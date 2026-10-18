@@ -6,6 +6,7 @@
     "@effect/tsgo": "catalog:lsp",
     "@tsconfig/bun": "catalog:types",
     "@types/bun": "catalog:types",
+    "@types/eslint": "catalog:types",
     "@types/node": "catalog:types",
     "bun-types": "catalog:types"
   },
@@ -35,6 +36,7 @@
       "types": {
         "@tsconfig/bun": "1.0.11",
         "@types/bun": "1.4.2",
+        "@types/eslint": "9.6.1",
         "@types/node": "26.6.3",
         "bun-types": "1.4.4-canary.20261018T141114"
       }
