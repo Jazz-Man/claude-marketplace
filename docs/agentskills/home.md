@@ -1,11 +1,11 @@
 > ## Documentation Index
+>
 > Fetch the complete documentation index at: https://agentskills.io/llms.txt
 > Use this file to discover all available pages before exploring further.
 
 # Agent Skills Overview
 
 > A standardized way to give AI agents new capabilities and expertise.
-
 
 ## What are Agent Skills?
 
@@ -26,9 +26,9 @@ my-skill/
 
 Agents are increasingly capable, but often don't have the context they need to do real work reliably. Skills solve this by packaging procedural knowledge and company-, team-, and user-specific context into portable, version-controlled folders that agents load on demand. This gives agents:
 
-* **Domain expertise**: Capture specialized knowledge — from legal review processes to data analysis pipelines to presentation formatting — as reusable instructions and resources.
-* **Repeatable workflows**: Turn multi-step tasks into consistent, auditable procedures.
-* **Cross-product reuse**: Build a skill once and use it across any skills-compatible agent.
+- **Domain expertise**: Capture specialized knowledge — from legal review processes to data analysis pipelines to presentation formatting — as reusable instructions and resources.
+- **Repeatable workflows**: Turn multi-step tasks into consistent, auditable procedures.
+- **Cross-product reuse**: Build a skill once and use it across any skills-compatible agent.
 
 ## How do Agent Skills work?
 

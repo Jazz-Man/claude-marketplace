@@ -16,9 +16,9 @@ import { prompt, markdown, xml } from "@kasava/prompt-builder";
 
 const b = prompt().field("Owner", "Ada").list(["alpha", "beta"]);
 
-console.log(b.build());                 // markdown (corrected)
+console.log(b.build()); // markdown (corrected)
 console.log(b.build(markdown({ strict: true }))); // pre-0.3 bytes
-console.log(b.build(xml()));            // <owner>Ada</owner> + markdown list
+console.log(b.build(xml())); // <owner>Ada</owner> + markdown list
 ```
 
 ---
@@ -77,7 +77,9 @@ const full = prompt()
   .priority("required")
   .include(prompt().guidelines(["Answer only from the context."]))
   .priority("low")
-  .include(prompt().heading("Worked Examples", 2).raw("…long demonstration content…"));
+  .include(
+    prompt().heading("Worked Examples", 2).raw("…long demonstration content…"),
+  );
 
 const trimmed = full.$budget({ maxTokens: 16 });
 
@@ -106,7 +108,9 @@ import { toolGuidance } from "@kasava/prompt-builder/presets";
 console.log(
   prompt()
     .role("research agent")
-    .include(toolGuidance([{ tool: "search", usage: "Find documents by keyword" }]))
+    .include(
+      toolGuidance([{ tool: "search", usage: "Find documents by keyword" }]),
+    )
     .build(),
 );
 ```

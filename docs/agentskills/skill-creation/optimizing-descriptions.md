@@ -1,4 +1,5 @@
 > ## Documentation Index
+>
 > Fetch the complete documentation index at: https://agentskills.io/llms.txt
 > Use this file to discover all available pages before exploring further.
 
@@ -22,10 +23,10 @@ One important nuance: agents typically only consult skills for tasks that requir
 
 Before testing, it helps to know what a good description looks like. A few principles:
 
-* **Use imperative phrasing.** Frame the description as an instruction to the agent: "Use this skill when..." rather than "This skill does..." The agent is deciding whether to act, so tell it when to act.
-* **Focus on user intent, not implementation.** Describe what the user is trying to achieve, not the skill's internal mechanics. The agent matches against what the user asked for.
-* **Err on the side of being pushy.** Explicitly list contexts where the skill applies, including cases where the user doesn't name the domain directly: "even if they don't explicitly mention 'CSV' or 'analysis.'"
-* **Keep it concise.** A few sentences to a short paragraph is usually right — long enough to cover the skill's scope, short enough that it doesn't bloat the agent's context across many skills. The [specification](/specification#description-field) enforces a hard limit of 1024 characters.
+- **Use imperative phrasing.** Frame the description as an instruction to the agent: "Use this skill when..." rather than "This skill does..." The agent is deciding whether to act, so tell it when to act.
+- **Focus on user intent, not implementation.** Describe what the user is trying to achieve, not the skill's internal mechanics. The agent matches against what the user asked for.
+- **Err on the side of being pushy.** Explicitly list contexts where the skill applies, including cases where the user doesn't name the domain directly: "even if they don't explicitly mention 'CSV' or 'analysis.'"
+- **Keep it concise.** A few sentences to a short paragraph is usually right — long enough to cover the skill's scope, short enough that it doesn't bloat the agent's context across many skills. The [specification](/specification#description-field) enforces a hard limit of 1024 characters.
 
 ## Designing trigger eval queries
 
@@ -33,8 +34,14 @@ To test triggering, you need a set of eval queries — realistic user prompts la
 
 ```json eval_queries.json theme={null}
 [
-  { "query": "I've got a spreadsheet in ~/data/q4_results.xlsx with revenue in col C and expenses in col D — can you add a profit margin column and highlight anything under 10%?", "should_trigger": true },
-  { "query": "whats the quickest way to convert this json file to yaml", "should_trigger": false }
+  {
+    "query": "I've got a spreadsheet in ~/data/q4_results.xlsx with revenue in col C and expenses in col D — can you add a profit margin column and highlight anything under 10%?",
+    "should_trigger": true
+  },
+  {
+    "query": "whats the quickest way to convert this json file to yaml",
+    "should_trigger": false
+  }
 ]
 ```
 
@@ -44,10 +51,10 @@ Aim for about 20 queries: 8-10 that should trigger and 8-10 that shouldn't.
 
 These test whether the description captures the skill's scope. Vary them along several axes:
 
-* **Phrasing**: some formal, some casual, some with typos or abbreviations.
-* **Explicitness**: some name the skill's domain directly ("analyze this CSV"), others describe the need without naming it ("my boss wants a chart from this data file").
-* **Detail**: mix terse prompts with context-heavy ones — a short "analyze my sales CSV and make a chart" alongside a longer message with file paths, column names, and backstory.
-* **Complexity**: vary the number of steps and decision points. Include single-step tasks alongside multi-step workflows to test whether the agent can discern the skill is relevant when the task it addresses is buried in a larger chain.
+- **Phrasing**: some formal, some casual, some with typos or abbreviations.
+- **Explicitness**: some name the skill's domain directly ("analyze this CSV"), others describe the need without naming it ("my boss wants a chart from this data file").
+- **Detail**: mix terse prompts with context-heavy ones — a short "analyze my sales CSV and make a chart" alongside a longer message with file paths, column names, and backstory.
+- **Complexity**: vary the number of steps and decision points. Include single-step tasks alongside multi-step workflows to test whether the agent can discern the skill is relevant when the task it addresses is buried in a larger chain.
 
 The most useful should-trigger queries are ones where the skill would help but the connection isn't obvious from the query alone. These are the cases where description wording makes the difference — if the query already asks for exactly what the skill does, any reasonable description would trigger.
 
@@ -57,22 +64,22 @@ The most valuable negative test cases are **near-misses** — queries that share
 
 For a CSV analysis skill, weak negative examples would be:
 
-* `"Write a fibonacci function"` — obviously irrelevant, tests nothing.
-* `"What's the weather today?"` — no keyword overlap, too easy.
+- `"Write a fibonacci function"` — obviously irrelevant, tests nothing.
+- `"What's the weather today?"` — no keyword overlap, too easy.
 
 Strong negative examples:
 
-* `"I need to update the formulas in my Excel budget spreadsheet"` — shares "spreadsheet" and "data" concepts, but needs Excel editing, not CSV analysis.
-* `"can you write a python script that reads a csv and uploads each row to our postgres database"` — involves CSV, but the task is database ETL, not analysis.
+- `"I need to update the formulas in my Excel budget spreadsheet"` — shares "spreadsheet" and "data" concepts, but needs Excel editing, not CSV analysis.
+- `"can you write a python script that reads a csv and uploads each row to our postgres database"` — involves CSV, but the task is database ETL, not analysis.
 
 ### Tips for realism
 
 Real user prompts contain context that generic test queries lack. Include:
 
-* File paths (`~/Downloads/report_final_v2.xlsx`)
-* Personal context (`"my manager asked me to..."`)
-* Specific details (column names, company names, data values)
-* Casual language, abbreviations, and occasional typos
+- File paths (`~/Downloads/report_final_v2.xlsx`)
+- Personal context (`"my manager asked me to..."`)
+- Specific details (column names, company names, data values)
+- Casual language, abbreviations, and occasional typos
 
 ## Testing whether a description triggers
 
@@ -82,8 +89,8 @@ Most agent clients provide some form of observability — execution logs, tool c
 
 A query "passes" if:
 
-* `should_trigger` is `true` and the skill was invoked, or
-* `should_trigger` is `false` and the skill was not invoked.
+- `should_trigger` is `true` and the skill was invoked, or
+- `should_trigger` is `false` and the skill was not invoked.
 
 ### Running multiple times
 
@@ -139,8 +146,8 @@ If you optimize the description against all your queries, you risk overfitting �
 
 The solution is to split your query set:
 
-* **Train set (\~60%)**: the queries you use to identify failures and guide improvements.
-* **Validation set (\~40%)**: queries you set aside and only use to check whether improvements generalize.
+- **Train set (\~60%)**: the queries you use to identify failures and guide improvements.
+- **Validation set (\~40%)**: queries you set aside and only use to check whether improvements generalize.
 
 Make sure both sets contain a proportional mix of should-trigger and should-not-trigger queries — don't accidentally put all the positives in one set. Shuffle randomly and keep the split fixed across iterations so you're comparing apples to apples.
 
@@ -148,17 +155,17 @@ If you're using a script like the one [above](#running-multiple-times), you can 
 
 ## The optimization loop
 
-1. **Evaluate** the current description on both *train and validation sets*. The train results guide your changes; the validation results tell you whether those changes are generalizing.
-2. **Identify failures** in the *train set*: which should-trigger queries didn't trigger? Which should-not-trigger queries did?
-   * Only use train set failures to guide your changes — whether you're revising the description yourself or prompting an LLM, keep validation set results out of the process.
+1. **Evaluate** the current description on both _train and validation sets_. The train results guide your changes; the validation results tell you whether those changes are generalizing.
+2. **Identify failures** in the _train set_: which should-trigger queries didn't trigger? Which should-not-trigger queries did?
+   - Only use train set failures to guide your changes — whether you're revising the description yourself or prompting an LLM, keep validation set results out of the process.
 3. **Revise the description.** Focus on generalizing:
-   * If should-trigger queries are failing, the description may be too narrow. Broaden the scope or add context about when the skill is useful.
-   * If should-not-trigger queries are false-triggering, the description may be too broad. Add specificity about what the skill does *not* do, or clarify the boundary between this skill and adjacent capabilities.
-   * Avoid adding specific keywords from failed queries — that's overfitting. Instead, find the general category or concept those queries represent and address that.
-   * If you're stuck after several iterations, try a structurally different approach to the description rather than incremental tweaks. A different framing or sentence structure may break through where refinement can't.
-   * Check that the description stays under the 1024-character limit — descriptions tend to grow during optimization.
-4. **Repeat** steps 1-3 until all *train set* queries pass or you stop seeing meaningful improvement.
-5. **Select the best iteration** by its validation pass rate — the fraction of queries in the *validation set* that passed. Note that the best description may not be the last one you produced; an earlier iteration might have a higher validation pass rate than later ones that overfit to the train set.
+   - If should-trigger queries are failing, the description may be too narrow. Broaden the scope or add context about when the skill is useful.
+   - If should-not-trigger queries are false-triggering, the description may be too broad. Add specificity about what the skill does _not_ do, or clarify the boundary between this skill and adjacent capabilities.
+   - Avoid adding specific keywords from failed queries — that's overfitting. Instead, find the general category or concept those queries represent and address that.
+   - If you're stuck after several iterations, try a structurally different approach to the description rather than incremental tweaks. A different framing or sentence structure may break through where refinement can't.
+   - Check that the description stays under the 1024-character limit — descriptions tend to grow during optimization.
+4. **Repeat** steps 1-3 until all _train set_ queries pass or you stop seeing meaningful improvement.
+5. **Select the best iteration** by its validation pass rate — the fraction of queries in the _validation set_ that passed. Note that the best description may not be the last one you produced; an earlier iteration might have a higher validation pass rate than later ones that overfit to the train set.
 
 Five iterations is usually enough. If performance isn't improving, the issue may be with the queries (too easy, too hard, or poorly labeled) rather than the description.
 

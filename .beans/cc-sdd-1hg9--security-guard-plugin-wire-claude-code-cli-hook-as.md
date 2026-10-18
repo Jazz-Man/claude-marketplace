@@ -1,6 +1,6 @@
 ---
 # cc-sdd-1hg9
-title: 'security-guard plugin: wire claude-code-cli-hook as PreToolUse hook'
+title: "security-guard plugin: wire claude-code-cli-hook as PreToolUse hook"
 status: completed
 type: feature
 priority: normal

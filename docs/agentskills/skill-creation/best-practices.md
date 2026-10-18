@@ -1,4 +1,5 @@
 > ## Documentation Index
+>
 > Fetch the complete documentation index at: https://agentskills.io/llms.txt
 > Use this file to discover all available pages before exploring further.
 
@@ -16,22 +17,22 @@ Effective skills are grounded in real expertise. The key is feeding domain-speci
 
 Complete a real task in conversation with an agent, providing context, corrections, and preferences along the way. Then extract the reusable pattern into a skill. Pay attention to:
 
-* **Steps that worked** — the sequence of actions that led to success
-* **Corrections you made** — places where you steered the agent's approach (e.g., "use library X instead of Y," "check for edge case Z")
-* **Input/output formats** — what the data looked like going in and coming out
-* **Context you provided** — project-specific facts, conventions, or constraints the agent didn't already know
+- **Steps that worked** — the sequence of actions that led to success
+- **Corrections you made** — places where you steered the agent's approach (e.g., "use library X instead of Y," "check for edge case Z")
+- **Input/output formats** — what the data looked like going in and coming out
+- **Context you provided** — project-specific facts, conventions, or constraints the agent didn't already know
 
 ### Synthesize from existing project artifacts
 
-When you have a body of existing knowledge, you can feed it into an LLM and ask it to synthesize a skill. A data-pipeline skill synthesized from your team's actual incident reports and runbooks will outperform one synthesized from a generic "data engineering best practices" article, because it captures *your* schemas, failure modes, and recovery procedures. The key is project-specific material, not generic references.
+When you have a body of existing knowledge, you can feed it into an LLM and ask it to synthesize a skill. A data-pipeline skill synthesized from your team's actual incident reports and runbooks will outperform one synthesized from a generic "data engineering best practices" article, because it captures _your_ schemas, failure modes, and recovery procedures. The key is project-specific material, not generic references.
 
 Good source material includes:
 
-* Internal documentation, runbooks, and style guides
-* API specifications, schemas, and configuration files
-* Code review comments and issue trackers (captures recurring concerns and reviewer expectations)
-* Version control history, especially patches and fixes (reveals patterns through what actually changed)
-* Real-world failure cases and their resolutions
+- Internal documentation, runbooks, and style guides
+- API specifications, schemas, and configuration files
+- Code review comments and issue trackers (captures recurring concerns and reviewer expectations)
+- Version control history, especially patches and fixes (reveals patterns through what actually changed)
+- Real-world failure cases and their resolutions
 
 ## Refine with real execution
 
@@ -51,10 +52,11 @@ Once a skill activates, its full `SKILL.md` body loads into the agent's context 
 
 ### Add what the agent lacks, omit what it knows
 
-Focus on what the agent *wouldn't* know without your skill: project-specific conventions, domain-specific procedures, non-obvious edge cases, and the particular tools or APIs to use. You don't need to explain what a PDF is, how HTTP works, or what a database migration does.
+Focus on what the agent _wouldn't_ know without your skill: project-specific conventions, domain-specific procedures, non-obvious edge cases, and the particular tools or APIs to use. You don't need to explain what a PDF is, how HTTP works, or what a database migration does.
 
 ````markdown theme={null}
 <!-- Too verbose — the agent already knows what PDFs are -->
+
 ## Extract PDF text
 
 PDF (Portable Document Format) files are a common file format that contains
@@ -62,6 +64,7 @@ text, images, and other content. To extract text from a PDF, you'll need to
 use a library. pdfplumber is recommended because it handles most cases well.
 
 <!-- Better — jumps straight to what the agent wouldn't know on its own -->
+
 ## Extract PDF text
 
 Use pdfplumber for text extraction. For scanned documents, fall back to
@@ -89,7 +92,7 @@ Overly comprehensive skills can hurt more than they help — the agent struggles
 
 The [specification](/specification#progressive-disclosure) recommends keeping `SKILL.md` under 500 lines and 5,000 tokens — just the core instructions the agent needs on every run. When a skill legitimately needs more content, move detailed reference material to separate files in `references/` or similar directories.
 
-The key is telling the agent *when* to load each file. "Read `references/api-errors.md` if the API returns a non-200 status code" is more useful than a generic "see references/ for details." This lets the agent load context on demand rather than up front, which is how [progressive disclosure](/specification#progressive-disclosure) is designed to work.
+The key is telling the agent _when_ to load each file. "Read `references/api-errors.md` if the API returns a non-200 status code" is more useful than a generic "see references/ for details." This lets the agent load context on demand rather than up front, which is how [progressive disclosure](/specification#progressive-disclosure) is designed to work.
 
 ## Calibrating control
 
@@ -97,7 +100,7 @@ Not every part of a skill needs the same level of prescriptiveness. Match the sp
 
 ### Match specificity to fragility
 
-**Give the agent freedom** when multiple approaches are valid and the task tolerates variation. For flexible instructions, explaining *why* can be more effective than rigid directives — an agent that understands the purpose behind an instruction makes better context-dependent decisions. A code review skill can describe what to look for without prescribing exact steps:
+**Give the agent freedom** when multiple approaches are valid and the task tolerates variation. For flexible instructions, explaining _why_ can be more effective than rigid directives — an agent that understands the purpose behind an instruction makes better context-dependent decisions. A code review skill can describe what to look for without prescribing exact steps:
 
 ```markdown theme={null}
 ## Code review process
@@ -130,9 +133,11 @@ When multiple tools or approaches could work, pick a default and mention alterna
 
 ````markdown theme={null}
 <!-- Too many options -->
+
 You can use pypdf, pdfplumber, PyMuPDF, or pdf2image...
 
 <!-- Clear default with escape hatch -->
+
 Use pdfplumber for text extraction:
 
 ```python
@@ -144,21 +149,23 @@ For scanned PDFs requiring OCR, use pdf2image with pytesseract instead.
 
 ### Favor procedures over declarations
 
-A skill should teach the agent *how to approach* a class of problems, not *what to produce* for a specific instance. Compare:
+A skill should teach the agent _how to approach_ a class of problems, not _what to produce_ for a specific instance. Compare:
 
 ```markdown theme={null}
 <!-- Specific answer — only useful for this exact task -->
+
 Join the `orders` table to `customers` on `customer_id`, filter where
 `region = 'EMEA'`, and sum the `amount` column.
 
 <!-- Reusable method — works for any analytical query -->
+
 1. Read the schema from `references/schema.yaml` to find relevant tables
 2. Join tables using the `_id` foreign key convention
 3. Apply any filters from the user's request as WHERE clauses
 4. Aggregate numeric columns as needed and format as a markdown table
 ```
 
-This doesn't mean skills can't include specific details — output format templates (see [Templates for output format](#templates-for-output-format)), constraints like "never output PII," and tool-specific instructions are all valuable. The point is that the *approach* should generalize even when individual details are specific.
+This doesn't mean skills can't include specific details — output format templates (see [Templates for output format](#templates-for-output-format)), constraints like "never output PII," and tool-specific instructions are all valuable. The point is that the _approach_ should generalize even when individual details are specific.
 
 ## Patterns for effective instructions
 
@@ -199,13 +206,16 @@ Use this template, adapting sections as needed for the specific analysis:
 # [Analysis Title]
 
 ## Executive summary
+
 [One-paragraph overview of key findings]
 
 ## Key findings
+
 - Finding 1 with supporting data
 - Finding 2 with supporting data
 
 ## Recommendations
+
 1. Specific actionable recommendation
 2. Specific actionable recommendation
 ```
@@ -219,6 +229,7 @@ An explicit checklist helps the agent track progress and avoid skipping steps, e
 ## Form processing workflow
 
 Progress:
+
 - [ ] Step 1: Analyze the form (run `scripts/analyze_form.py`)
 - [ ] Step 2: Create field mapping (edit `fields.json`)
 - [ ] Step 3: Validate mapping (run `scripts/validate_fields.py`)
@@ -273,5 +284,5 @@ For more on designing and bundling scripts, see [Using scripts in skills](/skill
 
 Once you have a working skill, two guides can help you refine it further:
 
-* **[Evaluating skill output quality](/skill-creation/evaluating-skills)** — Set up test cases, grade results, and iterate systematically.
-* **[Optimizing skill descriptions](/skill-creation/optimizing-descriptions)** — Test and improve your skill's `description` field so it triggers on the right prompts.
+- **[Evaluating skill output quality](/skill-creation/evaluating-skills)** — Set up test cases, grade results, and iterate systematically.
+- **[Optimizing skill descriptions](/skill-creation/optimizing-descriptions)** — Test and improve your skill's `description` field so it triggers on the right prompts.

@@ -25,13 +25,13 @@ No package manager, no build step, no test framework. Assume this toolchain: the
 
 ## bin/ helper contracts
 
-| Helper | Writes | Contract |
-|---|---|---|
-| `sdd-phase <skill-name>` | nothing | exit 0 iff the skill's phase precondition holds (per-skill map; `impl` delegates to the full `sdd-gate`); failure prints a one-line diagnosis naming the fixing command |
-| `sdd-gate <epic-id>` | nothing | exit 0 iff the epic is impl-ready: three completed phase beans, `validated` tags plus current `Doc-hash:` on requirements/design, and a runnable or finished task queue anywhere in the task tree |
-| `sdd-next` | nothing | prints the next actionable leaf of the active feature's task tree (`NEXT:`), pending `ROLLUP:` containers, or `FINISHED`; blockers, ancestor chaining, and `## Blocker` notes gate the selection |
-| `sdd-verdict <bean-id> [field]` | nothing | prints the latest `- FIELD: TOKEN` token from the bean body; rounds append, so the last match wins |
-| `sdd-promote <epic-id> --all \| <bean-id>...` | `beans update <id> -s todo` only | the sole write helper in the plugin; promotes draft descendants of the epic (any depth, phase beans never); everything else stays read-only |
+| Helper                                        | Writes                           | Contract                                                                                                                                                                                          |
+| --------------------------------------------- | -------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `sdd-phase <skill-name>`                      | nothing                          | exit 0 iff the skill's phase precondition holds (per-skill map; `impl` delegates to the full `sdd-gate`); failure prints a one-line diagnosis naming the fixing command                           |
+| `sdd-gate <epic-id>`                          | nothing                          | exit 0 iff the epic is impl-ready: three completed phase beans, `validated` tags plus current `Doc-hash:` on requirements/design, and a runnable or finished task queue anywhere in the task tree |
+| `sdd-next`                                    | nothing                          | prints the next actionable leaf of the active feature's task tree (`NEXT:`), pending `ROLLUP:` containers, or `FINISHED`; blockers, ancestor chaining, and `## Blocker` notes gate the selection  |
+| `sdd-verdict <bean-id> [field]`               | nothing                          | prints the latest `- FIELD: TOKEN` token from the bean body; rounds append, so the last match wins                                                                                                |
+| `sdd-promote <epic-id> --all \| <bean-id>...` | `beans update <id> -s todo` only | the sole write helper in the plugin; promotes draft descendants of the epic (any depth, phase beans never); everything else stays read-only                                                       |
 
 The task tree shape is a beans-CLI constraint, not a choice: task beans parent only under milestone/epic/feature, and feature-under-feature is refused — so majors are `feature`-type containers and leaves are `task` beans; deeper decomposition flattens to dotted numbers plus `blockedByIds` edges.
 

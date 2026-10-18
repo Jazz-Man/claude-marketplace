@@ -1,4 +1,5 @@
 > ## Documentation Index
+>
 > Fetch the complete documentation index at: https://agentskills.io/llms.txt
 > Use this file to discover all available pages before exploring further.
 
@@ -12,9 +13,9 @@ You wrote a skill, tried it on a prompt, and it seemed to work. But does it work
 
 A test case has three parts:
 
-* **Prompt**: a realistic user message — the kind of thing someone would actually type.
-* **Expected output**: a human-readable description of what success looks like.
-* **Input files** (optional): files the skill needs to work with.
+- **Prompt**: a realistic user message — the kind of thing someone would actually type.
+- **Expected output**: a human-readable description of what success looks like.
+- **Input files** (optional): files the skill needs to work with.
 
 Store test cases in `evals/evals.json` inside your skill directory:
 
@@ -40,10 +41,10 @@ Store test cases in `evals/evals.json` inside your skill directory:
 
 **Tips for writing good test prompts:**
 
-* **Start with 2-3 test cases.** Don't over-invest before you've seen your first round of results. You can expand the set later.
-* **Vary the prompts.** Use different phrasings, levels of detail, and formality. Some prompts should be casual ("hey can you clean up this csv"), others precise ("Parse the CSV at data/input.csv, drop rows where column B is null, and write the result to data/output.csv").
-* **Cover edge cases.** Include at least one prompt that tests a boundary condition — a malformed input, an unusual request, or a case where the skill's instructions might be ambiguous.
-* **Use realistic context.** Real users mention file paths, column names, and personal context. Prompts like "process this data" are too vague to test anything useful.
+- **Start with 2-3 test cases.** Don't over-invest before you've seen your first round of results. You can expand the set later.
+- **Vary the prompts.** Use different phrasings, levels of detail, and formality. Some prompts should be casual ("hey can you clean up this csv"), others precise ("Parse the CSV at data/input.csv, drop rows where column B is null, and write the result to data/output.csv").
+- **Cover edge cases.** Include at least one prompt that tests a boundary condition — a malformed input, an unusual request, or a case where the skill's instructions might be ambiguous.
+- **Use realistic context.** Real users mention file paths, column names, and personal context. Prompts like "process this data" are too vague to test anything useful.
 
 Don't worry about defining specific pass/fail checks yet — just the prompts and expected outputs. You'll add detailed checks (called assertions) after you see what the first run produces.
 
@@ -91,10 +92,10 @@ Each eval run should start with a clean context — no leftover state from previ
 
 For each run, provide:
 
-* The skill path (or no skill for the baseline)
-* The test prompt
-* Any input files
-* The output directory
+- The skill path (or no skill for the baseline)
+- The test prompt
+- Any input files
+- The output directory
 
 Here's an example of the instructions you'd give the agent for a single with-skill run:
 
@@ -132,14 +133,14 @@ Assertions are verifiable statements about what the output should contain or ach
 
 Good assertions:
 
-* `"The output file is valid JSON"` — programmatically verifiable.
-* `"The bar chart has labeled axes"` — specific and observable.
-* `"The report includes at least 3 recommendations"` — countable.
+- `"The output file is valid JSON"` — programmatically verifiable.
+- `"The bar chart has labeled axes"` — specific and observable.
+- `"The report includes at least 3 recommendations"` — countable.
 
 Weak assertions:
 
-* `"The output is good"` — too vague to grade.
-* `"The output uses exactly the phrase 'Total Revenue: $X'"` — too brittle; correct output with different wording would fail.
+- `"The output is good"` — too vague to grade.
+- `"The output uses exactly the phrase 'Total Revenue: $X'"` — too brittle; correct output with different wording would fail.
 
 Not everything needs an assertion. Some qualities — writing style, visual design, whether the output "feels right" — are hard to decompose into pass/fail checks. These are better caught during [human review](#reviewing-results-with-a-human). Reserve assertions for things that can be checked objectively.
 
@@ -206,8 +207,8 @@ The simplest approach is to give the outputs and assertions to an LLM and ask it
 
 ### Grading principles
 
-* **Require concrete evidence for a PASS.** Don't give the benefit of the doubt. If an assertion says "includes a summary" and the output has a section titled "Summary" with one vague sentence, that's a FAIL — the label is there but the substance isn't.
-* **Review the assertions themselves, not just the results.** While grading, notice when assertions are too easy (always pass regardless of skill quality), too hard (always fail even when the output is good), or unverifiable (can't be checked from the output alone). Fix these for the next iteration.
+- **Require concrete evidence for a PASS.** Don't give the benefit of the doubt. If an assertion says "includes a summary" and the output has a section titled "Summary" with one vague sentence, that's a FAIL — the label is there but the substance isn't.
+- **Review the assertions themselves, not just the results.** While grading, notice when assertions are too easy (always pass regardless of skill quality), too hard (always fail even when the output is good), or unverifiable (can't be checked from the output alone). Fix these for the next iteration.
 
 <Tip>
   For comparing two skill versions, try **blind comparison**: present both outputs to an LLM judge without revealing which came from which version. The judge scores holistic qualities — organization, formatting, usability, polish — on its own rubric, free from bias about which version "should" be better. This complements assertion grading: two outputs might both pass all assertions but differ significantly in overall quality.
@@ -226,12 +227,12 @@ Once every run in the iteration is graded, compute summary statistics per config
       "tokens": { "mean": 3800, "stddev": 400 }
     },
     "without_skill": {
-      "pass_rate": { "mean": 0.33, "stddev": 0.10 },
+      "pass_rate": { "mean": 0.33, "stddev": 0.1 },
       "time_seconds": { "mean": 32.0, "stddev": 8.0 },
       "tokens": { "mean": 2100, "stddev": 300 }
     },
     "delta": {
-      "pass_rate": 0.50,
+      "pass_rate": 0.5,
       "time_seconds": 13.0,
       "tokens": 1700
     }
@@ -249,11 +250,11 @@ The `delta` tells you what the skill costs (more time, more tokens) and what it 
 
 Aggregate statistics can hide important patterns. After computing the benchmarks:
 
-* **Remove or replace assertions that always pass in both configurations.** These don't tell you anything useful — the model handles them fine without the skill. They inflate the with-skill pass rate without reflecting actual skill value.
-* **Investigate assertions that always fail in both configurations.** Either the assertion is broken (asking for something the model can't do), the test case is too hard, or the assertion is checking for the wrong thing. Fix these before the next iteration.
-* **Study assertions that pass with the skill but fail without.** This is where the skill is clearly adding value. Understand *why* — which instructions or scripts made the difference?
-* **Tighten instructions when results are inconsistent across runs.** If the same eval passes sometimes and fails others (reflected as high `stddev` in the benchmark), the eval may be flaky (sensitive to model randomness), or the skill's instructions may be ambiguous enough that the model interprets them differently each time. Add examples or more specific guidance to reduce ambiguity.
-* **Check time and token outliers.** If one eval takes 3x longer than the others, read its execution transcript (the full log of what the model did during the run) to find the bottleneck.
+- **Remove or replace assertions that always pass in both configurations.** These don't tell you anything useful — the model handles them fine without the skill. They inflate the with-skill pass rate without reflecting actual skill value.
+- **Investigate assertions that always fail in both configurations.** Either the assertion is broken (asking for something the model can't do), the test case is too hard, or the assertion is checking for the wrong thing. Fix these before the next iteration.
+- **Study assertions that pass with the skill but fail without.** This is where the skill is clearly adding value. Understand _why_ — which instructions or scripts made the difference?
+- **Tighten instructions when results are inconsistent across runs.** If the same eval passes sometimes and fails others (reflected as high `stddev` in the benchmark), the eval may be flaky (sensitive to model randomness), or the skill's instructions may be ambiguous enough that the model interprets them differently each time. Add examples or more specific guidance to reduce ambiguity.
+- **Check time and token outliers.** If one eval takes 3x longer than the others, read its execution transcript (the full log of what the model did during the run) to find the bottleneck.
 
 ## Reviewing results with a human
 
@@ -274,16 +275,16 @@ Record specific feedback for each test case and save it in the workspace (e.g., 
 
 After grading and reviewing, you have three sources of signal:
 
-* **Failed assertions** point to specific gaps — a missing step, an unclear instruction, or a case the skill doesn't handle.
-* **Human feedback** points to broader quality issues — the approach was wrong, the output was poorly structured, or the skill produced a technically correct but unhelpful result.
-* **Execution transcripts** reveal *why* things went wrong. If the agent ignored an instruction, the instruction may be ambiguous. If the agent spent time on unproductive steps, those instructions may need to be simplified or removed.
+- **Failed assertions** point to specific gaps — a missing step, an unclear instruction, or a case the skill doesn't handle.
+- **Human feedback** points to broader quality issues — the approach was wrong, the output was poorly structured, or the skill produced a technically correct but unhelpful result.
+- **Execution transcripts** reveal _why_ things went wrong. If the agent ignored an instruction, the instruction may be ambiguous. If the agent spent time on unproductive steps, those instructions may need to be simplified or removed.
 
 The most effective way to turn these signals into skill improvements is to give all three — along with the current `SKILL.md` — to an LLM and ask it to propose changes. The LLM can synthesize patterns across failed assertions, reviewer complaints, and transcript behavior that would be tedious to connect manually. When prompting the LLM, include these guidelines:
 
-* **Generalize from feedback.** The skill will be used across many different prompts, not just the test cases. Fixes should address underlying issues broadly rather than adding narrow patches for specific examples.
-* **Keep the skill lean.** Fewer, better instructions often outperform exhaustive rules. If transcripts show wasted work (unnecessary validation, unneeded intermediate outputs), remove those instructions. If pass rates plateau despite adding more rules, the skill may be over-constrained — try removing instructions and see if results hold or improve.
-* **Explain the why.** Reasoning-based instructions ("Do X because Y tends to cause Z") work better than rigid directives ("ALWAYS do X, NEVER do Y"). Models follow instructions more reliably when they understand the purpose.
-* **Bundle repeated work.** If every test run independently wrote a similar helper script (a chart builder, a data parser), that's a signal to bundle the script into the skill's `scripts/` directory. See [Using scripts](/skill-creation/using-scripts) for how to do this.
+- **Generalize from feedback.** The skill will be used across many different prompts, not just the test cases. Fixes should address underlying issues broadly rather than adding narrow patches for specific examples.
+- **Keep the skill lean.** Fewer, better instructions often outperform exhaustive rules. If transcripts show wasted work (unnecessary validation, unneeded intermediate outputs), remove those instructions. If pass rates plateau despite adding more rules, the skill may be over-constrained — try removing instructions and see if results hold or improve.
+- **Explain the why.** Reasoning-based instructions ("Do X because Y tends to cause Z") work better than rigid directives ("ALWAYS do X, NEVER do Y"). Models follow instructions more reliably when they understand the purpose.
+- **Bundle repeated work.** If every test run independently wrote a similar helper script (a chart builder, a data parser), that's a signal to bundle the script into the skill's `scripts/` directory. See [Using scripts](/skill-creation/using-scripts) for how to do this.
 
 ### The loop
 

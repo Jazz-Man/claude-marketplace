@@ -1,6 +1,6 @@
 ---
 # cc-sdd-6jwd
-title: 'Research: Claude Code multi-LSP handling per file type'
+title: "Research: Claude Code multi-LSP handling per file type"
 status: completed
 type: task
 priority: normal

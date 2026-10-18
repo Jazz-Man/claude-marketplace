@@ -118,13 +118,15 @@ interface Input {
 }
 
 function buildPrompt(input: Input): string {
-  return prompt()
-    .role("reviewer")
-    .tag("document", input.document) // unique tag per source
-    .tag("profile", input.profile) // distinct name — never reuse a fixed-name tag
-    .data("Input schema: ...") // single <data> block
-    // ... rest of prompt
-    .build();
+  return (
+    prompt()
+      .role("reviewer")
+      .tag("document", input.document) // unique tag per source
+      .tag("profile", input.profile) // distinct name — never reuse a fixed-name tag
+      .data("Input schema: ...") // single <data> block
+      // ... rest of prompt
+      .build()
+  );
 }
 ```
 
@@ -171,17 +173,25 @@ const dynamic = prompt()
 Use when content depends on values known only at render time and you want the variable set typed and checked — a missing required variable is a render-time error, not a silently empty section.
 
 ```typescript fragment
-import { bool, definePrompt, list, p, prompt, text, when } from "@kasava/prompt-builder";
+import {
+  bool,
+  definePrompt,
+  list,
+  p,
+  prompt,
+  text,
+  when,
+} from "@kasava/prompt-builder";
 
 const template = definePrompt("listing_review", {
-  itemName: text().notNull(),       // required at render time
-  features: list().default([]),     // optional, with fallback
+  itemName: text().notNull(), // required at render time
+  features: list().default([]), // optional, with fallback
   isMobile: bool().default(false),
 }).body((v) =>
   prompt()
     .role("listing reviewer")
     .tag("item", p`Name: ${v.itemName}`)
-    .include(when(v.isMobile, prompt().raw("Keep the reply short.")))
+    .include(when(v.isMobile, prompt().raw("Keep the reply short."))),
 );
 
 template.render({ itemName: "Vintage lamp" }); // features/isMobile fall back to defaults
@@ -203,8 +213,8 @@ const builder = prompt()
   .include(p`Version ${placeholder("version")} is live.`);
 
 const prepared = builder.prepare("announce_v1"); // AST compiled once
-prepared.params;                          // ["version"]
-prepared.render({ version: "2.1.0" });    // each render fills slots only
+prepared.params; // ["version"]
+prepared.render({ version: "2.1.0" }); // each render fills slots only
 prepared.render({ version: "2.2.0" });
 ```
 
@@ -244,12 +254,12 @@ import { toMessages, xml } from "@kasava/prompt-builder";
 const builder = prompt()
   .role("support triage")
   .context("Triage policy — stable across requests.") // cache-stable half
-  .cacheBoundary()                                    // marker lands on the block BEFORE it
-  .data("Ticket: per-request content");               // volatile half
+  .cacheBoundary() // marker lands on the block BEFORE it
+  .data("Ticket: per-request content"); // volatile half
 
-builder.build();      // markdown string — one consumer
+builder.build(); // markdown string — one consumer
 builder.build(xml()); // XML dialect — another consumer
-toMessages(builder);  // ChatMessage[] with cache_control — chat consumer
+toMessages(builder); // ChatMessage[] with cache_control — chat consumer
 ```
 
 **Key methods:** `toMessages`, `cacheBoundary`, `xml` — [api-output.md](api-output.md)
@@ -267,7 +277,7 @@ import { workedExample } from "@kasava/prompt-builder/presets";
 const full = prompt()
   .role("code reviewer")
   .priority("required")
-  .guidelines(["Answer only from the diff."])  // never dropped
+  .guidelines(["Answer only from the diff."]) // never dropped
   .priority("normal")
   .protocol({ name, steps, followThrough })
   .priority("low")
@@ -282,27 +292,27 @@ const trimmed = full.$budget({ maxTokens: 4000 }); // NEW builder — full is un
 
 ## Method-to-Pattern Matrix
 
-| Method | Scoring | Tool Agent | Analysis | Q&A | Code Review | Context-Heavy | Conditional | Runtime-Data | Repeated-Render | Composable | Multi-Target | Budget |
-|---|:---:|:---:|:---:|:---:|:---:|:---:|:---:|:---:|:---:|:---:|:---:|:---:|
-| `.role()` | Y | Y | Y | Y | Y | Y | Y | Y | Y | Y | Y | Y |
-| `.context()` | Y | Y | Y | - | Y | Y | - | - | - | - | Y | - |
-| `.data()` | Y | Y | - | - | - | Y | - | - | - | - | Y | - |
-| `.protocol()` | Y | Y | Y | - | Y | - | - | - | - | - | - | Y |
-| `.arrowRules()` | Y | Y | - | - | Y | - | - | - | - | - | - | - |
-| `.toolGuidance()` → /presets | Y | Y | Y | Y | - | - | - | - | - | - | - | - |
-| `.lookupTable()` | Y | - | - | - | - | - | - | - | - | - | - | - |
-| `.severityScale()` | Y | - | - | - | - | - | - | - | - | - | - | - |
-| `.guidelines()` | Y | Y | Y | Y | Y | Y | - | - | - | - | - | Y |
-| `.analysisRequirements()` → /presets | Y | - | Y | - | Y | - | - | - | - | - | - | - |
-| `.gracefulDegradation()` → /presets | - | Y | Y | - | - | - | - | - | - | - | - | - |
-| `.verificationChecklist()` | - | Y | Y | - | Y | - | - | - | - | - | - | - |
-| `.investigationStrategy()` | - | - | Y | - | Y | - | - | - | - | - | - | - |
-| `.confidenceScale()` | - | - | Y | - | - | - | - | - | - | - | - | - |
-| `.workedExample()` → /presets | - | Y | - | - | - | - | - | - | - | - | - | Y |
-| `.conditional()` | Y | Y | Y | - | Y | Y | Y | - | - | - | - | - |
-| `.include()` | - | - | - | - | - | Y | Y | Y | Y | Y | - | Y |
-| `definePrompt()` + `.render()` | - | - | - | - | - | - | - | Y | - | - | - | - |
-| `p` / `placeholder()` | - | - | - | - | - | - | - | Y | Y | - | - | - |
-| `when`/`unless`/`all`/`any`/`each` | - | - | - | - | - | - | Y | Y | - | Y | - | - |
-| `toMessages()` + `.cacheBoundary()` | - | - | - | - | - | - | - | - | - | - | Y | - |
-| `.priority()` + `.$budget()` | - | - | - | - | - | - | - | - | - | - | - | Y |
+| Method                               | Scoring | Tool Agent | Analysis | Q&A | Code Review | Context-Heavy | Conditional | Runtime-Data | Repeated-Render | Composable | Multi-Target | Budget |
+| ------------------------------------ | :-----: | :--------: | :------: | :-: | :---------: | :-----------: | :---------: | :----------: | :-------------: | :--------: | :----------: | :----: |
+| `.role()`                            |    Y    |     Y      |    Y     |  Y  |      Y      |       Y       |      Y      |      Y       |        Y        |     Y      |      Y       |   Y    |
+| `.context()`                         |    Y    |     Y      |    Y     |  -  |      Y      |       Y       |      -      |      -       |        -        |     -      |      Y       |   -    |
+| `.data()`                            |    Y    |     Y      |    -     |  -  |      -      |       Y       |      -      |      -       |        -        |     -      |      Y       |   -    |
+| `.protocol()`                        |    Y    |     Y      |    Y     |  -  |      Y      |       -       |      -      |      -       |        -        |     -      |      -       |   Y    |
+| `.arrowRules()`                      |    Y    |     Y      |    -     |  -  |      Y      |       -       |      -      |      -       |        -        |     -      |      -       |   -    |
+| `.toolGuidance()` → /presets         |    Y    |     Y      |    Y     |  Y  |      -      |       -       |      -      |      -       |        -        |     -      |      -       |   -    |
+| `.lookupTable()`                     |    Y    |     -      |    -     |  -  |      -      |       -       |      -      |      -       |        -        |     -      |      -       |   -    |
+| `.severityScale()`                   |    Y    |     -      |    -     |  -  |      -      |       -       |      -      |      -       |        -        |     -      |      -       |   -    |
+| `.guidelines()`                      |    Y    |     Y      |    Y     |  Y  |      Y      |       Y       |      -      |      -       |        -        |     -      |      -       |   Y    |
+| `.analysisRequirements()` → /presets |    Y    |     -      |    Y     |  -  |      Y      |       -       |      -      |      -       |        -        |     -      |      -       |   -    |
+| `.gracefulDegradation()` → /presets  |    -    |     Y      |    Y     |  -  |      -      |       -       |      -      |      -       |        -        |     -      |      -       |   -    |
+| `.verificationChecklist()`           |    -    |     Y      |    Y     |  -  |      Y      |       -       |      -      |      -       |        -        |     -      |      -       |   -    |
+| `.investigationStrategy()`           |    -    |     -      |    Y     |  -  |      Y      |       -       |      -      |      -       |        -        |     -      |      -       |   -    |
+| `.confidenceScale()`                 |    -    |     -      |    Y     |  -  |      -      |       -       |      -      |      -       |        -        |     -      |      -       |   -    |
+| `.workedExample()` → /presets        |    -    |     Y      |    -     |  -  |      -      |       -       |      -      |      -       |        -        |     -      |      -       |   Y    |
+| `.conditional()`                     |    Y    |     Y      |    Y     |  -  |      Y      |       Y       |      Y      |      -       |        -        |     -      |      -       |   -    |
+| `.include()`                         |    -    |     -      |    -     |  -  |      -      |       Y       |      Y      |      Y       |        Y        |     Y      |      -       |   Y    |
+| `definePrompt()` + `.render()`       |    -    |     -      |    -     |  -  |      -      |       -       |      -      |      Y       |        -        |     -      |      -       |   -    |
+| `p` / `placeholder()`                |    -    |     -      |    -     |  -  |      -      |       -       |      -      |      Y       |        Y        |     -      |      -       |   -    |
+| `when`/`unless`/`all`/`any`/`each`   |    -    |     -      |    -     |  -  |      -      |       -       |      Y      |      Y       |        -        |     Y      |      -       |   -    |
+| `toMessages()` + `.cacheBoundary()`  |    -    |     -      |    -     |  -  |      -      |       -       |      -      |      -       |        -        |     -      |      Y       |   -    |
+| `.priority()` + `.$budget()`         |    -    |     -      |    -     |  -  |      -      |       -       |      -      |      -       |        -        |     -      |      -       |   Y    |

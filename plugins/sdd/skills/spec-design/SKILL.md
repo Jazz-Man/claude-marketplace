@@ -252,7 +252,7 @@ AskUserQuestion:
         `Doc-hash: <the sha256 just computed>`
         (this freshness write mirrors `${CLAUDE_PLUGIN_ROOT}/bin/sdd-gate`'s read)
      4. Complete: `beans update <design-phase-id> -s completed`
-     Then name the next command in a code block:
+        Then name the next command in a code block:
      ```
      /sdd:spec-tasks
      ```
@@ -283,6 +283,7 @@ AskUserQuestion:
    A standalone `/sdd:validate-design` run stays available anytime
    as a formative check; the approve gate above runs its own
    validation regardless.
+
 2. **Edit** - the user supplies feedback. Append it under
    `## Round <K>` in
    `.sdd/specs/<feature>/workspace/design-edits.md` (create the file if

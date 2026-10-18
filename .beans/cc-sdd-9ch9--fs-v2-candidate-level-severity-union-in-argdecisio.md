@@ -1,6 +1,6 @@
 ---
 # cc-sdd-9ch9
-title: 'fs v2: candidate-level severity union in argDecision (C1 survivor)'
+title: "fs v2: candidate-level severity union in argDecision (C1 survivor)"
 status: completed
 type: bug
 priority: critical

@@ -1,6 +1,6 @@
 ---
 # cc-sdd-6gn1
-title: 'Task 8: SkillService + writer + marketplace upsert'
+title: "Task 8: SkillService + writer + marketplace upsert"
 status: completed
 type: task
 priority: normal
@@ -27,4 +27,4 @@ Battery: vitest 40/40 (7 files); bun test 263/0/10 (constant); tsc per-package 0
 2. tests/yaml-emitter.test.ts: 6 its, written RED-first (3 failed on the holes: trailing space, undefined, date shape; 3 pinned existing behavior). Round-trip through Bun.YAML.parse verified in a throwaway bun probe — all 6 emitted docs parse back to the exact source values. Committed vitest tests assert emitted TEXT shape (no YAML parser without a new dep).
 3. Date-shape: /^\d{4}-\d{2}-\d{2}/ prefix check quotes slug-legal date/datetime-like scalars.
 4. Split: src/skill-compose.ts (298 lines: composer family + SkillBuildError/SkillDeps/PluginBundle/sortedJson/asBuildError) and src/skill-service.ts (175 lines: writer + generate + SkillService); one-way service -> compose; BOTH file-level biome-ignores deleted. Deviation flagged: SkillDefinition/SkillBuildReport/SkillBuildError export from skill-compose.ts, NOT re-exported from skill-service.ts (export-from trips noBarrelFile, export-of-import trips noExportedImports under preset:all; test surface unchanged — tests import only SkillService).
-Battery: vitest 46/46 (8 files); bun test 264/0/10 (+1 from the parallel cc-sdd-1zge workstream, none mine); tsc per-package 0; tsc root clean except that workstream's scratch-skill-verify.ts; biome clean on all files this task touches.
+   Battery: vitest 46/46 (8 files); bun test 264/0/10 (+1 from the parallel cc-sdd-1zge workstream, none mine); tsc per-package 0; tsc root clean except that workstream's scratch-skill-verify.ts; biome clean on all files this task touches.

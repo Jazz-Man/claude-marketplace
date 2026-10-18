@@ -21,13 +21,13 @@ Page keys: [components] = code.claude.com/docs/en/plugins/components · [manifes
 
 ### Sources that can register an LSP server
 
-| Source | Documented? | Evidence |
-|---|---|---|
-| Plugin `.lsp.json` at plugin root | Yes | "Declare the server in `.lsp.json` at the plugin root" / "The file maps each server name directly to its configuration, with no wrapper object around the map." [components] |
-| Manifest `lspServers` key | Yes | "`lspServers` takes a `.json` file path, an inline map of server name to config, or an array of either." "its servers add to the ones in `.lsp.json`" [manifest, components] |
-| claude.ai-synced plugins | Yes (delivery channel) | "a synced plugin's skills, agents, hooks, MCP servers, and LSP servers all load, with the same trust as a marketplace plugin you installed." [loading] |
-| `settings.json` (any scope) | No — verified absent | Zero occurrences of "lsp"/"language server" on the full Settings page (grep-verified during mining). |
-| Project-level `.lsp.json` outside a plugin | Not found | [Unverified] whether such a mechanism exists. |
+| Source                                     | Documented?            | Evidence                                                                                                                                                                     |
+| ------------------------------------------ | ---------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Plugin `.lsp.json` at plugin root          | Yes                    | "Declare the server in `.lsp.json` at the plugin root" / "The file maps each server name directly to its configuration, with no wrapper object around the map." [components] |
+| Manifest `lspServers` key                  | Yes                    | "`lspServers` takes a `.json` file path, an inline map of server name to config, or an array of either." "its servers add to the ones in `.lsp.json`" [manifest, components] |
+| claude.ai-synced plugins                   | Yes (delivery channel) | "a synced plugin's skills, agents, hooks, MCP servers, and LSP servers all load, with the same trust as a marketplace plugin you installed." [loading]                       |
+| `settings.json` (any scope)                | No — verified absent   | Zero occurrences of "lsp"/"language server" on the full Settings page (grep-verified during mining).                                                                         |
+| Project-level `.lsp.json` outside a plugin | Not found              | [Unverified] whether such a mechanism exists.                                                                                                                                |
 
 ### Within one plugin
 
@@ -35,11 +35,11 @@ Page keys: [components] = code.claude.com/docs/en/plugins/components · [manifes
 
 > "When a manifest server has the same name as one in `.lsp.json`, the manifest server replaces it." — [components]
 
-This is name-keyed replacement, not extension-keyed: the later declaration wins by server *name*, and the replaced server's extensions go with it.
+This is name-keyed replacement, not extension-keyed: the later declaration wins by server _name_, and the replaced server's extensions go with it.
 
 ### Across two distinct plugins — not documented
 
-Neither [components], [code-intel], nor [loading] states which of two differently-named enabled plugins registers its servers first. The adjacent documented facts do not cover it: the loading reference's "Name conflicts" precedence (managed settings > `--plugin-dir` > installed marketplace > skills-directory > synced) decides *which plugin loads at all* when manifest names collide, not server registration order; the "Official first" marketplace rule [code-intel] governs only the install-recommendation dialog.
+Neither [components], [code-intel], nor [loading] states which of two differently-named enabled plugins registers its servers first. The adjacent documented facts do not cover it: the loading reference's "Name conflicts" precedence (managed settings > `--plugin-dir` > installed marketplace > skills-directory > synced) decides _which plugin loads at all_ when manifest names collide, not server registration order; the "Official first" marketplace rule [code-intel] governs only the install-recommendation dialog.
 
 ### Empirical order evidence (live experiment, 2026-10-06)
 
@@ -97,7 +97,7 @@ Delivery shape: "the conversation shows only the `Found N new diagnostic issues 
 - [Inference, based on observed patterns]: the push surface appears to be a main-conversation feature that did not reach the subagent context in that run — or it simply did not trigger. No docs page states where pushes surface; the reconciling mechanism is undocumented [Unverified].
 - **Corroboration (main conversation, live 2026-10-06):** during that same subagent run, the main conversation received `<new-diagnostics>` for the subagent-written probes — `lsp-probe-ctrl.json` `[assist/source/useSortedKeys]` (biome), `lsp-probe-ts.ts` ×2 `[6133]` (ts), `lsp-probe-sym.json` (biome). The pushes were not lost: they surfaced in the main conversation while the editing subagent itself saw none. [Inference] the push surface is the main conversation regardless of which agent edited the file — which also resolves the §3 caveat: the subagent-run silences were a surfacing artifact, not exclusion, and the `.ts` "no biome push" verdict stands via the real-file follow-up above.
 
-LSP tool on a capability gap: the documented failure mode covers only start failure — "Claude Code returns an error result for each LSP call on a file whose language server it can't start." [tools] For a *running* server that lacks a method, the docs say nothing; the live evidence is the `Method not found` error above. [Inference] with exactly one candidate server per extension, a missing capability yields an error (or empty) result — no second candidate exists by construction. Server-side misconfiguration is out of scope for CC: "A language server that isn't configured for the workspace can report unresolved imports for internal packages. There's nothing to fix on the Claude Code side…" [troubleshooting]
+LSP tool on a capability gap: the documented failure mode covers only start failure — "Claude Code returns an error result for each LSP call on a file whose language server it can't start." [tools] For a _running_ server that lacks a method, the docs say nothing; the live evidence is the `Method not found` error above. [Inference] with exactly one candidate server per extension, a missing capability yields an error (or empty) result — no second candidate exists by construction. Server-side misconfiguration is out of scope for CC: "A language server that isn't configured for the workspace can report unresolved imports for internal packages. There's nothing to fix on the Claude Code side…" [troubleshooting]
 
 ## 5. Subagents and -p mode
 

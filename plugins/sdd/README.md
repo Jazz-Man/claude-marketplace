@@ -150,13 +150,13 @@ task, escalating to a plan change, or aborting the feature.
 
 Pinned in the skill texts, never the agent's choice:
 
-| Work | Model |
-|---|---|
-| Requirements, design, and tasks generation | opus |
-| All reviews and validations (task review, re-review, whole-branch review, validate-*) | opus |
-| Implementation | sonnet |
-| Implementation in fix-loop rounds 4–5 and post-debug retries | opus |
-| Debugger | opus |
+| Work                                                                                  | Model  |
+| ------------------------------------------------------------------------------------- | ------ |
+| Requirements, design, and tasks generation                                            | opus   |
+| All reviews and validations (task review, re-review, whole-branch review, validate-*) | opus   |
+| Implementation                                                                        | sonnet |
+| Implementation in fix-loop rounds 4–5 and post-debug retries                          | opus   |
+| Debugger                                                                              | opus   |
 
 ## Interaction rules
 
@@ -180,23 +180,23 @@ Pinned in the skill texts, never the agent's choice:
 
 ## The 15 skills
 
-| Skill | What it does |
-|---|---|
-| `/sdd:init` | write the user-owned `.claude/rules/sdd.md` from the plugin default |
-| `/sdd:discovery` | entry point: research and route new work; writes `.sdd/brief.md` |
-| `/sdd:spec-init` | birth a feature: spec directory + epic bean + three phase beans |
-| `/sdd:spec-requirements` | interview the user, dispatch the EARS draft (opus) |
-| `/sdd:spec-design` | fork: research the feature and write `design.md` |
-| `/sdd:spec-tasks` | fork: draft the task tree (majors + leaf `## Brief` beans) |
-| `/sdd:impl` | orchestrator: subagent implement/review, stop-per-task |
-| `/sdd:review` | adversarial task-local review protocol |
-| `/sdd:debug` | root-cause-first debug protocol |
-| `/sdd:verify-completion` | fresh-evidence gate for completion claims |
-| `/sdd:validate-requirements` | requirements gate: EARS, completeness, contradictions |
-| `/sdd:validate-gap` | requirements vs codebase gap analysis (`research.md`) |
-| `/sdd:validate-design` | design quality review, verdict per criterion |
-| `/sdd:validate-impl` | feature-level GO/NO_GO gate |
-| `/sdd:steering` | manage `.claude/rules/` in the target project |
+| Skill                        | What it does                                                        |
+| ---------------------------- | ------------------------------------------------------------------- |
+| `/sdd:init`                  | write the user-owned `.claude/rules/sdd.md` from the plugin default |
+| `/sdd:discovery`             | entry point: research and route new work; writes `.sdd/brief.md`    |
+| `/sdd:spec-init`             | birth a feature: spec directory + epic bean + three phase beans     |
+| `/sdd:spec-requirements`     | interview the user, dispatch the EARS draft (opus)                  |
+| `/sdd:spec-design`           | fork: research the feature and write `design.md`                    |
+| `/sdd:spec-tasks`            | fork: draft the task tree (majors + leaf `## Brief` beans)          |
+| `/sdd:impl`                  | orchestrator: subagent implement/review, stop-per-task              |
+| `/sdd:review`                | adversarial task-local review protocol                              |
+| `/sdd:debug`                 | root-cause-first debug protocol                                     |
+| `/sdd:verify-completion`     | fresh-evidence gate for completion claims                           |
+| `/sdd:validate-requirements` | requirements gate: EARS, completeness, contradictions               |
+| `/sdd:validate-gap`          | requirements vs codebase gap analysis (`research.md`)               |
+| `/sdd:validate-design`       | design quality review, verdict per criterion                        |
+| `/sdd:validate-impl`         | feature-level GO/NO_GO gate                                         |
+| `/sdd:steering`              | manage `.claude/rules/` in the target project                       |
 
 ## Bootstrap
 
@@ -274,11 +274,11 @@ sections.
 
 ## Documentation
 
-| Guide | Contents |
-|---|---|
-| [Skill Reference](docs/guides/skill-reference.md) | all 15 skills: invocation, purpose, key contracts |
-| [Spec-Driven Workflow](docs/guides/spec-driven.md) | the phase-by-phase walkthrough |
-| [Why sdd?](docs/guides/why-cc-sdd.md) | design rationale and trade-offs |
+| Guide                                              | Contents                                          |
+| -------------------------------------------------- | ------------------------------------------------- |
+| [Skill Reference](docs/guides/skill-reference.md)  | all 15 skills: invocation, purpose, key contracts |
+| [Spec-Driven Workflow](docs/guides/spec-driven.md) | the phase-by-phase walkthrough                    |
+| [Why sdd?](docs/guides/why-cc-sdd.md)              | design rationale and trade-offs                   |
 
 The conversion's own spec and task plan live in `../../docs/superpowers/` — this
 repository was migrated from the multi-agent `cc-sdd` toolkit, and that

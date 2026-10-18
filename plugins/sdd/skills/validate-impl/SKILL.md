@@ -38,6 +38,7 @@ catch what only becomes visible when the completed tasks are viewed
 together.
 
 Boundary terminology continuity:
+
 - discovery identifies `Boundary Candidates`
 - design fixes `Boundary Commitments`
 - tasks constrain execution with `_Boundary:_`
@@ -137,21 +138,25 @@ already used by repo automation over ad hoc pipelines.
 ### Mechanical checks (run them; output and exit codes are the signal)
 
 **A. Full test suite**
+
 - Run the canonical full-test command. Use the exit code.
 - Tests fail -> NO_GO. No judgment needed.
 - No canonical test command identifiable -> MANUAL_VERIFY_REQUIRED.
 
 **B. Residual placeholder markers**
+
 - `grep -rn "TBD\|TODO\|FIXME\|HACK\|XXX" <feature-boundary-paths>`
 - Matches introduced by this feature -> Warning finding.
 
 **C. Residual hardcoded secrets**
+
 - `grep -rni "password\s*=\|api_key\s*=\|secret\s*=\|token\s*=" <feature-boundary-paths>`
   (case-insensitive)
 - Matches that are not environment-variable references -> Critical
   finding.
 
 **D. Runtime liveness (smoke boot)**
+
 - Run the canonical smoke command proving the built artifact starts and
   reaches its first usable state (root URL load, Electron launch-ready,
   CLI `--help`, service health endpoint - whatever fits the app shape).
@@ -163,6 +168,7 @@ already used by repo automation over ad hoc pipelines.
 ### Judgment checks (read code, compare to spec)
 
 **E. Cross-task integration**
+
 - Where tasks share interfaces, data models, or API contracts: Task A's
   output format matches Task B's expected input.
 - No conflicting assumptions between tasks (naming, error codes, data
@@ -171,17 +177,20 @@ already used by repo automation over ad hoc pipelines.
   boundary's behavior into another.
 
 **F. Requirements coverage gaps**
+
 - Every requirement section maps to at least one completed task;
   identify cross-cutting requirements no single task fully covers.
 - Use the original section numbering from requirements.md; never invent
   `REQ-*` aliases.
 
 **G. Design end-to-end alignment**
+
 - Component graph, integration patterns, and dependency direction match
   design.md (no upward imports); File Structure Plan matches the actual
   layout. Report drift.
 
 **G.5 Boundary audit**
+
 - Compare completed work against the design's Boundary Commitments,
   Out of Boundary, Allowed Dependencies, and Revalidation Triggers.
 - Cross-task spillover (one area quietly absorbing another boundary's
@@ -191,6 +200,7 @@ already used by repo automation over ad hoc pipelines.
   integration points were actually re-checked.
 
 **H. Blocked tasks and implementation notes**
+
 - Open task beans and unresolved `## Blocker` notes (Step 2) and their
   impact on feature completeness.
 - `## Notes` one-liners in the task beans that need cross-cutting
@@ -199,6 +209,7 @@ already used by repo automation over ad hoc pipelines.
 ## Step 5 - Classify ownership, apply verify-completion, report
 
 **Ownership** (before writing any remediation):
+
 - `LOCAL` - the defect belongs to this feature.
 - `UPSTREAM` - the root cause belongs to a dependency, foundation,
   shared platform, or earlier spec. Do not collapse it into local

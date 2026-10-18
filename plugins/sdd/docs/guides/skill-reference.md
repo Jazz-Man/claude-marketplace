@@ -31,23 +31,23 @@ ad-hoc use.
 
 ## The skill table
 
-| Skill | Purpose |
-|---|---|
-| `/sdd:init` | write the user-owned `.claude/rules/sdd.md` from the plugin default |
-| `/sdd:discovery` | entry point: research and route new work; writes `.sdd/brief.md` |
-| `/sdd:spec-init` | birth a feature: spec directory + epic bean + three phase beans |
-| `/sdd:spec-requirements` | interview the user, dispatch the EARS draft (opus) |
-| `/sdd:spec-design` | fork: research the feature and write `design.md` |
-| `/sdd:spec-tasks` | fork: draft one task bean (`## Brief`) per sub-task |
-| `/sdd:impl` | orchestrator: subagent implement/review, stop-per-task |
-| `/sdd:review` | adversarial task-local review protocol |
-| `/sdd:debug` | root-cause-first debugging protocol |
-| `/sdd:verify-completion` | fresh-evidence gate for completion claims |
-| `/sdd:validate-requirements` | requirements gate: EARS, completeness, contradictions |
-| `/sdd:validate-gap` | requirements vs codebase gap analysis (`research.md`) |
-| `/sdd:validate-design` | design quality review, verdict per criterion |
-| `/sdd:validate-impl` | feature-level GO/NO_GO gate |
-| `/sdd:steering` | manage `.claude/rules/` in the target project |
+| Skill                        | Purpose                                                             |
+| ---------------------------- | ------------------------------------------------------------------- |
+| `/sdd:init`                  | write the user-owned `.claude/rules/sdd.md` from the plugin default |
+| `/sdd:discovery`             | entry point: research and route new work; writes `.sdd/brief.md`    |
+| `/sdd:spec-init`             | birth a feature: spec directory + epic bean + three phase beans     |
+| `/sdd:spec-requirements`     | interview the user, dispatch the EARS draft (opus)                  |
+| `/sdd:spec-design`           | fork: research the feature and write `design.md`                    |
+| `/sdd:spec-tasks`            | fork: draft one task bean (`## Brief`) per sub-task                 |
+| `/sdd:impl`                  | orchestrator: subagent implement/review, stop-per-task              |
+| `/sdd:review`                | adversarial task-local review protocol                              |
+| `/sdd:debug`                 | root-cause-first debugging protocol                                 |
+| `/sdd:verify-completion`     | fresh-evidence gate for completion claims                           |
+| `/sdd:validate-requirements` | requirements gate: EARS, completeness, contradictions               |
+| `/sdd:validate-gap`          | requirements vs codebase gap analysis (`research.md`)               |
+| `/sdd:validate-design`       | design quality review, verdict per criterion                        |
+| `/sdd:validate-impl`         | feature-level GO/NO_GO gate                                         |
+| `/sdd:steering`              | manage `.claude/rules/` in the target project                       |
 
 Contracts every skill shares, regardless of shape:
 
@@ -178,13 +178,13 @@ files, and every interaction with you. It never implements or reviews code
 itself. Execution goes to subagents (general-purpose type; the role defined by
 five prompt templates kept in the skill's `templates/` directory):
 
-| Template | Role | Model |
-|---|---|---|
-| `implementer-prompt.md` | implement one task from its brief | sonnet |
-| `task-reviewer-prompt.md` | adversarial review of a task's package | opus |
-| `re-review-prompt.md` | scoped re-review after a fix round | opus |
-| `code-reviewer-prompt.md` | whole-branch review at feature finish | opus |
-| `debugger-prompt.md` | root-cause investigation of a failure | opus |
+| Template                  | Role                                   | Model  |
+| ------------------------- | -------------------------------------- | ------ |
+| `implementer-prompt.md`   | implement one task from its brief      | sonnet |
+| `task-reviewer-prompt.md` | adversarial review of a task's package | opus   |
+| `re-review-prompt.md`     | scoped re-review after a fix round     | opus   |
+| `code-reviewer-prompt.md` | whole-branch review at feature finish  | opus   |
+| `debugger-prompt.md`      | root-cause investigation of a failure  | opus   |
 
 The task cycle:
 

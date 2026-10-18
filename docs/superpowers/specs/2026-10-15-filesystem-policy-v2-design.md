@@ -51,7 +51,7 @@ ask tier renders prompts in normal modes only.
 
 ```ts
 export interface PolicyContext {
-  cwd: string;         // Bash working dir of this call (moves per call)
+  cwd: string; // Bash working dir of this call (moves per call)
   projectRoot: string; // additional allowed root (see the boundary rule §7.5)
 }
 ```
@@ -66,10 +66,10 @@ outside $HOME does not brick the agent inside its own files.
 
 ```ts
 const POLICIES: Policy[] = [
-  noDepsPolicy,        // absolutes first: deny-only
-  gitReadonlyPolicy,   //
+  noDepsPolicy, // absolutes first: deny-only
+  gitReadonlyPolicy, //
   noInlineScriptsPolicy,
-  filesystemPolicy,    // v2: deny | ask
+  filesystemPolicy, // v2: deny | ask
 ];
 ```
 
@@ -118,16 +118,16 @@ settings rule fails to fire.
 
 ### 7.1 SENSITIVE_PATHS
 
-| Tier | Patterns (fresh data; source map in `tmp/pattern-source.md`) | Verdict |
-|---|---|---|
-| Secrets | `.env`, `.env.*`, `.ssh/*`, `id_rsa`, `id_ed25519`, `id_ecdsa`, `*.pem`, `*.key`, `*.p12`, `*.pfx`, `.aws/credentials`, `.gnupg/*`, `.netrc`, `.npmrc`, `.pypirc`, `.docker/config.json`, `.kube/config`, `.gcloud/*`, `credentials.json`, `*.secret`, `*.secrets`, `.htpasswd`, `token.json`, `terraform.tfstate` | **deny read+write, both channels, always** — even in-project |
-| ~~System~~ | REMOVED (owner 2026-10-16): a point-list of /etc files was a vestige of the pre-boundary design — the §7.5 boundary denies EVERYTHING outside $HOME ∪ projectRoot (reads included, `/dev/null`-family exempt), so the tier changed only the reason text. `/etc/*`, `/proc/*`, `/var/*` all deny via the boundary. |
-| Settings | `.claude/settings.json`, `.claude/settings.local.json`, `~/.claude/settings.json`, `~/.claude.json` | **deny read+write, both channels, always** (self-disable vector: settings hold the hooks that enforce the guard) |
-| Git internals | `.git/config` | **deny write, both channels, always** (mutations belong to the git-readonly policy's `git config` gate; this closes the file-channel bypass; `~/.gitconfig` stays in PersonalConfig) |
-| Git internals | `.git/hooks/*` | **deny read, write, and execute — any reference, both channels, always**: tool-channel `Read`/`Edit`/`Write`, and any Bash arg or command resolving under `.git/hooks/` (running `bash .git/hooks/x` is as bad as planting it). Name-based access via the `git hook` subcommand is closed in the git-readonly policy (companion rule, §7.5) |
-| PersonalConfig | `.bashrc`, `.zshrc`, `.zprofile`, `.profile`, `.bash_profile`, `.vimrc`, `.gitconfig`, `.config/*`, `.vscode/*`, `.cursor/*` | **deny write** (always — the tier is home-relative, a persistence vector); read allowed |
-| macOS Library | `~/Library/**` (whole tree) | **deny read+write, both channels, always** — Keychains, Safari, Mail, Application Support, Preferences live here (verified empirically on macOS 26.7.1; research 2026-10-15) |
-| macOS personal folders | `~/Desktop`, `~/Documents`, `~/Downloads`, `~/Movies`, `~/Music`, `~/Pictures`, `~/Public`, `~/Applications`, `~/Sites` | **deny write/delete** — the user's personal content (TCC gates these at the OS level anyway); read allowed; **matching is case-insensitive** (the root APFS volume is case-insensitive: `~/DESKTOP` is the same folder) |
+| Tier                   | Patterns (fresh data; source map in `tmp/pattern-source.md`)                                                                                                                                                                                                                                                       | Verdict                                                                                                                                                                                                                                                                                                                                     |
+| ---------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Secrets                | `.env`, `.env.*`, `.ssh/*`, `id_rsa`, `id_ed25519`, `id_ecdsa`, `*.pem`, `*.key`, `*.p12`, `*.pfx`, `.aws/credentials`, `.gnupg/*`, `.netrc`, `.npmrc`, `.pypirc`, `.docker/config.json`, `.kube/config`, `.gcloud/*`, `credentials.json`, `*.secret`, `*.secrets`, `.htpasswd`, `token.json`, `terraform.tfstate` | **deny read+write, both channels, always** — even in-project                                                                                                                                                                                                                                                                                |
+| ~~System~~             | REMOVED (owner 2026-10-16): a point-list of /etc files was a vestige of the pre-boundary design — the §7.5 boundary denies EVERYTHING outside $HOME ∪ projectRoot (reads included, `/dev/null`-family exempt), so the tier changed only the reason text. `/etc/*`, `/proc/*`, `/var/*` all deny via the boundary.  |
+| Settings               | `.claude/settings.json`, `.claude/settings.local.json`, `~/.claude/settings.json`, `~/.claude.json`                                                                                                                                                                                                                | **deny read+write, both channels, always** (self-disable vector: settings hold the hooks that enforce the guard)                                                                                                                                                                                                                            |
+| Git internals          | `.git/config`                                                                                                                                                                                                                                                                                                      | **deny write, both channels, always** (mutations belong to the git-readonly policy's `git config` gate; this closes the file-channel bypass; `~/.gitconfig` stays in PersonalConfig)                                                                                                                                                        |
+| Git internals          | `.git/hooks/*`                                                                                                                                                                                                                                                                                                     | **deny read, write, and execute — any reference, both channels, always**: tool-channel `Read`/`Edit`/`Write`, and any Bash arg or command resolving under `.git/hooks/` (running `bash .git/hooks/x` is as bad as planting it). Name-based access via the `git hook` subcommand is closed in the git-readonly policy (companion rule, §7.5) |
+| PersonalConfig         | `.bashrc`, `.zshrc`, `.zprofile`, `.profile`, `.bash_profile`, `.vimrc`, `.gitconfig`, `.config/*`, `.vscode/*`, `.cursor/*`                                                                                                                                                                                       | **deny write** (always — the tier is home-relative, a persistence vector); read allowed                                                                                                                                                                                                                                                     |
+| macOS Library          | `~/Library/**` (whole tree)                                                                                                                                                                                                                                                                                        | **deny read+write, both channels, always** — Keychains, Safari, Mail, Application Support, Preferences live here (verified empirically on macOS 26.7.1; research 2026-10-15)                                                                                                                                                                |
+| macOS personal folders | `~/Desktop`, `~/Documents`, `~/Downloads`, `~/Movies`, `~/Music`, `~/Pictures`, `~/Public`, `~/Applications`, `~/Sites`                                                                                                                                                                                            | **deny write/delete** — the user's personal content (TCC gates these at the OS level anyway); read allowed; **matching is case-insensitive** (the root APFS volume is case-insensitive: `~/DESKTOP` is the same folder)                                                                                                                     |
 
 `.claude/*` as a whole is **unrestricted** (agents author skills and rules
 there daily; the steering skill writes `.claude/rules/` in target
@@ -217,46 +217,46 @@ closes the same vector): **the whole `git hook` subcommand → deny**
 filesystem scan to catch; `list` is reconnaissance of the same directory.
 The plumbing command has no legitimate agent use.
 
-| # | Condition | Verdict |
-|---|---|---|
-| 1 | Scope `/` (filesystem root), any intent — reads included (owner decision 2026-10-15) | deny |
-| 2 | Any §7.1 sensitive-path hit (tier verdict applies: read and/or write) | deny |
-| 3 | Injection pattern (§7.2) | deny |
-| 4 | Network command (§7.3 list, unwrapped name) | deny |
-| 5 | **Outside the allowed zone ($HOME ∪ projectRoot), read OR write** — `/etc/*`, `/var/*`, `/tmp/*`, `/opt/*`, other users' homes, … Relative `..`-chains resolve LEXICALLY before classification (`normalize(join(cwd, token))`), so `cat ../../../../../../etc/passwd` lands on `/etc/passwd` and denies. (Owner decision 2026-10-15; exempts `/dev/null`, `/dev/stdin`, `/dev/stdout`, `/dev/stderr`, `/dev/zero`, `/dev/urandom`, `/dev/random`) | deny |
-| 6 | Executable spelled as an absolute path (§7.4 PATH rule) | deny |
-| 7 | Any unit reaching `sudo` — directly or through a wrapper chain (§7.4, owner decision 2026-10-15) | deny |
-| 8 | write/delete targeting Home as a whole (`~`, `$HOME`, no tail) | deny |
-| 9 | read targeting Home as a whole | ask |
-| 10 | write to PersonalConfig tier (§7.1) — always home-relative | deny |
-| 11 | everything else: any read or write inside the zone (incl. writes in $HOME outside the project), prose-`=` mentions | allow |
+| #   | Condition                                                                                                                                                                                                                                                                                                                                                                                                                                         | Verdict |
+| --- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------- |
+| 1   | Scope `/` (filesystem root), any intent — reads included (owner decision 2026-10-15)                                                                                                                                                                                                                                                                                                                                                              | deny    |
+| 2   | Any §7.1 sensitive-path hit (tier verdict applies: read and/or write)                                                                                                                                                                                                                                                                                                                                                                             | deny    |
+| 3   | Injection pattern (§7.2)                                                                                                                                                                                                                                                                                                                                                                                                                          | deny    |
+| 4   | Network command (§7.3 list, unwrapped name)                                                                                                                                                                                                                                                                                                                                                                                                       | deny    |
+| 5   | **Outside the allowed zone ($HOME ∪ projectRoot), read OR write** — `/etc/*`, `/var/*`, `/tmp/*`, `/opt/*`, other users' homes, … Relative `..`-chains resolve LEXICALLY before classification (`normalize(join(cwd, token))`), so `cat ../../../../../../etc/passwd` lands on `/etc/passwd` and denies. (Owner decision 2026-10-15; exempts `/dev/null`, `/dev/stdin`, `/dev/stdout`, `/dev/stderr`, `/dev/zero`, `/dev/urandom`, `/dev/random`) | deny    |
+| 6   | Executable spelled as an absolute path (§7.4 PATH rule)                                                                                                                                                                                                                                                                                                                                                                                           | deny    |
+| 7   | Any unit reaching `sudo` — directly or through a wrapper chain (§7.4, owner decision 2026-10-15)                                                                                                                                                                                                                                                                                                                                                  | deny    |
+| 8   | write/delete targeting Home as a whole (`~`, `$HOME`, no tail)                                                                                                                                                                                                                                                                                                                                                                                    | deny    |
+| 9   | read targeting Home as a whole                                                                                                                                                                                                                                                                                                                                                                                                                    | ask     |
+| 10  | write to PersonalConfig tier (§7.1) — always home-relative                                                                                                                                                                                                                                                                                                                                                                                        | deny    |
+| 11  | everything else: any read or write inside the zone (incl. writes in $HOME outside the project), prose-`=` mentions                                                                                                                                                                                                                                                                                                                                | allow   |
 
 ## 8. Behavior changes vs today
 
-| Command | Today (policy disabled: all allow) | v2 |
-|---|---|---|
-| `cat ../../README.md` (read repo root from a package cwd) | allow | **allow** (the pain, fixed; repo lives in $HOME) |
-| `cat ~/some-file.txt`, `tee ~/notes/x` (ordinary $HOME use) | allow | **allow** |
-| `cat ../../../../../../etc/passwd` (relative `..`-escape) | allow | **deny** (lexical `..` collapse → `/etc/passwd`) |
-| `cat .env` in-project | allow | **deny** (intentional; agent must ask the user) |
-| `ls /etc`, `cat /etc/group`, `head /var/log/syslog` | allow | **deny** (outside the zone) |
-| `cat /etc/passwd` | allow | **deny** |
-| `tee /tmp/notes` | allow | **deny** (outside the zone) |
-| `/opt/homebrew/bin/biome check .` (absolute binary path) | allow | **deny** (PATH rule) |
-| `cat file 2>/dev/null` | allow | allow (safe-device exemption) |
-| `rm -rf ~/` / `rm -rf /` | allow | **deny** |
-| `curl https://x`, `wget …`, `env curl …`, `ssh h`, `ping x` — any §7.3 network command, any flags | allow | **deny** (network blanket; reason redirects to MCP/manual channels) |
-| `sudo ls`, `env sudo tee /etc/motd x` | allow | **deny** (sudo blanket rule) |
-| `:(){ :\|:& };:`, `_(){ _\|_& };_`, `a(){ b& }; b(){ a& }; a`, `function fb { … }` — any inline function, any signature | allow | **deny** (no-inline-scripts: AST-typed `Function` nodes) |
-| `tee ~/Movies/clip.mp4`, `rm ~/Desktop/notes.txt`, `cp x ~/Downloads/` | allow | **deny** (macOS personal folders) |
-| `cat ~/Documents/report.pdf`, `ls ~/Downloads` | allow | allow |
-| `cat ~/Library/Keychains/login.keychain` | allow | **deny** (~/Library) |
-| `cat /ETC/PASSWD`, `tee /System/Volumes/Data/private/tmp/x` | allow | **deny** (boundary is case- and firmlink-robust); the `/tmp` spelling carries the `./tmp/` hint |
-| `echo foo=/etc` (prose `=`-mention) | allow | allow |
-| `Read ~/.claude/settings.json`, `Edit` of it | allow (unguarded channel) | **deny** |
-| `Read /var/log/x` (tool channel, outside zone) | allow | **deny** (boundary, shared logic) |
-| `tee .git/hooks/pre-commit` / Write into `.git/hooks/` | allow | **deny** |
-| Authoring `.claude/skills/…`, `.claude/rules/…` | allow | allow |
+| Command                                                                                                                 | Today (policy disabled: all allow) | v2                                                                                              |
+| ----------------------------------------------------------------------------------------------------------------------- | ---------------------------------- | ----------------------------------------------------------------------------------------------- |
+| `cat ../../README.md` (read repo root from a package cwd)                                                               | allow                              | **allow** (the pain, fixed; repo lives in $HOME)                                                |
+| `cat ~/some-file.txt`, `tee ~/notes/x` (ordinary $HOME use)                                                             | allow                              | **allow**                                                                                       |
+| `cat ../../../../../../etc/passwd` (relative `..`-escape)                                                               | allow                              | **deny** (lexical `..` collapse → `/etc/passwd`)                                                |
+| `cat .env` in-project                                                                                                   | allow                              | **deny** (intentional; agent must ask the user)                                                 |
+| `ls /etc`, `cat /etc/group`, `head /var/log/syslog`                                                                     | allow                              | **deny** (outside the zone)                                                                     |
+| `cat /etc/passwd`                                                                                                       | allow                              | **deny**                                                                                        |
+| `tee /tmp/notes`                                                                                                        | allow                              | **deny** (outside the zone)                                                                     |
+| `/opt/homebrew/bin/biome check .` (absolute binary path)                                                                | allow                              | **deny** (PATH rule)                                                                            |
+| `cat file 2>/dev/null`                                                                                                  | allow                              | allow (safe-device exemption)                                                                   |
+| `rm -rf ~/` / `rm -rf /`                                                                                                | allow                              | **deny**                                                                                        |
+| `curl https://x`, `wget …`, `env curl …`, `ssh h`, `ping x` — any §7.3 network command, any flags                       | allow                              | **deny** (network blanket; reason redirects to MCP/manual channels)                             |
+| `sudo ls`, `env sudo tee /etc/motd x`                                                                                   | allow                              | **deny** (sudo blanket rule)                                                                    |
+| `:(){ :\|:& };:`, `_(){ _\|_& };_`, `a(){ b& }; b(){ a& }; a`, `function fb { … }` — any inline function, any signature | allow                              | **deny** (no-inline-scripts: AST-typed `Function` nodes)                                        |
+| `tee ~/Movies/clip.mp4`, `rm ~/Desktop/notes.txt`, `cp x ~/Downloads/`                                                  | allow                              | **deny** (macOS personal folders)                                                               |
+| `cat ~/Documents/report.pdf`, `ls ~/Downloads`                                                                          | allow                              | allow                                                                                           |
+| `cat ~/Library/Keychains/login.keychain`                                                                                | allow                              | **deny** (~/Library)                                                                            |
+| `cat /ETC/PASSWD`, `tee /System/Volumes/Data/private/tmp/x`                                                             | allow                              | **deny** (boundary is case- and firmlink-robust); the `/tmp` spelling carries the `./tmp/` hint |
+| `echo foo=/etc` (prose `=`-mention)                                                                                     | allow                              | allow                                                                                           |
+| `Read ~/.claude/settings.json`, `Edit` of it                                                                            | allow (unguarded channel)          | **deny**                                                                                        |
+| `Read /var/log/x` (tool channel, outside zone)                                                                          | allow                              | **deny** (boundary, shared logic)                                                               |
+| `tee .git/hooks/pre-commit` / Write into `.git/hooks/`                                                                  | allow                              | **deny**                                                                                        |
+| Authoring `.claude/skills/…`, `.claude/rules/…`                                                                         | allow                              | allow                                                                                           |
 
 ## 9. Error handling
 
@@ -272,7 +272,7 @@ tools.
 - `tests/helpers/policy.ts`: `decisionOf(result) → "deny" | "ask" | null`
   next to `reasonOf`.
 - New tests: router ask path; tool-channel payloads (`tool_name: "Read"`
-  + `file_path`); settings-tier and `.git/config` denies.
+  - `file_path`); settings-tier and `.git/config` denies.
 - TDD per increment; gates: `bun test`, `tsc -p tsconfig.json --noEmit`,
   `rtk biome check --reporter=concise`, `bun run build-bin`,
   `claude plugin validate .`.
@@ -304,21 +304,21 @@ tools.
 
 ## 12. Files touched
 
-| File | Change |
-|---|---|
-| `packages/cli-hook/src/core/decision.ts` | + `ask(reason)` |
-| `packages/cli-hook/src/core/ast.ts` | + `ParsedCommand.functionDefs` (unbash `Function` nodes, every definition form) |
-| `packages/cli-hook/src/policies/no-inline-scripts.ts` | + inline-function deny (owns all fork-bomb signatures; reason teaches `./tmp/`) |
-| `packages/cli-hook/tests/fixtures/no-inline-scripts.ts` | + `FUNCTIONS` fixture table |
-| `packages/cli-hook/src/core/policy.ts` | `PolicyCheckResult` widen; `PolicyContext` + `projectRoot` |
-| `packages/cli-hook/src/core/payload.ts` | + `filePath` extraction |
-| `packages/cli-hook/src/run-hook.ts` | router order; tool-channel branch; uncomment filesystemPolicy |
-| `packages/cli-hook/src/policies/filesystem/` | full v2 as a module folder: tiers/resolve/reasons/policy (+intents in T3, guards in T4) |
-| `packages/cli-hook/src/policies/git-readonly.ts` | + deny the `git hook` subcommand entirely (name-based `.git/hooks` run/list, §7.5 companion rule) |
-| `packages/cli-hook/tests/fixtures/filesystem.ts` | DENY/ASK/ALLOW tables |
-| `packages/cli-hook/tests/filesystem.test.ts` | restructure + tool-channel tests |
-| `packages/cli-hook/tests/helpers/policy.ts` | + `decisionOf` |
-| `plugins/security-guard/hooks/hooks.json` | matcher `Bash\|Read\|Edit\|Write\|NotebookEdit` |
-| `plugins/security-guard/recommended-settings.json` | ready-to-merge global deny block (§6.1) |
-| `tmp/pattern-source.md` (git-ignored) | pattern-source reference; mandatory reading for implementer and reviewer (§2) |
-| `plugins/security-guard/README.md` | document v2 policy set, tool channel, settings layer |
+| File                                                    | Change                                                                                            |
+| ------------------------------------------------------- | ------------------------------------------------------------------------------------------------- |
+| `packages/cli-hook/src/core/decision.ts`                | + `ask(reason)`                                                                                   |
+| `packages/cli-hook/src/core/ast.ts`                     | + `ParsedCommand.functionDefs` (unbash `Function` nodes, every definition form)                   |
+| `packages/cli-hook/src/policies/no-inline-scripts.ts`   | + inline-function deny (owns all fork-bomb signatures; reason teaches `./tmp/`)                   |
+| `packages/cli-hook/tests/fixtures/no-inline-scripts.ts` | + `FUNCTIONS` fixture table                                                                       |
+| `packages/cli-hook/src/core/policy.ts`                  | `PolicyCheckResult` widen; `PolicyContext` + `projectRoot`                                        |
+| `packages/cli-hook/src/core/payload.ts`                 | + `filePath` extraction                                                                           |
+| `packages/cli-hook/src/run-hook.ts`                     | router order; tool-channel branch; uncomment filesystemPolicy                                     |
+| `packages/cli-hook/src/policies/filesystem/`            | full v2 as a module folder: tiers/resolve/reasons/policy (+intents in T3, guards in T4)           |
+| `packages/cli-hook/src/policies/git-readonly.ts`        | + deny the `git hook` subcommand entirely (name-based `.git/hooks` run/list, §7.5 companion rule) |
+| `packages/cli-hook/tests/fixtures/filesystem.ts`        | DENY/ASK/ALLOW tables                                                                             |
+| `packages/cli-hook/tests/filesystem.test.ts`            | restructure + tool-channel tests                                                                  |
+| `packages/cli-hook/tests/helpers/policy.ts`             | + `decisionOf`                                                                                    |
+| `plugins/security-guard/hooks/hooks.json`               | matcher `Bash\|Read\|Edit\|Write\|NotebookEdit`                                                   |
+| `plugins/security-guard/recommended-settings.json`      | ready-to-merge global deny block (§6.1)                                                           |
+| `tmp/pattern-source.md` (git-ignored)                   | pattern-source reference; mandatory reading for implementer and reviewer (§2)                     |
+| `plugins/security-guard/README.md`                      | document v2 policy set, tool channel, settings layer                                              |

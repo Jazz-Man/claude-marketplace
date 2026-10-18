@@ -5,9 +5,9 @@ status: completed
 type: task
 priority: normal
 tags:
-    - status-done-with-concerns
-    - verdict-approved
-    - verification-verified
+  - status-done-with-concerns
+  - verdict-approved
+  - verification-verified
 created_at: 2026-09-26T16:49:15Z
 updated_at: 2026-09-27T10:58:17Z
 parent: cc-sdd-lpx9
@@ -70,9 +70,11 @@ Pass criterion: exactly one `sdd-local` registration, `Source: Directory (/Users
 - Learning for downstream 3.x checks: marketplace list output cannot distinguish a stale pre-restructure registration from a freshly re-added one (same path, no refresh evidence printed) — the re-add's success evidence at list level is only the user having run it plus the single-entry check; load-level proof comes from the fresh-session checks (3.3-3.5).
 
 ## Validation
+
 - VERDICT: APPROVED - 2026-09-27, review round 1, package: workspace/review-package-3.1.md
 
 - STATUS: VERIFIED - 2026-09-27, verification gate (fresh): marketplace list shows exactly one sdd-local -> Directory (/Users/vasilsokolik/www/cc-sdd); sdd@sdd-local present in plugin list; primary re-add executed by the user, fallback unused
 
 ## Summary of Changes
+
 Registration re-point hand-off executed: same-name re-add of the repository directory under sdd-local (in-place replace, identities preserved, fallback unused); single-entry list shape and user-scope enablement confirmed fresh; review round 1 APPROVED with zero findings. Load-level proof (3.3-3.5) deferred to task 3.2 by design.

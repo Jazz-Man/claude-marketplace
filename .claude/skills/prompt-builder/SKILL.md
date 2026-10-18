@@ -16,45 +16,45 @@ Use this skill when building, editing, or reviewing prompts that use `@kasava/pr
 
 ## Where to look
 
-| I need… | See |
-|---|---|
-| Fluent method lookup | [api-fluent.md](references/api-fluent.md) |
-| Variables/templates/render | [api-schema.md](references/api-schema.md) |
-| Dialects/messages/cache/budget/AST | [api-output.md](references/api-output.md) |
-| Structuring prompt code | [architectures.md](references/architectures.md) |
-| Pattern by prompt type | [patterns.md](references/patterns.md) |
-| Copy-paste starter | [examples.md](references/examples.md) |
+| I need…                            | See                                             |
+| ---------------------------------- | ----------------------------------------------- |
+| Fluent method lookup               | [api-fluent.md](references/api-fluent.md)       |
+| Variables/templates/render         | [api-schema.md](references/api-schema.md)       |
+| Dialects/messages/cache/budget/AST | [api-output.md](references/api-output.md)       |
+| Structuring prompt code            | [architectures.md](references/architectures.md) |
+| Pattern by prompt type             | [patterns.md](references/patterns.md)           |
+| Copy-paste starter                 | [examples.md](references/examples.md)           |
 
 ## Quick Reference
 
-| Prompt Need | Method(s) |
-|---|---|
-| Agent persona | `.role()` |
-| Multi-step process | `.protocol()` |
-| Numbered investigation phases | `.investigationStrategy()` |
-| Decision rules | `.arrowRules()` |
-| Two-column reference / rubric | `.lookupTable()` |
-| Tiered classification | `.severityScale()` |
-| Confidence tiers | `.confidenceScale()` |
-| Tool usage guidance | `toolGuidance` from `/presets` + `.include()` (class shim removed in 1.0) |
-| Action → follow-up matrix | `followThroughMatrix` from `/presets` + `.include()` (class shim removed in 1.0) |
-| Error handling | `gracefulDegradation` from `/presets` + `.include()` (class shim removed in 1.0) |
-| Pre-return checks | `.verificationChecklist()` |
-| Behavioral rules | `.guidelines()` |
-| Analysis requirements | `analysisRequirements` from `/presets` + `.include()` (class shim removed in 1.0) |
-| Worked examples | `workedExample(s)` from `/presets` + `.include()` (class shim removed in 1.0) |
-| Context injection | `.context()`, `.data()` |
-| Instructions wrapper | `.instructions()` |
-| Conditional sections | `.conditional()` |
-| Reusable fragments | `section()` + `.include()` |
-| File list with stats | `.filesList()` |
-| Diff display | `.diffBlock()` |
-| Simple output fields | `.outputFormat()` *(flat field list — see [api-fluent.md](references/api-fluent.md) for limits)* |
-| Runtime variables | `definePrompt` + `.render()` — [api-schema.md](references/api-schema.md) |
-| Interpolation | ``p`…` `` + `placeholder()` — [api-schema.md](references/api-schema.md) |
-| Conditional fragments | `when`/`unless`/`all`/`any`/`each` — [api-schema.md](references/api-schema.md) |
-| Chat output + caching | `toMessages()` + `.cacheBoundary()` — [api-output.md](references/api-output.md) |
-| Token trimming | `.priority()` + `.$budget()` — [api-output.md](references/api-output.md) |
+| Prompt Need                   | Method(s)                                                                                        |
+| ----------------------------- | ------------------------------------------------------------------------------------------------ |
+| Agent persona                 | `.role()`                                                                                        |
+| Multi-step process            | `.protocol()`                                                                                    |
+| Numbered investigation phases | `.investigationStrategy()`                                                                       |
+| Decision rules                | `.arrowRules()`                                                                                  |
+| Two-column reference / rubric | `.lookupTable()`                                                                                 |
+| Tiered classification         | `.severityScale()`                                                                               |
+| Confidence tiers              | `.confidenceScale()`                                                                             |
+| Tool usage guidance           | `toolGuidance` from `/presets` + `.include()` (class shim removed in 1.0)                        |
+| Action → follow-up matrix     | `followThroughMatrix` from `/presets` + `.include()` (class shim removed in 1.0)                 |
+| Error handling                | `gracefulDegradation` from `/presets` + `.include()` (class shim removed in 1.0)                 |
+| Pre-return checks             | `.verificationChecklist()`                                                                       |
+| Behavioral rules              | `.guidelines()`                                                                                  |
+| Analysis requirements         | `analysisRequirements` from `/presets` + `.include()` (class shim removed in 1.0)                |
+| Worked examples               | `workedExample(s)` from `/presets` + `.include()` (class shim removed in 1.0)                    |
+| Context injection             | `.context()`, `.data()`                                                                          |
+| Instructions wrapper          | `.instructions()`                                                                                |
+| Conditional sections          | `.conditional()`                                                                                 |
+| Reusable fragments            | `section()` + `.include()`                                                                       |
+| File list with stats          | `.filesList()`                                                                                   |
+| Diff display                  | `.diffBlock()`                                                                                   |
+| Simple output fields          | `.outputFormat()` _(flat field list — see [api-fluent.md](references/api-fluent.md) for limits)_ |
+| Runtime variables             | `definePrompt` + `.render()` — [api-schema.md](references/api-schema.md)                         |
+| Interpolation                 | ``p`…` `` + `placeholder()` — [api-schema.md](references/api-schema.md)                          |
+| Conditional fragments         | `when`/`unless`/`all`/`any`/`each` — [api-schema.md](references/api-schema.md)                   |
+| Chat output + caching         | `toMessages()` + `.cacheBoundary()` — [api-output.md](references/api-output.md)                  |
+| Token trimming                | `.priority()` + `.$budget()` — [api-output.md](references/api-output.md)                         |
 
 > Quick Reference maps a single need → one method. For a whole prompt type → a method chain, see [patterns.md](references/patterns.md). The `/presets` functions are documented in [api-output.md](references/api-output.md).
 
@@ -83,17 +83,14 @@ import { type PromptBuilder, prompt } from "@kasava/prompt-builder";
 export function buildAnalyzerPrompt(data: AnalyzerInput): PromptBuilder {
   return prompt()
     .role("data analyzer")
-    .context(data.background)        // caller already read the file
-    .protocol({ /* steps */ })
+    .context(data.background) // caller already read the file
+    .protocol({/* steps */})
     .instructions("Analyze and return the result.");
 }
 
 // Or return the finished string for standalone use:
 export function buildSimplePrompt(question: string): string {
-  return prompt()
-    .role("assistant")
-    .raw(question)
-    .build();
+  return prompt().role("assistant").raw(question).build();
 }
 ```
 

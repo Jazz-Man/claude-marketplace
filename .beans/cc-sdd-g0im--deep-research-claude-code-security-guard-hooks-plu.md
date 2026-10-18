@@ -1,6 +1,6 @@
 ---
 # cc-sdd-g0im
-title: 'Deep research: Claude Code security guard (hooks + plugin) under bypass permissions'
+title: "Deep research: Claude Code security guard (hooks + plugin) under bypass permissions"
 status: completed
 type: task
 priority: normal

@@ -5,9 +5,9 @@ status: completed
 type: task
 priority: normal
 tags:
-    - status-done
-    - verdict-approved
-    - verification-verified
+  - status-done
+  - verdict-approved
+  - verification-verified
 created_at: 2026-09-26T16:49:00Z
 updated_at: 2026-09-26T17:22:34Z
 parent: cc-sdd-lpx9
@@ -56,11 +56,14 @@ Concerns: none.
 • Learning for later tasks: `claude plugin validate` output (text and --json) names the root marketplace manifest and reports zero errors but never prints per-entry resolved paths — entry resolution is only evidenced by the manifest's source value plus the plugin manifest's existence at the resolved path, never by validate output.
 
 ## Validation
+
 - VERDICT: APPROVED - 2026-09-26, review round 1, package: workspace/review-package-1.2.md
 - STATUS: VERIFIED - 2026-09-26, verification gate (fresh): claude plugin validate . exit 0 naming the root manifest; source line 8 reads ./plugins/sdd; plugins/sdd/.claude-plugin/plugin.json name sdd matches the entry
 
 ## Parking lot
+
 - design.md Testing Strategy overstates validate output (no per-entry resolved path line exists) - feature-level validate-impl must not wait on that observable; entry resolution stays evidenced by manifest source + plugin manifest existence at the resolved path.
 
 ## Summary of Changes
+
 One-line root manifest re-point (entry source ./ -> ./plugins/sdd), everything else byte-identical; validate green with content gate independently verified; review round 1 APPROVED (1 MINOR parked).

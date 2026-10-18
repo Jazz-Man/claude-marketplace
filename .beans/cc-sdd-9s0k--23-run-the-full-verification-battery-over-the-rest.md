@@ -5,9 +5,9 @@ status: completed
 type: task
 priority: normal
 tags:
-    - status-done
-    - verdict-approved
-    - verification-verified
+  - status-done
+  - verdict-approved
+  - verification-verified
 created_at: 2026-09-26T16:49:07Z
 updated_at: 2026-09-27T10:26:04Z
 parent: cc-sdd-lpx9
@@ -73,12 +73,15 @@ Concerns: none.
 • Battery result for validate-impl: full re-scoped battery green end to end (zero-hit greps 0, twins 6/6/6 one-per-fork-file, paired-diff empty, forks 6, census 15, validate exit 0); e2e remains the only skipped member (runbook absent, cc-sdd-9xq7) — requirements 5.1/5.2 evidence complete.
 
 ## Validation
+
 - VERDICT: APPROVED - 2026-09-27, review round 1, package: workspace/review-package-2.3.md
 
 ## Parking lot
+
 - e2e dry run still open at feature finish - validate-impl must carry the absent-runbook reason (cc-sdd-9xq7 record) into the feature-level GO/NO_GO instead of assuming the member ran.
 
 - STATUS: VERIFIED - 2026-09-27, verification gate (fresh, erratum working patterns): GP-1 twins 6/6, RS-1 twin 6, census 15, double-brace zero-hit 0, claude plugin validate . exit 0
 
 ## Summary of Changes
+
 Read-only full-battery run over the restructured tree: 13 zero-hit invariant greps all 0, twins exactly 6 per fork file, approve-gate paired-diff empty, census 15, validate green; sole skipped member e2e (runbook absent, pre-adjudicated) recorded; review round 1 APPROVED (1 MINOR parked).

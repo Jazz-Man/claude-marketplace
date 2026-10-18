@@ -1,6 +1,6 @@
 ---
 # cc-sdd-jbnq
-title: 'no-inline-scripts misses heredoc-fed interpreters (unbash 5.1.0: << delimiter rides unit args)'
+title: "no-inline-scripts misses heredoc-fed interpreters (unbash 5.1.0: << delimiter rides unit args)"
 status: completed
 type: bug
 priority: normal

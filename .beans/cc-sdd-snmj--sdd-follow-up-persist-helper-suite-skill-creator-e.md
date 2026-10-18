@@ -1,6 +1,6 @@
 ---
 # cc-sdd-snmj
-title: 'sdd follow-up: persist helper suite + skill-creator eval packaging'
+title: "sdd follow-up: persist helper suite + skill-creator eval packaging"
 status: completed
 type: task
 priority: normal

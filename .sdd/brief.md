@@ -3,6 +3,7 @@
 ## security-guard (2026-10-07)
 
 ### Intent
+
 The user runs Claude Code almost always with bypass permissions on and wants a
 full security guard that still binds in that mode: a personal plugin (third
 `plugins/` sibling) whose PreToolUse hooks block filesystem reads/writes
@@ -14,6 +15,7 @@ Mandated design input: `docs/claude-code-security-guard-bypass-permissions.md`
 (§10 blueprint, §11 empirical findings).
 
 ### Scope
+
 - **In**: cli-hook extension (Read/Edit/Write/Glob/Grep payload shapes,
   path-based policies with canonicalization, trusted plugin-root allowlist,
   executable packaging); new `plugins/` sibling with hooks.json + marketplace
@@ -24,6 +26,7 @@ Mandated design input: `docs/claude-code-security-guard-bypass-permissions.md`
   automated enforcement of sandbox settings (plugin payload is hooks only).
 
 ### Decisions
+
 - Route: **single new feature `security-guard`**, full sdd cycle. Rationale:
   the engine has no standalone value without the plugin and the plugin is
   empty without the engine — the seams are design-internal, not independent
@@ -43,6 +46,7 @@ Mandated design input: `docs/claude-code-security-guard-bypass-permissions.md`
   already-installed stack (unbash, agent-types, Bun).
 
 ### Open Questions
+
 - Does Claude Code auto-add plugin roots to working directories? [Unverified]
   — resolved in design; determines how loud the plugin-root allowlist must be.
 - Runtime shape of the hook entry (bun-invoked TS vs compiled shim) vs the
@@ -52,11 +56,13 @@ Mandated design input: `docs/claude-code-security-guard-bypass-permissions.md`
   requirements.
 
 ### Queue
+
 No beans yet — `/sdd:spec-init` births the epic for this feature.
 
 ## marketplace-restructure (2026-09-26)
 
 ### Intent
+
 The user wants one personal repo hosting multiple Claude Code plugins/skills under
 separate namespaces, each plugin in its own subfolder. Today the repo root IS the
 single sdd plugin (`.claude-plugin/marketplace.json` lists it with `source: "./"`),
@@ -66,6 +72,7 @@ manifest and verification battery reflect the new structure, and future plugins
 have a place to land.
 
 ### Scope
+
 - **In**: target layout design (plugin subfolder vs repo-level split for every
   current root item), marketplace.json re-pointing to the plugin subfolder,
   plugin.json relocation, re-scoping the verification battery and CLAUDE.md
@@ -77,6 +84,7 @@ have a place to land.
   `.github/workflows/`; publishing/public-marketplace distribution.
 
 ### Decisions
+
 - **Route: single new feature `marketplace-restructure`**, full sdd cycle.
   Rationale: beyond the moves themselves there is real correctness surface —
   manifest schema, plugin-vs-repo-level split, re-scoping every invariant grep —
@@ -94,6 +102,7 @@ have a place to land.
   `sdd/`, marketplace identity naming).
 
 ### Open Questions
+
 - Target folder convention for plugins — resolved in design.
 - Repo/marketplace naming (`sdd-local`, repo `cc-sdd`) — requirements or design.
 - Destination of `docs/guides`, README, LICENSE — plugin payload or repo
@@ -102,5 +111,6 @@ have a place to land.
   at repo root only — design.
 
 ### Queue
+
 Empty — no beans yet. `/sdd:spec-init "marketplace-restructure"` births the
 epic and phase beans; beans becomes the source of truth from that point.

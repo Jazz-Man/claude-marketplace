@@ -40,13 +40,13 @@ Division of labor:
 4. **Model policy is pinned, never the agent's choice.** Set the `model`
    parameter in every Agent dispatch exactly as follows:
 
-   | Dispatch | Model |
-   |---|---|
-   | Implementer - initial dispatch and fix rounds 1-3 | sonnet |
-   | Implementer - fix rounds 4-5, and the retry after a RESOLVED debug | opus |
-   | Implementer - feature-finish remediation rounds | sonnet |
-   | Debugger | opus |
-   | Task-reviewer, scoped re-review, code-reviewer, validate-impl | opus |
+   | Dispatch                                                           | Model  |
+   | ------------------------------------------------------------------ | ------ |
+   | Implementer - initial dispatch and fix rounds 1-3                  | sonnet |
+   | Implementer - fix rounds 4-5, and the retry after a RESOLVED debug | opus   |
+   | Implementer - feature-finish remediation rounds                    | sonnet |
+   | Debugger                                                           | opus   |
+   | Task-reviewer, scoped re-review, code-reviewer, validate-impl      | opus   |
 
 5. **Subagents never ask the user directly.** Any question a subagent raises
    arrives as a status contract; you decide whether it is answerable from the
@@ -82,13 +82,13 @@ Division of labor:
    (`beans update <id> --remove-tag <old> --tag <new>`; plain `--tag`
    when no tag of that family is set):
 
-   | Contract line (writer) | Mirror tags |
-   |---|---|
-   | implementer `STATUS: DONE` / `DONE_WITH_CONCERNS` | `status-done` / `status-done-with-concerns` |
-   | review + re-review `VERDICT: APPROVED` / `REJECTED` | `verdict-approved` / `verdict-rejected` |
-   | debugger `OUTCOME: RESOLVED` / `UNRESOLVED` | `outcome-resolved` / `outcome-unresolved` |
-   | verification `STATUS: VERIFIED` / `NOT_VERIFIED` / `MANUAL_VERIFY_REQUIRED` | `verification-verified` / `verification-not-verified` / `verification-manual-verify-required` |
-   | validate-impl `DECISION: GO` / `NO_GO` / `MANUAL_VERIFY_REQUIRED` (recorded on the epic bean) | `decision-go` / `decision-no-go` / `decision-manual-verify-required` |
+   | Contract line (writer)                                                                        | Mirror tags                                                                                   |
+   | --------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------- |
+   | implementer `STATUS: DONE` / `DONE_WITH_CONCERNS`                                             | `status-done` / `status-done-with-concerns`                                                   |
+   | review + re-review `VERDICT: APPROVED` / `REJECTED`                                           | `verdict-approved` / `verdict-rejected`                                                       |
+   | debugger `OUTCOME: RESOLVED` / `UNRESOLVED`                                                   | `outcome-resolved` / `outcome-unresolved`                                                     |
+   | verification `STATUS: VERIFIED` / `NOT_VERIFIED` / `MANUAL_VERIFY_REQUIRED`                   | `verification-verified` / `verification-not-verified` / `verification-manual-verify-required` |
+   | validate-impl `DECISION: GO` / `NO_GO` / `MANUAL_VERIFY_REQUIRED` (recorded on the epic bean) | `decision-go` / `decision-no-go` / `decision-manual-verify-required`                          |
 
    `BLOCKED` and `NEEDS_CONTEXT` get no tag — transient control
    states, not records. Phase beans carry `validated` (Revision 6,
@@ -191,7 +191,7 @@ adjudication:
      Present the four-part format - 1. Per plan: completed
      requirement/design phases carry `validated` and a `Doc-hash:`
      line. 2. Actual: `<bean>` is missing `<the tag | the Doc-hash
-     line>`. 3. Why it matters: the approval's validation evidence
+line>`. 3. Why it matters: the approval's validation evidence
      does not exist. 4. Options: re-run the phase's command to revise
      and re-validate / stop - naming `/sdd:spec-requirements` or
      `/sdd:spec-design`.
@@ -302,6 +302,7 @@ Parse the implementer's final message for the exact block:
 
 ```md
 ## Status Report
+
 - STATUS: <DONE | DONE_WITH_CONCERNS | BLOCKED | NEEDS_CONTEXT>
 ```
 
@@ -311,12 +312,12 @@ the agent once (SendMessage) requesting the exact structured block only. Never
 infer status from surrounding prose. The report must list the files touched
 this round (field shape defined by the role prompt).
 
-| STATUS | Action |
-|---|---|
-| `DONE` | Hold the contract in context; go to Step 4. |
-| `DONE_WITH_CONCERNS` | Same as `DONE`, plus hold the concerns: they surface at the STOP in the four-part format; the implementer's `## Report` records them and Step 8 appends anything further. Review still runs - concerns do not bypass it. |
-| `BLOCKED` | Go to Step 6 (debug protocol). |
-| `NEEDS_CONTEXT` | The report states exactly what is missing. If it is trivially answerable from repo or spec files, answer it yourself and resume the implementer (SendMessage) with the answer. Otherwise formulate an AskUserQuestion for the user, then resume the implementer with their answer. Context rounds do not count against the fix-loop budget - but if the implementer repeats `NEEDS_CONTEXT` with no new specifics after being answered, treat it as `BLOCKED`. |
+| STATUS               | Action                                                                                                                                                                                                                                                                                                                                                                                                                                                         |
+| -------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `DONE`               | Hold the contract in context; go to Step 4.                                                                                                                                                                                                                                                                                                                                                                                                                    |
+| `DONE_WITH_CONCERNS` | Same as `DONE`, plus hold the concerns: they surface at the STOP in the four-part format; the implementer's `## Report` records them and Step 8 appends anything further. Review still runs - concerns do not bypass it.                                                                                                                                                                                                                                       |
+| `BLOCKED`            | Go to Step 6 (debug protocol).                                                                                                                                                                                                                                                                                                                                                                                                                                 |
+| `NEEDS_CONTEXT`      | The report states exactly what is missing. If it is trivially answerable from repo or spec files, answer it yourself and resume the implementer (SendMessage) with the answer. Otherwise formulate an AskUserQuestion for the user, then resume the implementer with their answer. Context rounds do not count against the fix-loop budget - but if the implementer repeats `NEEDS_CONTEXT` with no new specifics after being answered, treat it as `BLOCKED`. |
 
 On `DONE` or `DONE_WITH_CONCERNS`, two bean duties are yours before
 Step 4 (Hard rule 9): confirm the task bean now carries the
@@ -367,6 +368,7 @@ Agent(
 
 ```md
 ## Review Verdict
+
 - VERDICT: <APPROVED | REJECTED>
 ```
 
@@ -454,6 +456,7 @@ Agent(
 
 ```md
 ## Debug Outcome
+
 - OUTCOME: <RESOLVED | UNRESOLVED>
 ```
 
@@ -555,7 +558,7 @@ from Step 0 when invoked in that state).
 1. **Whole-branch review**. Build `workspace/review-package-final.md`: the
    committed diff since the feature branch diverged from the repository's
    default branch (divergence point via `git merge-base <default-branch>
-   HEAD`, diff via `git diff <base>...HEAD`) plus the uncommitted
+HEAD`, diff via `git diff <base>...HEAD`) plus the uncommitted
    working-tree remainder. Then
    dispatch the code-reviewer: read
    `${CLAUDE_SKILL_DIR}/templates/code-reviewer-prompt.md`, resolve, dispatch
@@ -587,13 +590,13 @@ Agent(
 )
 ```
 
-   The validator writes no beans (its own hard rules); on parsing its
-   `## Validation Summary`, record the decision on the EPIC bean: ONE
-   line under `## Validation` —
-   `- DECISION: <GO | NO_GO | MANUAL_VERIFY_REQUIRED> - <date>, validate-impl` —
-   plus the decision mirror tag per Hard rule 9 (old family tag
-   removed in the same call). Remediation rounds re-run the gate and
-   append their own round lines.
+The validator writes no beans (its own hard rules); on parsing its
+`## Validation Summary`, record the decision on the EPIC bean: ONE
+line under `## Validation` —
+`- DECISION: <GO | NO_GO | MANUAL_VERIFY_REQUIRED> - <date>, validate-impl` —
+plus the decision mirror tag per Hard rule 9 (old family tag
+removed in the same call). Remediation rounds re-run the gate and
+append their own round lines.
 
 3. **Remediation budget: 3 rounds total for the finish phase**, shared by
    both gates. Each round: implementer dispatch (`model: sonnet`) fixing the

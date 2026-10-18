@@ -10,6 +10,7 @@ choices, no architecture, no implementation detail.
 
 Include this section only when the scope could be misread or the feature
 touches adjacent systems or specs:
+
 - **In scope**: behaviors this feature owns
 - **Out of scope**: behaviors explicitly excluded
 - **Adjacent expectations**: what this feature expects from adjacent systems

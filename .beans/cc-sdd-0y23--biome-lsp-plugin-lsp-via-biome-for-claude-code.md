@@ -1,6 +1,6 @@
 ---
 # cc-sdd-0y23
-title: 'biome-lsp plugin: LSP via biome for Claude Code'
+title: "biome-lsp plugin: LSP via biome for Claude Code"
 status: completed
 type: feature
 priority: normal

@@ -87,7 +87,7 @@ Division of labor:
         re-completes the requirements phase.
      2. **Accept desync risk** - leave every gate as it is; append a
         one-line dated note to the epic body (`Desync accepted:
-        requirements re-entered while phase gates read completed`),
+requirements re-entered while phase gates read completed`),
         then continue this run. Downstream phases stay completed
         against a requirements document that may change - the risk is
         on record, not silent.
@@ -99,6 +99,7 @@ Division of labor:
 
    Keep the requirements phase bean id at hand (when present); Phase 3
    validates onto it and completes it at the approve gate.
+
 4. **Existing-document gate**: if
    `.sdd/specs/<feature>/requirements.md` already exists, ask via
    AskUserQuestion before the interview begins:
@@ -116,6 +117,7 @@ recommendation. The user may paste free context instead of picking an
 option - incorporate it and never re-ask what it already answers.
 
 **Ask about (requirements scope - the WHAT):**
+
 - Functional scope: what is included and what is excluded
 - User-observable behavior: "when X happens, what should the user
   see/experience?"
@@ -126,6 +128,7 @@ option - incorporate it and never re-ask what it already answers.
   what this feature relies on, and what it explicitly does not own
 
 **Do not ask about (design territory - deferred to /sdd:spec-design):**
+
 - Technology stack choices, architecture patterns, API design, data
   models, internal component structure, and how to achieve the
   non-functional requirements
@@ -276,7 +279,7 @@ AskUserQuestion:
         `Doc-hash: <the sha256 just computed>`
         (this freshness write mirrors `${CLAUDE_PLUGIN_ROOT}/bin/sdd-gate`'s read)
      4. Complete: `beans update <requirements-phase-id> -s completed`
-     Then name the next command in a code block:
+        Then name the next command in a code block:
      ```
      /sdd:spec-design
      ```

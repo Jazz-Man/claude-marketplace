@@ -1,6 +1,6 @@
 ---
 # cc-sdd-0cnj
-title: 'fs v2 fix round 2: =@ decomposition final form + case-residual basenames'
+title: "fs v2 fix round 2: =@ decomposition final form + case-residual basenames"
 status: completed
 type: task
 priority: normal

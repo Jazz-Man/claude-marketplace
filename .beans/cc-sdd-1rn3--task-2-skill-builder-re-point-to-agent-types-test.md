@@ -1,6 +1,6 @@
 ---
 # cc-sdd-1rn3
-title: 'Task 2: skill-builder re-point to agent-types + test infrastructure'
+title: "Task 2: skill-builder re-point to agent-types + test infrastructure"
 status: in-progress
 type: task
 priority: normal
@@ -32,7 +32,7 @@ Re-point packages/skill-builder hook types to @cc-sdd/agent-types, add tests dir
 - [x] root vitest.config.ts created (scoped include, no plugins)
 - [x] smoke test import -> @effect/vitest (tarball-verified: export * from vitest)
 - [x] red attempt documented: bun test sees 0 skill-builder files (ignore live, 263/0/10 green); @effect/vitest + vitest/config unresolvable pre-install (tsgo 2307)
-STOP: AWAITING_USER_BATCH — user runs bun install
+      STOP: AWAITING_USER_BATCH — user runs bun install
 
 ## Summary of Changes
 
@@ -43,5 +43,4 @@ Re-pointed packages/skill-builder hook types to @cc-sdd/agent-types (delete hand
 - [x] root devDeps += vitest catalog:effect (sorted, last)
 - [x] biome.json overrides x2 — schema-verified against 2.5.15 (includes: glob array, linter.rules.<group>.<rule>: "off"): skill-builder/index.ts noBarrelFile off; vitest.config.ts noDefaultExport off
 - [x] pre-batch check: only noUnresolvedImports remains (install closes it)
-Post-install gates (fresh): biome 43 files 0 diagnostics; vitest 1 pass; bun test 263/0/10; tsgo agg 27 files 0 errors; tsgo pkg 4 files 0 errors. ALL GREEN — task closed, awaiting user review/commit.
-
+      Post-install gates (fresh): biome 43 files 0 diagnostics; vitest 1 pass; bun test 263/0/10; tsgo agg 27 files 0 errors; tsgo pkg 4 files 0 errors. ALL GREEN — task closed, awaiting user review/commit.

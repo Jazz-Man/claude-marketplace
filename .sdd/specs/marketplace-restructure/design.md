@@ -175,6 +175,7 @@ graph TB
 ```
 
 **Architecture Integration**:
+
 - Selected pattern: the platform's documented multi-plugin marketplace — one
   root manifest, one entry per plugin, each plugin a self-contained subfolder.
   Nothing is invented; the platform model is adopted as-is.
@@ -192,11 +193,11 @@ graph TB
 
 ### Technology Stack
 
-| Layer | Choice / Version | Role in Feature | Notes |
-|-------|------------------|-----------------|-------|
-| Platform | Claude Code plugin/marketplace (docs as of 2026-09-26) | Loads the marketplace and plugin; defines `source` resolution and registration semantics | Adopted, not extended; no version-gated features used |
-| VCS | git (`git mv`) | Executes every move, preserving history | User-run only; agents read-only |
-| Verification | `claude plugin validate`, `grep -rIn`, `awk`/`sed`/`diff`, `shasum -a 256` | Battery and gate checks | All existing; scope strings change only |
+| Layer        | Choice / Version                                                           | Role in Feature                                                                          | Notes                                                 |
+| ------------ | -------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------- | ----------------------------------------------------- |
+| Platform     | Claude Code plugin/marketplace (docs as of 2026-09-26)                     | Loads the marketplace and plugin; defines `source` resolution and registration semantics | Adopted, not extended; no version-gated features used |
+| VCS          | git (`git mv`)                                                             | Executes every move, preserving history                                                  | User-run only; agents read-only                       |
+| Verification | `claude plugin validate`, `grep -rIn`, `awk`/`sed`/`diff`, `shasum -a 256` | Battery and gate checks                                                                  | All existing; scope strings change only               |
 
 No new dependencies at any layer.
 
@@ -287,36 +288,37 @@ Flow-level decisions:
 
 ## Requirements Traceability
 
-| Requirement | Summary | Components | Interfaces | Flows |
-|-------------|---------|------------|------------|-------|
-| 1 | Plugin placement: one subfolder per plugin under `plugins/`; sdd at `plugins/sdd/`; future plugins need no changes inside existing subfolders | sdd plugin folder; target layout (File Structure Plan) | Marketplace manifest contract (append-only entries) | — |
-| 2 | Marketplace manifest validity: plugin referenced by path; plugin manifest inside its subfolder; `claude plugin validate` passes | Root marketplace manifest; sdd plugin folder | Marketplace manifest contract (JSON) | Migration flow (Validate checkpoint) |
-| 3 | Installation continuity: `sdd-local` / `sdd@sdd-local` preserved; re-add replaces in place; skills load, hook injects, `CLAUDE_PLUGIN_ROOT` resolves to `plugins/sdd`; pre-re-add session has no plugin | Registration re-point procedure; sdd plugin folder (verbatim payload) | Registration procedure contract (CLI sequence) | Migration flow (ReAdd, FreshCheck; window annotation) |
-| 4 | Move integrity: unmodified contents; user-run `git mv`; history preserved | Migration execution model | Move-batch contract (command block) | Migration flow (Move) |
-| 5 | Battery and docs alignment: same invariants, pinned results (zero / exactly 6), docs reference new locations | Verification battery; Documentation re-referencing | Battery scope contract; documentation edit list | Migration flow (Rescope) |
+| Requirement | Summary                                                                                                                                                                                                 | Components                                                            | Interfaces                                          | Flows                                                 |
+| ----------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------- | --------------------------------------------------- | ----------------------------------------------------- |
+| 1           | Plugin placement: one subfolder per plugin under `plugins/`; sdd at `plugins/sdd/`; future plugins need no changes inside existing subfolders                                                           | sdd plugin folder; target layout (File Structure Plan)                | Marketplace manifest contract (append-only entries) | —                                                     |
+| 2           | Marketplace manifest validity: plugin referenced by path; plugin manifest inside its subfolder; `claude plugin validate` passes                                                                         | Root marketplace manifest; sdd plugin folder                          | Marketplace manifest contract (JSON)                | Migration flow (Validate checkpoint)                  |
+| 3           | Installation continuity: `sdd-local` / `sdd@sdd-local` preserved; re-add replaces in place; skills load, hook injects, `CLAUDE_PLUGIN_ROOT` resolves to `plugins/sdd`; pre-re-add session has no plugin | Registration re-point procedure; sdd plugin folder (verbatim payload) | Registration procedure contract (CLI sequence)      | Migration flow (ReAdd, FreshCheck; window annotation) |
+| 4           | Move integrity: unmodified contents; user-run `git mv`; history preserved                                                                                                                               | Migration execution model                                             | Move-batch contract (command block)                 | Migration flow (Move)                                 |
+| 5           | Battery and docs alignment: same invariants, pinned results (zero / exactly 6), docs reference new locations                                                                                            | Verification battery; Documentation re-referencing                    | Battery scope contract; documentation edit list     | Migration flow (Rescope)                              |
 
 ## Components and Interfaces
 
-| Component | Domain/Layer | Intent | Req Coverage | Key Dependencies | Contracts |
-|-----------|--------------|--------|--------------|------------------|-----------|
-| Root marketplace manifest | Marketplace root | Plugin registry: one entry per plugin by relative path | 1, 2 | Platform validation (P0) | File content |
-| sdd plugin folder | Plugin unit | The complete relocatable plugin | 1, 2, 3, 4 | Platform loading (P0) | — (verbatim payload) |
-| Migration execution model | Process | Handed `git mv` batches, ordered and user-run | 4 | git (P0), user execution (P0) | Command block |
-| Registration re-point procedure | External integration | Restore the user's `sdd-local` registration against the new layout | 3 | Platform CLI (P0) | CLI sequence |
-| Verification battery | Repo working state | Same invariants, same pinned results, new scope | 5 | Existing tooling (P1) | Scope contract |
-| Documentation re-referencing | Repo working state | Layout/verification docs name post-move paths | 5 | — | Edit list |
+| Component                       | Domain/Layer         | Intent                                                             | Req Coverage | Key Dependencies              | Contracts            |
+| ------------------------------- | -------------------- | ------------------------------------------------------------------ | ------------ | ----------------------------- | -------------------- |
+| Root marketplace manifest       | Marketplace root     | Plugin registry: one entry per plugin by relative path             | 1, 2         | Platform validation (P0)      | File content         |
+| sdd plugin folder               | Plugin unit          | The complete relocatable plugin                                    | 1, 2, 3, 4   | Platform loading (P0)         | — (verbatim payload) |
+| Migration execution model       | Process              | Handed `git mv` batches, ordered and user-run                      | 4            | git (P0), user execution (P0) | Command block        |
+| Registration re-point procedure | External integration | Restore the user's `sdd-local` registration against the new layout | 3            | Platform CLI (P0)             | CLI sequence         |
+| Verification battery            | Repo working state   | Same invariants, same pinned results, new scope                    | 5            | Existing tooling (P1)         | Scope contract       |
+| Documentation re-referencing    | Repo working state   | Layout/verification docs name post-move paths                      | 5            | —                             | Edit list            |
 
 ### Marketplace Root
 
 #### Root marketplace manifest
 
-| Field | Detail |
-|-------|--------|
-| Intent | Sole registry of plugins the marketplace offers |
-| Requirements | 1, 2.1, 2.3 |
-| Home | `.claude-plugin/marketplace.json` |
+| Field        | Detail                                          |
+| ------------ | ----------------------------------------------- |
+| Intent       | Sole registry of plugins the marketplace offers |
+| Requirements | 1, 2.1, 2.3                                     |
+| Home         | `.claude-plugin/marketplace.json`               |
 
 **Responsibilities & Constraints**
+
 - Owns plugin discovery and nothing else; plugin behavior lives entirely inside
   `plugins/sdd/`.
 - Entry list is append-only for future plugins: a new plugin is a new
@@ -324,12 +326,14 @@ Flow-level decisions:
   the existing entry never change to admit it.
 
 **Dependencies**
+
 - External: Claude Code platform validation — `claude plugin validate <root>`
   reads this file and each referenced plugin (P0).
 
 **Contracts**: File content.
 
 ##### Manifest content after the edit
+
 ```json
 {
   "name": "sdd-local",
@@ -344,6 +348,7 @@ Flow-level decisions:
   ]
 }
 ```
+
 - Preconditions: `plugins/sdd/.claude-plugin/plugin.json` exists (the move batch
   has run).
 - Postconditions: `claude plugin validate` at the repository root passes with no
@@ -355,13 +360,14 @@ Flow-level decisions:
 
 #### sdd plugin folder
 
-| Field | Detail |
-|-------|--------|
-| Intent | The complete, self-contained sdd plugin at `plugins/sdd/` |
-| Requirements | 1.1, 1.2, 2.2, 3.3, 3.4, 3.5, 4.1, 4.3 |
-| Home | `plugins/sdd/` (see File Structure Plan) |
+| Field        | Detail                                                    |
+| ------------ | --------------------------------------------------------- |
+| Intent       | The complete, self-contained sdd plugin at `plugins/sdd/` |
+| Requirements | 1.1, 1.2, 2.2, 3.3, 3.4, 3.5, 4.1, 4.3                    |
+| Home         | `plugins/sdd/` (see File Structure Plan)                  |
 
 **Responsibilities & Constraints**
+
 - Contains everything the plugin ships: `.claude-plugin/plugin.json` (2.2),
   `skills/`, `assets/`, `bin/`, `hooks/`, `docs/guides/`, `README.md`.
 - Payload is byte-identical to the pre-move root payload (4.1); the platform
@@ -370,6 +376,7 @@ Flow-level decisions:
 - No new boundaries introduced — this is a relocation; summary-only by design.
 
 **Implementation Notes**
+
 - Integration: the SessionStart hook cats
   `${CLAUDE_PLUGIN_ROOT}/assets/workflow-map.md`; a successful injection in a
   fresh session is the behavioral proof that the variable resolves to
@@ -382,13 +389,14 @@ Flow-level decisions:
 
 #### Migration execution model
 
-| Field | Detail |
-|-------|--------|
-| Intent | User-run `git mv` batches that produce the target layout without content changes |
-| Requirements | 4.1, 4.2, 4.3 |
-| Home | Handed at implementation stop points; produces the File Structure Plan tree |
+| Field        | Detail                                                                           |
+| ------------ | -------------------------------------------------------------------------------- |
+| Intent       | User-run `git mv` batches that produce the target layout without content changes |
+| Requirements | 4.1, 4.2, 4.3                                                                    |
+| Home         | Handed at implementation stop points; produces the File Structure Plan tree      |
 
 **Responsibilities & Constraints**
+
 - The agent issues commands; the user executes them (4.2). No git write is ever
   agent-run.
 - One batch, this exact shape (directory pre-creation included, because
@@ -402,9 +410,11 @@ git mv .claude-plugin/plugin.json plugins/sdd/.claude-plugin/plugin.json
 ```
 
 **Dependencies**
+
 - External: git — `git mv` preserves rename history (P0).
 
 **Contracts**: Command block (above).
+
 - Preconditions: clean working tree (the user commits or stashes first; the
   batch must be the only pending change).
 - Postconditions: `git status` shows pure renames; `git log --follow` on a moved
@@ -413,6 +423,7 @@ git mv .claude-plugin/plugin.json plugins/sdd/.claude-plugin/plugin.json
 - Invariants: zero content modifications inside the moved set (4.1).
 
 **Implementation Notes**
+
 - Integration: the manifest edit (a normal file edit, agent-allowed) follows the
   user's move batch; validate follows the edit.
 - Validation: `git status` shows renames only; `git diff --staged -M` empty on
@@ -422,23 +433,26 @@ git mv .claude-plugin/plugin.json plugins/sdd/.claude-plugin/plugin.json
 
 #### Registration re-point procedure
 
-| Field | Detail |
-|-------|--------|
-| Intent | Restore the user's local marketplace registration against the restructured repository |
-| Requirements | 3.1, 3.2, 3.6 |
-| Home | User-run CLI sequence; handed at the migration's ReAdd step |
+| Field        | Detail                                                                                |
+| ------------ | ------------------------------------------------------------------------------------- |
+| Intent       | Restore the user's local marketplace registration against the restructured repository |
+| Requirements | 3.1, 3.2, 3.6                                                                         |
+| Home         | User-run CLI sequence; handed at the migration's ReAdd step                           |
 
 **Responsibilities & Constraints**
+
 - Preserves the marketplace name `sdd-local` and the plugin reference
   `sdd@sdd-local` — nothing is renamed anywhere (3.1).
 - User-run (it mutates the user's Claude Code configuration, outside both the
   repo and the agent's write scope).
 
 **Dependencies**
+
 - External: `claude plugin marketplace add` — one registration per name; re-add
   under the existing name replaces the registration in place (P0).
 
 **Contracts**: CLI sequence.
+
 - Primary: `claude plugin marketplace add /Users/vasilsokolik/www/cc-sdd`
 - Fallback (if the CLI refuses a same-name re-add):
   `claude plugin marketplace remove sdd-local` then the add above.
@@ -452,6 +466,7 @@ git mv .claude-plugin/plugin.json plugins/sdd/.claude-plugin/plugin.json
   entry (3.2).
 
 **Implementation Notes**
+
 - Integration: `/reload-plugins` inside a running session, or a fresh session,
   picks up the re-pointed registration.
 - Validation: fresh-session checks in Testing Strategy.
@@ -463,19 +478,21 @@ git mv .claude-plugin/plugin.json plugins/sdd/.claude-plugin/plugin.json
 
 #### Verification battery (re-scoped)
 
-| Field | Detail |
-|-------|--------|
-| Intent | Same invariants, same pinned results, checked over the new layout |
-| Requirements | 5.1, 5.2 |
-| Home | CLAUDE.md §Verification (living definition); pattern texts pinned in `docs/superpowers/` spec docs (historical) |
+| Field        | Detail                                                                                                          |
+| ------------ | --------------------------------------------------------------------------------------------------------------- |
+| Intent       | Same invariants, same pinned results, checked over the new layout                                               |
+| Requirements | 5.1, 5.2                                                                                                        |
+| Home         | CLAUDE.md §Verification (living definition); pattern texts pinned in `docs/superpowers/` spec docs (historical) |
 
 **Responsibilities & Constraints**
+
 - Checks, never owns: the battery reads the plugin folder and the working state
   and writes nothing.
 - Every member survives the move with its pinned result intact because all
   checked content moves verbatim; only scope strings change.
 
 **Dependencies**
+
 - Outbound: plugin folder (zero-hit and twin greps, census) (P1);
   CLAUDE.md itself (in scope today, stays in scope) (P1).
 
@@ -483,7 +500,7 @@ git mv .claude-plugin/plugin.json plugins/sdd/.claude-plugin/plugin.json
 becomes:
 
 - Zero-hit greps: `plugins/sdd/skills/ plugins/sdd/assets/ plugins/sdd/hooks/
-  plugins/sdd/README.md CLAUDE.md plugins/sdd/docs/guides/`
+plugins/sdd/README.md CLAUDE.md plugins/sdd/docs/guides/`
 - Convention set additionally: `plugins/sdd/bin/`
 - Exactly-6 twin count-greps: `plugins/sdd/skills/` (6 stays 6 — files move
   verbatim)
@@ -499,6 +516,7 @@ docs are append-only records and are not edited (5.1 checks the same invariants;
 it does not rewrite history).
 
 **Implementation Notes**
+
 - Integration: re-scope lands as the CLAUDE.md edit inside the Rescope step,
   before the user re-adds the marketplace.
 - Validation: one full battery run over the restructured tree at the Rescope
@@ -508,13 +526,14 @@ it does not rewrite history).
 
 #### Documentation re-referencing
 
-| Field | Detail |
-|-------|--------|
-| Intent | Layout/verification documentation names post-restructure locations |
-| Requirements | 5.3 |
-| Home | `CLAUDE.md`, `plugins/sdd/README.md`, `.superpowers/.../e2e-runbook.md` |
+| Field        | Detail                                                                  |
+| ------------ | ----------------------------------------------------------------------- |
+| Intent       | Layout/verification documentation names post-restructure locations      |
+| Requirements | 5.3                                                                     |
+| Home         | `CLAUDE.md`, `plugins/sdd/README.md`, `.superpowers/.../e2e-runbook.md` |
 
 **Responsibilities & Constraints**
+
 - The complete edit list is the Modified Files section; nothing outside it is
   re-referenced.
 - CLAUDE.md §Layout replaces the tree and the "This repo IS the plugin" opening
@@ -524,6 +543,7 @@ it does not rewrite history).
 - The e2e runbook's `--plugin-dir` line points at the plugin folder.
 
 **Implementation Notes**
+
 - Validation: every changed line names an existing post-move path; README links
   resolve from `plugins/sdd/`.
 - Risks: the e2e runbook is untracked — its edit is real but unversioned;

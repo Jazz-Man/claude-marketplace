@@ -5,7 +5,7 @@ status: completed
 type: task
 priority: normal
 tags:
-    - verdict-approved
+  - verdict-approved
 created_at: 2026-09-29T11:00:21Z
 updated_at: 2026-09-29T11:45:43Z
 ---

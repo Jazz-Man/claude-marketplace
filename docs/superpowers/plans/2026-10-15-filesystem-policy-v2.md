@@ -41,6 +41,7 @@ Five input classes the spec implies but tasks' happy paths don't cover; each is 
 ### Task 1: Verdict plumbing — `ask()`, `PolicyContext.projectRoot`, `decisionOf`
 
 **Files:**
+
 - Modify: `packages/cli-hook/src/core/decision.ts`
 - Modify: `packages/cli-hook/src/core/policy.ts:10-12`
 - Modify: `packages/cli-hook/src/core/ast.ts` (+ `functionDefs`)
@@ -51,6 +52,7 @@ Five input classes the spec implies but tasks' happy paths don't cover; each is 
 - Test: `packages/cli-hook/tests/decision.test.ts`, `tests/ast.test.ts`, `tests/no-inline-scripts.test.ts`
 
 **Interfaces:**
+
 - Consumes: existing `decision(permission, reason)` and `Permission` type (already `"allow" | "deny" | "ask"`).
 - Produces (later tasks rely on these exact shapes):
   - `export function ask(reason: string): PolicyCheckResult`
@@ -184,7 +186,7 @@ export const FUNCTIONS: string[] = [
   "a(){ b& }; b(){ a& }; a",
   // benign inline use is denied BY DESIGN (owner 2026-10-15: an inline
   // function is always the wrong shape for an agent Bash call)
-  "usage(){ echo \"usage: foo\" | less & }; usage",
+  'usage(){ echo "usage: foo" | less & }; usage',
 ];
 ```
 
@@ -201,8 +203,13 @@ it.each(FUNCTIONS)("denies inline function definition %s", (command) => {
 
 ```ts
 it("collects inline function definition names (every form)", () => {
-  expect(parseCommand("function fb { fb | fb & }; fb")?.functionDefs).toEqual(["fb"]);
-  expect(parseCommand("a(){ b& }; b(){ a& }; a")?.functionDefs).toEqual(["a", "b"]);
+  expect(parseCommand("function fb { fb | fb & }; fb")?.functionDefs).toEqual([
+    "fb",
+  ]);
+  expect(parseCommand("a(){ b& }; b(){ a& }; a")?.functionDefs).toEqual([
+    "a",
+    "b",
+  ]);
   expect(parseCommand("ls -la")?.functionDefs).toEqual([]);
 });
 ```
@@ -223,11 +230,13 @@ Suggested message: `feat(cli-hook): ask verdict, projectRoot context, AST functi
 Full rewrite as a policy FOLDER `packages/cli-hook/src/policies/filesystem/` (v1 single file is replaced; its old fixtures move in Task 2/3/4 increments). **Read the current v1 file first** — it is still in the tree and its expansion quirks (tilde before normalize, `=`-decomposition) plus its tests are context; v2 semantics come from the spec, not from v1. This task delivers the first four modules — `tiers.ts`, `resolve.ts`, `reasons.ts`, `policy.ts` — holding: tier tables, token→absolute-path resolution, `checkFilePath` (exported from `policy.ts` — Task 6 consumes it), and a partial `check()` that denies tier hits on any Bash arg. Distribute the code below by module header comments; `run-hook.ts` and the test file import from `../src/policies/filesystem/policy.ts`.
 
 **Files:**
+
 - Create: `packages/cli-hook/src/policies/filesystem/tiers.ts`, `resolve.ts`, `reasons.ts`, `policy.ts` (delete the old single `policies/filesystem.ts`; update the import in `src/run-hook.ts` and tests to `./policies/filesystem/policy.ts`)
 - Modify (rewrite): `packages/cli-hook/tests/fixtures/filesystem.ts`
 - Modify (rewrite): `packages/cli-hook/tests/filesystem.test.ts`
 
 **Interfaces:**
+
 - Consumes: `Policy`, `PolicyContext` (Task 1), `ParsedCommand`/`CommandUnit` from `core/ast.ts`, `deny`/`ask` from `core/decision.ts`, node:path helpers.
 - Produces:
   - `export const filesystemPolicy: Policy` (name stays `"filesystem"`)
@@ -388,9 +397,9 @@ describe("filesystem policy v2", () => {
   });
 
   it("tier denies quote the offending token", () => {
-    expect(reasonOf(policyCheck(filesystemPolicy, "cat /etc/passwd"))).toContain(
-      "/etc/passwd",
-    );
+    expect(
+      reasonOf(policyCheck(filesystemPolicy, "cat /etc/passwd")),
+    ).toContain("/etc/passwd");
   });
 
   it("the /tmp deny reason teaches ./tmp/ at the project root", () => {
@@ -415,7 +424,11 @@ import { homedir } from "node:os";
 import { basename, isAbsolute, join, normalize } from "node:path";
 import { baseName, type ParsedCommand } from "../core/ast.ts";
 import { ask, deny } from "../core/decision.ts";
-import type { Policy, PolicyCheckResult, PolicyContext } from "../core/policy.ts";
+import type {
+  Policy,
+  PolicyCheckResult,
+  PolicyContext,
+} from "../core/policy.ts";
 
 // ---- Tier tables (spec §7.1; fresh data, see tmp/pattern-source.md) ----
 
@@ -429,30 +442,53 @@ type Tier =
   | "macos-personal"; // macOS content folders: write/delete denied, read allowed
 
 const SECRETS_BASENAMES = new Set([
-  "id_rsa", "id_ed25519", "id_ecdsa", "credentials.json", "token.json",
-  ".netrc", ".npmrc", ".pypirc", ".htpasswd", "terraform.tfstate",
+  "id_rsa",
+  "id_ed25519",
+  "id_ecdsa",
+  "credentials.json",
+  "token.json",
+  ".netrc",
+  ".npmrc",
+  ".pypirc",
+  ".htpasswd",
+  "terraform.tfstate",
 ]);
 const SECRETS_SUBPATHS = [
-  ".ssh", ".aws", ".gnupg", ".gcloud", ".docker", ".kube",
+  ".ssh",
+  ".aws",
+  ".gnupg",
+  ".gcloud",
+  ".docker",
+  ".kube",
 ];
 // No "system" tier and no SYSTEM_PATHS table (owner 2026-10-16): everything
 // outside $HOME ∪ projectRoot is denied by the boundary — a point-list of
 // /etc files was a vestige of the pre-boundary design and changed only the
 // reason text, while misleading readers into thinking it was the gate.
-const PERSONAL_HOME_SUBPATHS = [
-  ".config", ".vscode", ".cursor",
-];
+const PERSONAL_HOME_SUBPATHS = [".config", ".vscode", ".cursor"];
 const PERSONAL_BASENAMES = new Set([
-  ".bashrc", ".zshrc", ".zprofile", ".profile", ".bash_profile",
-  ".vimrc", ".gitconfig",
+  ".bashrc",
+  ".zshrc",
+  ".zprofile",
+  ".profile",
+  ".bash_profile",
+  ".vimrc",
+  ".gitconfig",
 ]);
 // macOS home layout (research 2026-10-15, verified on macOS 26.7.1).
 // ~/Library: full deny (Keychains, Safari, Mail, Application Support).
 // Personal content folders: deny writes/deletes; reads pass. Matching is
 // case-insensitive — the root APFS volume is (/TMP is /tmp).
 const MACOS_PERSONAL_DIRS = new Set([
-  "desktop", "documents", "downloads", "movies", "music", "pictures",
-  "public", "applications", "sites",
+  "desktop",
+  "documents",
+  "downloads",
+  "movies",
+  "music",
+  "pictures",
+  "public",
+  "applications",
+  "sites",
 ]);
 
 // ---- Path helpers ----
@@ -473,7 +509,10 @@ function isSecretBasename(base: string): boolean {
 // Resolve one shell token to an absolute path, or null when it is not
 // path-shaped. ~ and $HOME expand; bare words resolve against cwd (they
 // are file arguments of the command being inspected).
-export function expandToken(token: string, context: PolicyContext): string | null {
+export function expandToken(
+  token: string,
+  context: PolicyContext,
+): string | null {
   let t = token;
   if (t.startsWith("${HOME}")) {
     t = `~${t.slice(7)}`;
@@ -533,7 +572,10 @@ export function tierOf(absPath: string): Tier | null {
       return "personal";
     }
   }
-  if (absPath.endsWith("/.claude/settings.json") || absPath.endsWith("/.claude/settings.local.json")) {
+  if (
+    absPath.endsWith("/.claude/settings.json") ||
+    absPath.endsWith("/.claude/settings.local.json")
+  ) {
     return "settings";
   }
   return null;
@@ -547,8 +589,13 @@ Continue the file:
 // ordinary reads AND writes inside it pass; outside it both deny. The
 // /dev/null family is exempt — `2>/dev/null` is daily bash plumbing.
 const SAFE_DEVICES = new Set([
-  "/dev/null", "/dev/stdin", "/dev/stdout", "/dev/stderr",
-  "/dev/zero", "/dev/urandom", "/dev/random", // v1 parity (owner list 2026-10-16)
+  "/dev/null",
+  "/dev/stdin",
+  "/dev/stdout",
+  "/dev/stderr",
+  "/dev/zero",
+  "/dev/urandom",
+  "/dev/random", // v1 parity (owner list 2026-10-16)
 ]);
 
 function inAllowedZone(absPath: string, context: PolicyContext): boolean {
@@ -563,7 +610,12 @@ function inAllowedZone(absPath: string, context: PolicyContext): boolean {
   return absPath === root || absPath.startsWith(`${root}/`);
 }
 
-const TMP_PREFIXES = ["/tmp/", "/private/tmp/", "/var/tmp/", "/private/var/tmp/"];
+const TMP_PREFIXES = [
+  "/tmp/",
+  "/private/tmp/",
+  "/var/tmp/",
+  "/private/var/tmp/",
+];
 
 function isTmpPath(absPath: string): boolean {
   const p = absPath.toLowerCase(); // /TMP is /tmp on the case-insensitive root
@@ -616,7 +668,11 @@ export function checkFilePath(
       ? null
       : deny(BOUNDARY_REASON(filePath, abs));
   }
-  if (tier === "git-config" || tier === "personal" || tier === "macos-personal") {
+  if (
+    tier === "git-config" ||
+    tier === "personal" ||
+    tier === "macos-personal"
+  ) {
     return intent === "write" ? deny(tierReason(tier, filePath)) : null;
   }
   return deny(tierReason(tier, filePath));
@@ -640,7 +696,11 @@ export const filesystemPolicy: Policy = {
           }
           continue;
         }
-        if (tier === "personal" || tier === "git-config" || tier === "macos-personal") {
+        if (
+          tier === "personal" ||
+          tier === "git-config" ||
+          tier === "macos-personal"
+        ) {
           continue; // intent-aware handling arrives in Task 3
         }
         return deny(tierReason(tier, arg));
@@ -791,15 +851,14 @@ export function unresolvedVar(token: string): boolean {
     return token.includes("$");
   }
   return (
-    anchored.includes("$") ||
-    (anchored !== "~" && !anchored.startsWith("~/"))
+    anchored.includes("$") || (anchored !== "~" && !anchored.startsWith("~/"))
   );
 }
 ```
 
 `expandToken` uses `homeVarToTilde` first; the Bash-side walks (the stub
 `check`, Task 3's `tierCheck`, Task 4's `secretsSeen`) deny with
-`` Filesystem policy: "<token>" contains a shell variable the guard cannot resolve — expand it to a literal path. ``
+`Filesystem policy: "<token>" contains a shell variable the guard cannot resolve — expand it to a literal path.`
 when `unresolvedVar(arg)` before any other classification.
 
 **B. Case-insensitive in-zone tiers (tiers.ts).** The `.git/config`,
@@ -840,8 +899,6 @@ The Bash-side walks iterate `pathCandidates(arg)` instead of skipping
 `-`-prefixed tokens wholesale. `checkFilePath` (tool channel) does NOT
 decompose — its input is a literal path.
 
-
-
 - [ ] **Step 5: Full gates**
 
 `bun test` · `tsc -p tsconfig.json --noEmit` · `rtk biome check --reporter=concise src tests build.ts`
@@ -855,12 +912,14 @@ Suggested: `feat(cli-hook): filesystem v2 tier tables, path resolution, checkFil
 ### Task 3: intents, scope analysis, redirects — decision rows 5–11
 
 **Files:**
+
 - Create: `packages/cli-hook/src/policies/filesystem/intents.ts`
 - Modify: `packages/cli-hook/src/policies/filesystem/policy.ts`, `reasons.ts`
 - Modify: `packages/cli-hook/tests/fixtures/filesystem.ts` (append)
 - Test: `packages/cli-hook/tests/filesystem.test.ts` (append context cases)
 
 **Interfaces:**
+
 - Consumes: Task 2 internals (`expandToken`, `tierOf`, `inAllowedZone`).
 - Produces (Task 4 consumes): `INTENTS`, `WRAPPERS`, `intentOf(unit)`, `targetsOf(cmd, context)`, `decide(...)`.
 
@@ -943,16 +1002,47 @@ Create `src/policies/filesystem/intents.ts` (INTENTS, WRAPPERS, `intentOf`, `out
 type Intent = "read" | "write" | "delete" | "network";
 
 const INTENTS: Record<string, Intent> = {
-  cat: "read", head: "read", tail: "read", less: "read", more: "read",
-  wc: "read", stat: "read", file: "read", du: "read", df: "read",
-  find: "read", ls: "read", tree: "read", grep: "read", rg: "read",
-  diff: "read", md5sum: "read", shasum: "read",
-  tee: "write", cp: "write", mv: "write", touch: "write", mkdir: "write",
-  ln: "write", chmod: "write", chown: "write", truncate: "write",
-  dd: "write", rsync: "write", install: "write", tar: "write",
-  rm: "delete", rmdir: "delete", shred: "delete", unlink: "delete",
-  curl: "network", wget: "network", ssh: "network", scp: "network",
-  sftp: "network", nc: "network",
+  cat: "read",
+  head: "read",
+  tail: "read",
+  less: "read",
+  more: "read",
+  wc: "read",
+  stat: "read",
+  file: "read",
+  du: "read",
+  df: "read",
+  find: "read",
+  ls: "read",
+  tree: "read",
+  grep: "read",
+  rg: "read",
+  diff: "read",
+  md5sum: "read",
+  shasum: "read",
+  tee: "write",
+  cp: "write",
+  mv: "write",
+  touch: "write",
+  mkdir: "write",
+  ln: "write",
+  chmod: "write",
+  chown: "write",
+  truncate: "write",
+  dd: "write",
+  rsync: "write",
+  install: "write",
+  tar: "write",
+  rm: "delete",
+  rmdir: "delete",
+  shred: "delete",
+  unlink: "delete",
+  curl: "network",
+  wget: "network",
+  ssh: "network",
+  scp: "network",
+  sftp: "network",
+  nc: "network",
 };
 
 // Wrappers: the real command is args[0] (unbash flattens `env rm …`).
@@ -1018,7 +1108,9 @@ function outputTargetAt(args: string[], i: number): string | null {
 
 // Redirect targets parsed from the raw words (CommandUnit carries no
 // redirections): `> x`, `>> x`, `2> x` are writes; `< x` is a read.
-function redirectTargets(cmd: ParsedCommand): { intent: Intent; token: string }[] {
+function redirectTargets(
+  cmd: ParsedCommand,
+): { intent: Intent; token: string }[] {
   const out: { intent: Intent; token: string }[] = [];
   const words = cmd.words;
   for (let i = 0; i < words.length; i++) {
@@ -1050,19 +1142,30 @@ const PATH_RULE_REASON = (bin: string) =>
 
 const SUDO_REASON = `Filesystem policy: sudo is blocked — privilege escalation is never an agent operation; every needed command runs under the user account.`;
 
-function scopeDenyOrAsk(intent: Intent, abs: string, token: string): PolicyCheckResult {
+function scopeDenyOrAsk(
+  intent: Intent,
+  abs: string,
+  token: string,
+): PolicyCheckResult {
   if (abs === "/") {
-    return deny(`Filesystem policy: "${token}" targets the filesystem root — blocked.`);
+    return deny(
+      `Filesystem policy: "${token}" targets the filesystem root — blocked.`,
+    );
   }
   if (abs === homedir() && (intent === "write" || intent === "delete")) {
-    return deny(`Filesystem policy: "${token}" targets the home directory as a whole — ${intent} blocked.`);
+    return deny(
+      `Filesystem policy: "${token}" targets the home directory as a whole — ${intent} blocked.`,
+    );
   }
   return null;
 }
 
 export const filesystemPolicy: Policy = {
   check(cmd, context) {
-    const tierCheck = (intent: Intent | null, token: string): PolicyCheckResult => {
+    const tierCheck = (
+      intent: Intent | null,
+      token: string,
+    ): PolicyCheckResult => {
       const abs = expandToken(token, context);
       if (abs === null) {
         return null;
@@ -1078,7 +1181,9 @@ export const filesystemPolicy: Policy = {
         return deny(tierReason(tier, token));
       }
       if (
-        (tier === "git-config" || tier === "personal" || tier === "macos-personal") &&
+        (tier === "git-config" ||
+          tier === "personal" ||
+          tier === "macos-personal") &&
         (intent === "write" || intent === "delete")
       ) {
         return deny(tierReason(tier, token));
@@ -1138,10 +1243,32 @@ Also append to `tests/filesystem.test.ts` a projectRoot-aware case:
 ```ts
 describe("context", () => {
   it("allows writes inside $HOME and inside projectRoot, denies outside the zone", () => {
-    expect(decisionOf(policyCheck(filesystemPolicy, "tee build/x x", "/proj/sub", "/proj"))).toBeNull();
+    expect(
+      decisionOf(
+        policyCheck(filesystemPolicy, "tee build/x x", "/proj/sub", "/proj"),
+      ),
+    ).toBeNull();
     // projectRoot carves an allowed zone even outside $HOME
-    expect(decisionOf(policyCheck(filesystemPolicy, "tee /workspace/repo/x x", "/workspace/repo", "/workspace/repo"))).toBeNull();
-    expect(decisionOf(policyCheck(filesystemPolicy, "tee /elsewhere/x x", "/proj/sub", "/proj"))).toBe("deny");
+    expect(
+      decisionOf(
+        policyCheck(
+          filesystemPolicy,
+          "tee /workspace/repo/x x",
+          "/workspace/repo",
+          "/workspace/repo",
+        ),
+      ),
+    ).toBeNull();
+    expect(
+      decisionOf(
+        policyCheck(
+          filesystemPolicy,
+          "tee /elsewhere/x x",
+          "/proj/sub",
+          "/proj",
+        ),
+      ),
+    ).toBe("deny");
   });
 });
 ```
@@ -1164,12 +1291,14 @@ parsed because no network command runs. This task: injection guards, the
 network deny list, and the deletion sweep of now-meaningless tests.
 
 **Files:**
+
 - Create: `packages/cli-hook/src/policies/filesystem/guards.ts`
 - Modify: `packages/cli-hook/src/policies/filesystem/policy.ts`, `reasons.ts`, `intents.ts`
 - Modify: `packages/cli-hook/tests/fixtures/filesystem.ts` (deletions + new network pins)
 - Test: `packages/cli-hook/tests/filesystem.test.ts`
 
 **Interfaces:**
+
 - Consumes: Task 3 `intentOf` (unwrapped name context), `expandToken`, `tierOf`.
 - Produces: none beyond the policy's own behavior.
 
@@ -1197,7 +1326,7 @@ ADD to DENY (blanket pins): `curl https://x`, `wget https://x/y`,
 `nslookup example.com`, `whois example.com`.
 
 - [ ] **Step 2: Run to verify RED** — `bun test tests/filesystem.test.ts`:
-the 11 new rows fail (currently allow).
+      the 11 new rows fail (currently allow).
 
 - [ ] **Step 3: Implement**
 
@@ -1253,8 +1382,17 @@ unit walk, unwrapped name):
 
 ```ts
 const NETWORK_TOOLS = new Set([
-  "curl", "wget", "nc", "ssh", "scp", "sftp",
-  "ping", "dig", "host", "nslookup", "whois",
+  "curl",
+  "wget",
+  "nc",
+  "ssh",
+  "scp",
+  "sftp",
+  "ping",
+  "dig",
+  "host",
+  "nslookup",
+  "whois",
 ]);
 ```
 
@@ -1269,7 +1407,7 @@ remain).
 policy.ts or reasons.ts per module layout.
 
 - [ ] **Step 4: Tests + full gates** — new pins green; deletions leave no
-orphans; `bun test` (3 known run-hook failures tolerated) · tsc · biome.
+      orphans; `bun test` (3 known run-hook failures tolerated) · tsc · biome.
 
 - [ ] **Step 5: STOP — user reviews and commits**
 
@@ -1278,10 +1416,12 @@ Suggested: `feat(cli-hook): injection guards + network blanket deny`
 ### Task 5: router — absolutes first, filesystem re-enabled, projectRoot composition
 
 **Files:**
+
 - Modify: `packages/cli-hook/src/run-hook.ts`
 - Test: `packages/cli-hook/tests/run-hook.test.ts` (append)
 
 **Interfaces:**
+
 - Consumes: `filesystemPolicy` (Tasks 2–4), `PolicyContext.projectRoot` (Task 1).
 - Produces: router order `[noDeps, gitReadonly, noInlineScripts, filesystem]`; context composition `projectRoot = process.env.CLAUDE_PROJECT_DIR ?? payload.cwd`.
 
@@ -1367,12 +1507,14 @@ Suggested: `feat(cli-hook): absolutes-first router, filesystem v2 live, projectR
 ### Task 6: tool channel — payload.filePath, runHook branch, hooks.json matcher
 
 **Files:**
+
 - Modify: `packages/cli-hook/src/core/payload.ts`
 - Modify: `packages/cli-hook/src/run-hook.ts`
 - Modify: `plugins/security-guard/hooks/hooks.json`
 - Test: `packages/cli-hook/tests/payload.test.ts` (append), `packages/cli-hook/tests/run-hook.test.ts` (append)
 
 **Interfaces:**
+
 - Consumes: `checkFilePath(filePath, intent, context)` from `src/policies/filesystem/policy.ts` (Task 2).
 - Produces: `ParsedHookInput.filePath: string | undefined`; hook matcher `Bash|Read|Edit|Write|NotebookEdit`.
 
@@ -1382,9 +1524,19 @@ Suggested: `feat(cli-hook): absolutes-first router, filesystem v2 live, projectR
 
 ```ts
 it("extracts file_path and notebook_path", () => {
-  const r1 = toHookInput({ hook_event_name: "PreToolUse", tool_name: "Read", cwd: "/p", tool_input: { file_path: "/etc/passwd" } });
+  const r1 = toHookInput({
+    hook_event_name: "PreToolUse",
+    tool_name: "Read",
+    cwd: "/p",
+    tool_input: { file_path: "/etc/passwd" },
+  });
   expect(r1?.filePath).toBe("/etc/passwd");
-  const r2 = toHookInput({ hook_event_name: "PreToolUse", tool_name: "NotebookEdit", cwd: "/p", tool_input: { notebook_path: "/p/n.ipynb" } });
+  const r2 = toHookInput({
+    hook_event_name: "PreToolUse",
+    tool_name: "NotebookEdit",
+    cwd: "/p",
+    tool_input: { notebook_path: "/p/n.ipynb" },
+  });
   expect(r2?.filePath).toBe("/p/n.ipynb");
 });
 ```
@@ -1393,12 +1545,19 @@ it("extracts file_path and notebook_path", () => {
 
 ```ts
 function filePayload(tool_name: string, filePath: string) {
-  return { cwd: "/proj", hook_event_name: "PreToolUse", tool_input: { file_path: filePath }, tool_name };
+  return {
+    cwd: "/proj",
+    hook_event_name: "PreToolUse",
+    tool_input: { file_path: filePath },
+    tool_name,
+  };
 }
 
 describe("tool channel", () => {
   it("Read of a system file denies", () => {
-    expect(decisionOf(runHook(filePayload("Read", "/etc/passwd")))).toBe("deny");
+    expect(decisionOf(runHook(filePayload("Read", "/etc/passwd")))).toBe(
+      "deny",
+    );
   });
   it("Edit of home shell rc denies (personal config write)", () => {
     expect(decisionOf(runHook(filePayload("Edit", "~/.zshrc")))).toBe("deny");
@@ -1407,11 +1566,20 @@ describe("tool channel", () => {
     expect(runHook(filePayload("Write", "/proj/src/x.ts"))).toBeNull();
   });
   it("Read of .git/hooks denies (any reference)", () => {
-    expect(decisionOf(runHook(filePayload("Read", "/proj/.git/hooks/pre-commit")))).toBe("deny");
+    expect(
+      decisionOf(runHook(filePayload("Read", "/proj/.git/hooks/pre-commit"))),
+    ).toBe("deny");
   });
   it("non-file tools fail open", () => {
     expect(runHook(filePayload("Grep", "/etc/passwd"))).toBeNull();
-    expect(runHook({ cwd: "/proj", hook_event_name: "PreToolUse", tool_name: "Glob", tool_input: {} })).toBeNull();
+    expect(
+      runHook({
+        cwd: "/proj",
+        hook_event_name: "PreToolUse",
+        tool_name: "Glob",
+        tool_input: {},
+      }),
+    ).toBeNull();
   });
 });
 ```
@@ -1478,7 +1646,10 @@ if (payload.toolName === "Bash") {
   }
   return null;
 }
-if ((READ_TOOLS.has(payload.toolName) || WRITE_TOOLS.has(payload.toolName)) && payload.filePath !== undefined) {
+if (
+  (READ_TOOLS.has(payload.toolName) || WRITE_TOOLS.has(payload.toolName)) &&
+  payload.filePath !== undefined
+) {
   const intent = READ_TOOLS.has(payload.toolName) ? "read" : "write";
   return checkFilePath(payload.filePath, intent, {
     cwd: payload.cwd,
@@ -1521,6 +1692,7 @@ Suggested: `feat(security-guard): file-tool channel (Read/Edit/Write/NotebookEdi
 ### Task 7: git-readonly — deny the `git hook` subcommand
 
 **Files:**
+
 - Modify: `packages/cli-hook/src/policies/git-readonly.ts`
 - Modify: `packages/cli-hook/tests/fixtures/git-readonly.ts` (append)
 - Test: existing `tests/git-readonly.test.ts` (no structural change; new fixture rows)
@@ -1530,7 +1702,11 @@ Suggested: `feat(security-guard): file-tool channel (Read/Edit/Write/NotebookEdi
 - [ ] **Step 1: Append failing fixtures**
 
 ```ts
-DENY.push("git hook run pre-commit", "git hook list pre-commit", "git -C . hook run x");
+DENY.push(
+  "git hook run pre-commit",
+  "git hook list pre-commit",
+  "git -C . hook run x",
+);
 ```
 
 - [ ] **Step 2: Verify failures** — `bun test tests/git-readonly.test.ts`.
@@ -1560,6 +1736,7 @@ Suggested: `feat(cli-hook): deny git hook subcommand in git-readonly`
 ### Task 8: README, build, validate, live smokes
 
 **Files:**
+
 - Modify: `packages/cli-hook/../..` → `plugins/security-guard/README.md` (policy list + order + tool channel + settings-layer pointer already exist; refresh the policy-order section)
 
 **Interfaces:** none.

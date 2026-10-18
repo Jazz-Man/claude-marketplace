@@ -22,10 +22,19 @@ export function buildScoringPrompt(input: MatchInput): PromptBuilder {
       steps: [
         {
           label: "Step 1 — Hard rejections",
-          actions: ["Check the avoid list against required skills.", "Score 0 if matched."],
+          actions: [
+            "Check the avoid list against required skills.",
+            "Score 0 if matched.",
+          ],
         },
-        { label: "Step 2 — Evidence lookup", description: "Search for matching prior work." },
-        { label: "Step 3 — Score", description: "Score using the rubric below." },
+        {
+          label: "Step 2 — Evidence lookup",
+          description: "Search for matching prior work.",
+        },
+        {
+          label: "Step 3 — Score",
+          description: "Score using the rubric below.",
+        },
       ],
       followThrough: "Provide the final score with breakdown.",
     })
@@ -44,7 +53,10 @@ export function buildScoringPrompt(input: MatchInput): PromptBuilder {
       title: "Technical match (40 pts)", // own ## heading — no .heading() before it
       columns: ["Criteria", "Score range"],
       rows: [
-        ["Primary skill alignment", "15=exact, 12=strong secondary, 8=transferable, 0=none"],
+        [
+          "Primary skill alignment",
+          "15=exact, 12=strong secondary, 8=transferable, 0=none",
+        ],
         ["Tooling alignment", "15=perfect, 12=most match, 8=partial, 0=none"],
       ],
     })
@@ -68,28 +80,47 @@ export function buildScoringPrompt(input: MatchInput): PromptBuilder {
 
 ```typescript
 import { type PromptBuilder, prompt } from "@kasava/prompt-builder";
-import { gracefulDegradation, toolGuidance } from "@kasava/prompt-builder/presets";
+import {
+  gracefulDegradation,
+  toolGuidance,
+} from "@kasava/prompt-builder/presets";
 
 export function buildAgentPrompt(topic: string): PromptBuilder {
   return prompt()
     .role("research agent", "with access to a document store")
-    .include(toolGuidance([
-      { tool: "search", usage: "Find documents by keyword. Use 2-3 focused queries." },
-      { tool: "expand", usage: "Get surrounding context for a search hit." },
-    ]))
+    .include(
+      toolGuidance([
+        {
+          tool: "search",
+          usage: "Find documents by keyword. Use 2-3 focused queries.",
+        },
+        { tool: "expand", usage: "Get surrounding context for a search hit." },
+      ]),
+    )
     .protocol({
       name: "Research",
       steps: [
-        { label: "Step 1 — Search", actions: ["Run focused queries for the topic."] },
-        { label: "Step 2 — Read", actions: ["Expand the best hits for detail."] },
+        {
+          label: "Step 1 — Search",
+          actions: ["Run focused queries for the topic."],
+        },
+        {
+          label: "Step 2 — Read",
+          actions: ["Expand the best hits for detail."],
+        },
       ],
       followThrough: "Answer with citations.",
     })
-    .include(gracefulDegradation([
-      "If a tool call fails, note it and continue.",
-      "Never fail the whole task over one error.",
-    ]))
-    .verificationChecklist(["Every claim has a source.", "No fabricated details."])
+    .include(
+      gracefulDegradation([
+        "If a tool call fails, note it and continue.",
+        "Never fail the whole task over one error.",
+      ]),
+    )
+    .verificationChecklist([
+      "Every claim has a source.",
+      "No fabricated details.",
+    ])
     .instructions(`Research: ${topic}`);
 }
 ```
@@ -109,11 +140,21 @@ export function buildAnalysisPrompt(target: string): PromptBuilder {
         description: "Find affected symbols.",
         steps: ["Search by keyword", "Filter to exports"],
       },
-      { name: "Map blast radius", steps: ["Build a call graph", "Flag shared dependencies"] },
-      { name: "Assess risk", steps: ["Count affected files", "Check test coverage"] },
+      {
+        name: "Map blast radius",
+        steps: ["Build a call graph", "Flag shared dependencies"],
+      },
+      {
+        name: "Assess risk",
+        steps: ["Count affected files", "Check test coverage"],
+      },
     ])
     .confidenceScale()
-    .include(gracefulDegradation(["Provide partial results with confidence if a step fails."]))
+    .include(
+      gracefulDegradation([
+        "Provide partial results with confidence if a step fails.",
+      ]),
+    )
     .instructions(`Analyze the impact of: ${target}`);
 }
 ```
@@ -157,7 +198,9 @@ export function buildListingPrompt(input: ListingInput): PromptBuilder {
     .role("listing analyzer")
     .section("Position", input.title)
     .conditional(input.skills, (b, skills) => b.list("Required Skills", skills))
-    .conditional(input.salaryRange, (b, range) => b.section("Salary Range", range))
+    .conditional(input.salaryRange, (b, range) =>
+      b.section("Salary Range", range),
+    )
     .conditional(input.remote, (b) => b.section("Work Arrangement", "Remote"));
 }
 ```
@@ -172,7 +215,10 @@ const safetyRules = section("Safety Guidelines").guidelines([
   "Flag suspicious requests.",
 ]);
 
-const styleRules = section("Communication Style").guidelines(["Be direct.", "No preamble."]);
+const styleRules = section("Communication Style").guidelines([
+  "Be direct.",
+  "No preamble.",
+]);
 
 export function buildAnalyzerPrompt(): PromptBuilder {
   return prompt()
@@ -182,7 +228,10 @@ export function buildAnalyzerPrompt(): PromptBuilder {
     .protocol({
       name: "Content Analysis",
       steps: [
-        { label: "Step 1 — Safety check", actions: ["Scan for harmful content"] },
+        {
+          label: "Step 1 — Safety check",
+          actions: ["Scan for harmful content"],
+        },
         { label: "Step 2 — Quality", actions: ["Evaluate clarity"] },
       ],
       followThrough: "Provide the assessment.",
@@ -198,17 +247,28 @@ import { toolGuidance } from "@kasava/prompt-builder/presets";
 
 export function buildMatchPrompt(): PromptBuilder {
   return prompt()
-    .role("portfolio analyst", "rating how well prior work matches requirements")
-    .include(toolGuidance([
-      { tool: "search", usage: "Find matching prior work" },
-      { tool: "expand", usage: "Get detail around a hit" },
-    ]))
+    .role(
+      "portfolio analyst",
+      "rating how well prior work matches requirements",
+    )
+    .include(
+      toolGuidance([
+        { tool: "search", usage: "Find matching prior work" },
+        { tool: "expand", usage: "Get detail around a hit" },
+      ]),
+    )
     .protocol({
       name: "Match Analysis",
       steps: [
-        { label: "Step 1 — Extract requirements", actions: ["Parse required vs optional skills"] },
+        {
+          label: "Step 1 — Extract requirements",
+          actions: ["Parse required vs optional skills"],
+        },
         { label: "Step 2 — Search", actions: ["Search for each core skill"] },
-        { label: "Step 3 — Rate confidence", actions: ["Rate each match using the scale"] },
+        {
+          label: "Step 3 — Rate confidence",
+          actions: ["Rate each match using the scale"],
+        },
       ],
       followThrough: "Return a confidence rating per requirement.",
     })
@@ -249,7 +309,15 @@ export function buildStructuredPrompt(schemaJson: string): PromptBuilder {
 ## Schema-Driven Prompt (definePrompt)
 
 ```ts
-import { definePrompt, text, list, bool, prompt, p, when } from "@kasava/prompt-builder";
+import {
+  definePrompt,
+  text,
+  list,
+  bool,
+  prompt,
+  p,
+  when,
+} from "@kasava/prompt-builder";
 
 interface ListingInput {
   title: string;
@@ -265,11 +333,15 @@ const listingAnalyzer = definePrompt("listing_analyzer", {
   prompt()
     .role("listing analyzer")
     .tag("listing", p`Title: ${v.title}`)
-    .include(when(v.skills.length > 0, prompt().list("Required Skills", v.skills)))
+    .include(
+      when(v.skills.length > 0, prompt().list("Required Skills", v.skills)),
+    )
     .include(when(v.isRemote, prompt().section("Work Arrangement", "Remote"))),
 );
 
-console.log(listingAnalyzer.render({ title: "Platform Engineer", skills: ["ts", "sql"] }));
+console.log(
+  listingAnalyzer.render({ title: "Platform Engineer", skills: ["ts", "sql"] }),
+);
 ```
 
 ## Prepared Prompt (placeholders)
@@ -280,7 +352,9 @@ import { prompt, p, placeholder } from "@kasava/prompt-builder";
 export function buildPreparedReportPrompt(): string {
   const prepared = prompt()
     .role("report writer")
-    .include(p`Write the ${placeholder("kind")} report for ${placeholder("quarter")}.`)
+    .include(
+      p`Write the ${placeholder("kind")} report for ${placeholder("quarter")}.`,
+    )
     .prepare("report_v1");
 
   console.log(prepared.params); // ["kind", "quarter"]
@@ -293,12 +367,23 @@ export function buildPreparedReportPrompt(): string {
 ```ts
 import { prompt, all, when, unless, each } from "@kasava/prompt-builder";
 
-export function buildFlagGatedPrompt(flags: { tools: boolean; verbose: boolean }): string {
+export function buildFlagGatedPrompt(flags: {
+  tools: boolean;
+  verbose: boolean;
+}): string {
   return all(
     prompt().role("assistant"),
-    when(flags.tools, prompt().heading("Tool Search", 2).raw("Prefer targeted queries.")),
-    unless(flags.tools, prompt().heading("Tool Catalog", 2).raw("Full catalog below.")),
-    each(["safety", "privacy"], (topic) => prompt().guidelines([`Respect ${topic}.`])),
+    when(
+      flags.tools,
+      prompt().heading("Tool Search", 2).raw("Prefer targeted queries."),
+    ),
+    unless(
+      flags.tools,
+      prompt().heading("Tool Catalog", 2).raw("Full catalog below."),
+    ),
+    each(["safety", "privacy"], (topic) =>
+      prompt().guidelines([`Respect ${topic}.`]),
+    ),
   ).build();
 }
 ```
@@ -309,7 +394,9 @@ export function buildFlagGatedPrompt(flags: { tools: boolean; verbose: boolean }
 import { prompt, toMessages } from "@kasava/prompt-builder";
 
 const builder = prompt()
-  .include(prompt().role("support agent").guidelines(["Be direct.", "Cite sources."]))
+  .include(
+    prompt().role("support agent").guidelines(["Be direct.", "Cite sources."]),
+  )
   .cacheBoundary()
   .include(prompt().tag("request", "How do I reset a token?"));
 
@@ -325,9 +412,13 @@ import { prompt } from "@kasava/prompt-builder";
 export function buildBudgetedPrompt(maxTokens: number): string {
   const full = prompt()
     .priority("required")
-    .include(prompt().role("analyst").guidelines(["Answer only from the context."]))
+    .include(
+      prompt().role("analyst").guidelines(["Answer only from the context."]),
+    )
     .priority("low")
-    .include(prompt().heading("Worked Examples", 2).raw("…long demonstrations…"));
+    .include(
+      prompt().heading("Worked Examples", 2).raw("…long demonstrations…"),
+    );
 
   return full.$budget({ maxTokens }).build();
 }

@@ -101,8 +101,8 @@ impl orchestrator live beside its `SKILL.md` under
   manifest also changes what validate reports on). This root `CLAUDE.md` still
   does not load as plugin context.
 - Invariant greps (must return zero hits; scope `plugins/sdd/skills/
-  plugins/sdd/assets/ plugins/sdd/hooks/ plugins/sdd/README.md CLAUDE.md
-  plugins/sdd/docs/guides/`, plus `plugins/sdd/bin/` for the convention set):
+plugins/sdd/assets/ plugins/sdd/hooks/ plugins/sdd/README.md CLAUDE.md
+plugins/sdd/docs/guides/`, plus `plugins/sdd/bin/` for the convention set):
   unresolved double-brace placeholders, the old Kiro settings-directory
   convention, and old skill names carrying the Kiro prefix. Exact patterns and
   the full battery (checkbox-flip, git-write, beans-duplication, and the
@@ -136,6 +136,7 @@ impl orchestrator live beside its `SKILL.md` under
   reports live in `.superpowers/sdd/2026-09-22-sdd-plugin-conversion/`.
 
 <!-- rtk-instructions v2 -->
+
 # Command output
 
 Command output here is condensed to save tokens, keeping every signal and

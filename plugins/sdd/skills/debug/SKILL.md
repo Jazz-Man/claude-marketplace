@@ -35,6 +35,7 @@ Do not use this skill to speculate about fixes before gathering evidence.
 ## Inputs
 
 Provide:
+
 - Exact failure symptom or blocker statement
 - Error messages, stack trace, and failing command output
 - Current `git diff` or summary of uncommitted failed changes
@@ -50,6 +51,7 @@ Provide:
 ### 1. Reproduce
 
 Run the failing command. Capture and read carefully:
+
 - Exact error text
 - Stack trace or failure location
 - The command that produced the failure and its exit code
@@ -126,12 +128,12 @@ Do not propose a multi-fix shotgun plan. Identify the root cause first, then pro
 
 ## Common Rationalizations
 
-| Rationalization | Reality |
-|---|---|
-| “This probably just needs a quick patch” | Patch-first debugging creates rework. |
-| “Let’s try a few fixes” | Multi-fix guessing hides root cause. |
-| “The spec is probably wrong, I’ll adapt it” | Spec conflicts must be surfaced explicitly. |
-| “The docs search is optional” | For runtime/dependency issues, docs and version issues often contain the shortest path to root cause. |
+| Rationalization                             | Reality                                                                                               |
+| ------------------------------------------- | ----------------------------------------------------------------------------------------------------- |
+| “This probably just needs a quick patch”    | Patch-first debugging creates rework.                                                                 |
+| “Let’s try a few fixes”                     | Multi-fix guessing hides root cause.                                                                  |
+| “The spec is probably wrong, I’ll adapt it” | Spec conflicts must be surfaced explicitly.                                                           |
+| “The docs search is optional”               | For runtime/dependency issues, docs and version issues often contain the shortest path to root cause. |
 
 ## Output Format
 
@@ -141,6 +143,7 @@ the heading and the `- OUTCOME:` line mechanically):
 
 ```md
 ## Debug Outcome
+
 - OUTCOME: RESOLVED | UNRESOLVED
 - ROOT_CAUSE: <1-2 sentence root cause>
 - CATEGORY: MISSING_DEPENDENCY | RUNTIME_MISMATCH | MODULE_FORMAT | NATIVE_ABI | CONFIG_GAP | LOGIC_ERROR | TASK_ORDERING_PROBLEM | TASK_DECOMPOSITION_PROBLEM | SPEC_CONFLICT | EXTERNAL_DEPENDENCY

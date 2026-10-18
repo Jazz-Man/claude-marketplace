@@ -1,6 +1,6 @@
 ---
 # cc-sdd-541b
-title: 'Task 15: docs wave — README, guides, CHANGELOG'
+title: "Task 15: docs wave — README, guides, CHANGELOG"
 status: completed
 type: task
 priority: normal
@@ -16,4 +16,5 @@ Plan task 15: rewrite README (no npm/install/agent-table; /sdd:* usage, beans, m
 - [ ] **Step 3: STOP** — user reviews and commits.
 
 ## Summary of Changes
+
 Docs wave: README full rewrite (no npm/install/agent-table; phase flow, single active feature, beans-vs-files, stop-per-task, model pins, 14-skill table matching workflow-map verbatim, bootstrap, execution internals, honest scope note); guides pruned to 3 keepers rewritten to fork reality (command-reference/customization/migration/claude-subagents + docs/README* + RELEASE_NOTES deleted); CHANGELOG reset to 0.1.0; plugin.json author added (validate warning gone). Review APPROVED — accuracy sweep 15/15 factual checks passed; 3 record-only nitpicks.

@@ -1,6 +1,6 @@
 ---
 # cc-sdd-eie3
-title: 'Task 9: directory validator (transposed skill-validator matrix)'
+title: "Task 9: directory validator (transposed skill-validator matrix)"
 status: completed
 type: task
 priority: normal

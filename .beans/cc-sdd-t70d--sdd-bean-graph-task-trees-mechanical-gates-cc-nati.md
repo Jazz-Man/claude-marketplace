@@ -1,6 +1,6 @@
 ---
 # cc-sdd-t70d
-title: 'sdd: bean-graph task trees, mechanical gates, CC-native coherence'
+title: "sdd: bean-graph task trees, mechanical gates, CC-native coherence"
 status: completed
 type: feature
 priority: normal

@@ -1,6 +1,6 @@
 ---
 # cc-sdd-mbhk
-title: 'sdd hooks: standards audit (plugin-dev) + UserPromptExpansion matcher fix'
+title: "sdd hooks: standards audit (plugin-dev) + UserPromptExpansion matcher fix"
 status: completed
 type: task
 priority: normal

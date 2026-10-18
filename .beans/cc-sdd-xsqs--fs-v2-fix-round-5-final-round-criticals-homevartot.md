@@ -1,6 +1,6 @@
 ---
 # cc-sdd-xsqs
-title: 'fs v2 fix round 5 — final-round criticals: homeVarToTilde final form, tildeUser gate, SAFE_DEVICES restore'
+title: "fs v2 fix round 5 — final-round criticals: homeVarToTilde final form, tildeUser gate, SAFE_DEVICES restore"
 status: completed
 type: task
 priority: normal

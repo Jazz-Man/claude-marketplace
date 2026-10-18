@@ -13,11 +13,13 @@
 
 .claude-plugin/marketplace.json
 @@ -5,7 +5,7 @@
-   "plugins": [
-     {
-       "name": "sdd",
+"plugins": [
+{
+"name": "sdd",
+
 -      "source": "./",
-+      "source": "./plugins/sdd",
+
+*      "source": "./plugins/sdd",
        "description": "Kiro-style spec-driven development for Claude Code with subagent-first execution"
-     }
-   ]
+  }
+  ]

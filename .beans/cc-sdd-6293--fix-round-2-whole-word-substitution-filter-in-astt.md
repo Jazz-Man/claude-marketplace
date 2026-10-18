@@ -1,6 +1,6 @@
 ---
 # cc-sdd-6293
-title: 'Fix round 2: whole-word substitution filter in ast.ts (spliced-path evasion)'
+title: "Fix round 2: whole-word substitution filter in ast.ts (spliced-path evasion)"
 status: completed
 type: task
 priority: normal

@@ -69,6 +69,7 @@ AskUserQuestion with these options:
    AskUserQuestion) whether to overwrite with the default, keep the file as
    is, or let the user hand-edit first. The user hand-edits or asks for the
    overwrite - you never merge or selectively edit the file yourself.
+
 2. **Overwrite with the plugin default** - only on this explicit instruction:
    run Step 3 as if the file were absent.
 3. **Keep the file as is** - end the skill.

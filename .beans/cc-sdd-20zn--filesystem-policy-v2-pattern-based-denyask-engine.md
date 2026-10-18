@@ -17,4 +17,5 @@ Replace the strict outside-cwd filesystem policy with a pattern-based deny/ask e
 - Live smoke matrix complete (git-hook/Read-boundary/network denies verbatim; binary-ask correct; harness auto-allows ask under bypass — ask tier effective in normal modes only)
 
 ## Summary of Changes
+
 Filesystem policy v2 shipped across 8 tasks (commits 33cb653..aa42216): module folder tiers/resolve/reasons/intents/guards/policy on the unbash-6 forEachChild walk; Cookie.parse/parseEnv token parsing with deny-unions at every level; HOME-union-projectRoot boundary + 6 sensitive tiers + macOS tiers; injection guards; 12-tool network blanket; sudo/PATH-rule/git-hook/inline-function denies; tool channel via anchored matcher; severityUnion verdict model (deny never shadowed by ask at units/args/candidates); exported reason constants; 446/0 tests, tsc/biome clean; plugin validated; live smoke matrix reproduced verbatim. Owner closed the epic at aa42216 — remaining known items live in beans cc-sdd-0ivz (env git push family) and cc-sdd-ovm3 (carrier hardening); ask-under-bypass documented as harness behavior.

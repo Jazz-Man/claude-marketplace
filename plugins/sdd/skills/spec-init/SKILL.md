@@ -59,8 +59,8 @@ Query beans: `beans list --json -t epic -s in-progress`.
      incomplete task beans. Completing or scrapping also unblocks any
      follow-up epics queued `--blocked-by` this one.
   3. **Stop** - abort the run; the user resolves beans manually.
-  Any "stop" ends the skill; otherwise re-check and continue to Step 3
-  once no in-progress epic remains.
+     Any "stop" ends the skill; otherwise re-check and continue to Step 3
+     once no in-progress epic remains.
 
 **Heal carve-out**: if the active epic's phase beans are missing or
 incomplete (partial legacy state - e.g. `Phase — tasks` absent), a

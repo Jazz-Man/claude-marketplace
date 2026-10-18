@@ -19,6 +19,7 @@ A1: Every current and future plugin gets its own subfolder under
 
 Q2: What must be true when the restructure is done? (multi-select)
 A2: THREE acceptance criteria selected:
+
 - **Validate green**: `claude plugin validate` passes on the new layout
   (root `marketplace.json` listing plugins by path;
   `plugins/sdd/.claude-plugin/plugin.json` in place).
@@ -28,9 +29,9 @@ A2: THREE acceptance criteria selected:
 - **Battery green**: the invariant greps and Revision 9 twin checks are
   re-scoped to the new paths and pass (zero hits / exactly 6 where
   pinned today).
-NOT selected — **clean root**: no requirement that the repo root hold
-zero plugin-payload files; the move itself is the core change but root
-cleanliness is not an acceptance criterion.
+  NOT selected — **clean root**: no requirement that the repo root hold
+  zero plugin-payload files; the move itself is the core change but root
+  cleanliness is not an acceptance criterion.
 
 Q3: Rename the marketplace identity `sdd-local`?
 A3: Keep `sdd-local` for now; renaming is deferred until a second
@@ -92,6 +93,7 @@ Official Claude Code docs research (2026-09-26), 4 pages:
    README placement, source-path overlap rules — open for design.
 
 Sources:
+
 - https://code.claude.com/docs/en/plugins
 - https://code.claude.com/docs/en/plugins/create-marketplace
 - https://code.claude.com/docs/en/plugins/marketplace-reference

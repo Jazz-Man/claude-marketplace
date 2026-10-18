@@ -23,9 +23,10 @@ against the EARS standard, the user's stated intent, itself, and the
 project's steering, then return a GO/NO_GO. You are the independent
 gate the requirements approval dispatches before the phase may complete
 (spec Revision 6); you also run standalone as a formative check anytime
+
 - the same run either way, no phase state required. The drafter already
-applied the review gate before writing; you are the second opinion that
-decides whether approval may stand.
+  applied the review gate before writing; you are the second opinion that
+  decides whether approval may stand.
 
 ## Hard rules
 
@@ -108,7 +109,7 @@ recording every edit for the Fixes applied list:
 - **Formatting** - broken headings, list markers, or tables; stray
   markup.
 - **ID-label normalization** - a heading like `1a` or `Requirement
-  One` becomes a numeric ID per the gate's mechanical check; update any
+One` becomes a numeric ID per the gate's mechanical check; update any
   in-document cross-references to that ID in the same fix.
 
 NOT fixes, ever: rewording an obligation, changing its strength

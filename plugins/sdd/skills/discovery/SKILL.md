@@ -212,6 +212,7 @@ next command depends on beans state:
      Exactly one epic of the chain is ever runnable at a time. If the
      user asks for two specs in parallel, that is the
      single-active-feature rule talking - keep the chain linear.
+
 3. Append the intent and links to the milestone body:
 
    ```
@@ -241,23 +242,29 @@ section on top and leave prior content untouched below.
 ## <Initiative or feature title> (<YYYY-MM-DD>)
 
 ### Intent
+
 <who has the problem, what changes when done - two or three sentences>
 
 ### Scope
+
 - **In**: <what this workstream includes>
 - **Out**: <what it explicitly excludes>
 
 ### Decisions
+
 <each decision with its rationale: route taken, boundaries drawn,
 order chosen - and the alternatives rejected>
 
 ### Open Questions
+
 <unresolved items, each with where it will be resolved:
 requirements interview, design, a later initiative>
 
 ### Queue
+
 <rendered snapshot only - beans is the source of truth; plain ordered
 lines, never checkboxes>
+
 1. <epic-id> - <feature> - todo
 2. <epic-id> - <feature> - blocked by 1
 ```

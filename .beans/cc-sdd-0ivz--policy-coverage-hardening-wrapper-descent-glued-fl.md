@@ -1,6 +1,6 @@
 ---
 # cc-sdd-0ivz
-title: 'Policy coverage hardening: wrapper descent + glued-flag matching (activation gate)'
+title: "Policy coverage hardening: wrapper descent + glued-flag matching (activation gate)"
 status: todo
 type: task
 created_at: 2026-09-29T18:14:06Z

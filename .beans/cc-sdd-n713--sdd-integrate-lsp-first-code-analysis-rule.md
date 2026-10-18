@@ -1,6 +1,6 @@
 ---
 # cc-sdd-n713
-title: 'sdd: integrate LSP-first code-analysis rule'
+title: "sdd: integrate LSP-first code-analysis rule"
 status: in-progress
 type: task
 priority: normal

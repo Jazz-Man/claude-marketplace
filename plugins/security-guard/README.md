@@ -11,7 +11,7 @@ alone:
 1. **no-deps** — dependency installs/updates/removals (pip/uv, npm/pnpm/yarn,
    bun, cargo, brew, gem, go, swift, composer, …)
 2. **git-readonly** — every git write subcommand (`commit`, `push`, `tag
-   <name>`, bare `git branch x`, …) plus `git hook <anything>` (reads and
+<name>`, bare `git branch x`, …) plus `git hook <anything>` (reads and
    runs `.git/hooks` entries); only read-only git passes
 3. **no-inline-scripts** — inline code execution: interpreter
    `-e`/`-c`/`--eval` (`python -c`, `node -e`, `php -r`, `osascript -e`,

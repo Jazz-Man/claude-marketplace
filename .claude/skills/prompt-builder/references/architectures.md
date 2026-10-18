@@ -41,8 +41,8 @@ export function buildReviewerPrompt(document: string): string {
 ```ts
 import { definePrompt, text, prompt } from "@kasava/prompt-builder";
 
-const reviewer = definePrompt("reviewer", { document: text().notNull() }).body((v) =>
-  prompt().role("reviewer").tag("document", v.document),
+const reviewer = definePrompt("reviewer", { document: text().notNull() }).body(
+  (v) => prompt().role("reviewer").tag("document", v.document),
 );
 
 reviewer.render({ document: "…" });
@@ -65,7 +65,9 @@ reviewer.render({ document: "…" });
 ```ts
 import { prompt, p, placeholder } from "@kasava/prompt-builder";
 
-const prepared = prompt().include(p`Summary of ${placeholder("topic")}`).prepare("v1");
+const prepared = prompt()
+  .include(p`Summary of ${placeholder("topic")}`)
+  .prepare("v1");
 prepared.render({ topic: "caching" });
 ```
 
@@ -96,12 +98,12 @@ console.log(ast.map((n) => n.kind).join(","));
 
 Read the project against the columns; the matching row names where to start. Rows combine the same way the architectures do.
 
-| Runtime data? | Repeated renders? | Cache boundaries matter? | Introspection or trimming? | Consumers | Starting point |
-|---|---|---|---|---|---|
-| No | No | No | No | Few | Static builder functions |
-| Yes | No | No | No | Several call sites | Schema templates |
-| — | Yes | Yes | No | — | Prepared prompts |
-| — | — | — | Yes | — | AST pipelines |
-| Yes | Yes | Yes | No | Several call sites | Schema templates, prepared after binding |
+| Runtime data? | Repeated renders? | Cache boundaries matter? | Introspection or trimming? | Consumers          | Starting point                           |
+| ------------- | ----------------- | ------------------------ | -------------------------- | ------------------ | ---------------------------------------- |
+| No            | No                | No                       | No                         | Few                | Static builder functions                 |
+| Yes           | No                | No                       | No                         | Several call sites | Schema templates                         |
+| —             | Yes               | Yes                      | No                         | —                  | Prepared prompts                         |
+| —             | —                 | —                        | Yes                        | —                  | AST pipelines                            |
+| Yes           | Yes               | Yes                      | No                         | Several call sites | Schema templates, prepared after binding |
 
 a starting point, not a prescription.
