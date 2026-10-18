@@ -50,7 +50,8 @@
         },
         "noUnknownFunction": "error",
         "noUnusedVariables": "error",
-        "useQwikValidLexicalScope": "off"
+        "useQwikValidLexicalScope": "off",
+        "useSingleJsDocAsterisk": "error"
       },
       "performance": {
         "noBarrelFile": "error",
@@ -72,6 +73,7 @@
         "useNamingConvention": "off"
       },
       "suspicious": {
+        "noCommentText": "error",
         "noConsole": "off",
         "noTemplateCurlyInString": "off"
       }
