@@ -26,7 +26,7 @@ comment policy mechanically enforceable for the first time.
 | D2 | `plugins/biome-lsp/` stays temporarily as an IDE diagnostics bridge reading `biome.json`. | Two configs of overlapping knowledge exist by owner's explicit choice; the drift risk is documented (§8) and a follow-up bean tracks the bridge's removal. |
 | D3 | Comment policy is **maximally strict**: every comment is an error, except a closed system allowlist (§5). No JSDoc, no block-comment invariants. | `code-style.md`'s comment section is rewritten from convention to mechanical law; the existing comment corpus is deleted (§6 step 5). |
 | D4 | Rule coverage replaces Biome's `preset: "all"` with `[lint.categories]` `pedantic = "error"`, `style = "error"` on top of Bun's defaults, plus explicit per-rule parity (§4). | Closest practical equivalent to "all rules on"; noise is triaged in a probe pass before the config lands. |
-| D5 | Zero new dependencies. | Everything is built-in rules plus ONE local plugin file. npm ESLint plugins would be installs — forbidden; if ever wanted, the owner installs. |
+| D5 | Zero new dependencies. | Everything is built-in rules plus ONE local plugin file. npm ESLint plugins would be installs — forbidden; if ever wanted, the owner installs. Sole owner-made addition: `@types/eslint` (9.6.1, root devDependencies) for typing the plugin — installed by the owner, part of the fixed set. |
 | D6 | **`.zed/` is the owner's editor configuration — agents never touch it.** | No modification of any kind, in this migration or after. Read-only observation (D1's note) is the only interaction ever. |
 | D7 | **Severity doctrine (the owner's universal linter principle): every enabled rule emits `error`.** Warnings become errors; anything that would emit `info` becomes `warn`. The owner's release valve is an explicit per-rule `"off"` — never a downgrade to warn. | `[lint.categories]` sets every enabled category explicitly to `"error"`; the config contains zero `warn` entries; `--max-warnings 0` guards the gate against future defaults sneaking in at warn/info. |
 
@@ -35,7 +35,8 @@ comment policy mechanically enforceable for the first time.
 ```
 bunfig.toml            single source of lint/format truth ([lint], [fmt] appended
                        to the existing file; [test]/[install] untouched)
-lint/plugin.js         local ESLint plugin: no-comments + exports-last
+lint/plugin.ts         local ESLint plugin (typed via the owner-installed
+                       @types/eslint): no-comments + exports-last
 lint/plugin.test.ts    its tests (bun test)
 biome.json             FROZEN (D1): read by plugins/biome-lsp only, until the
                        bridge is retired (follow-up bean)
@@ -68,7 +69,7 @@ sortImports = true
 ignorePatterns = ["**/*.md", "packages/cli-hook/tests/fixtures/**"]
 
 [lint]
-plugins = ["./lint/plugin.js"]
+plugins = ["./lint/plugin.ts"]
 ignorePatterns = ["packages/cli-hook/tests/fixtures/**"]
 
 [lint.categories]
@@ -128,9 +129,12 @@ value. JSON/TS files are formatted.
 Every "probe" row is resolved in §6 step 1 BEFORE the config lands, by
 inspecting `bun lint --rules` output; every "loss" row lands in §8 as accepted.
 
-## 5. Local plugin `lint/plugin.js`
+## 5. Local plugin `lint/plugin.ts`
 
-Plain `.js`, no comments in its own source, loaded via `[lint].plugins`.
+TypeScript, typed with the owner-installed `@types/eslint` (a bun-lint plugin
+IS an ESLint plugin; the package provides `Rule.RuleModule`/`Rule.RuleContext`).
+Bun imports TS natively, so the plugin ships as `.ts`. Zero comments in its
+own source, loaded via `[lint].plugins = ["./lint/plugin.ts"]`.
 Two rules:
 
 ### 5.1 `local/no-comments` (error)
