@@ -3,7 +3,7 @@ telemetry = false
 
 [test]
 coverage = false
-pathIgnorePatterns = ["packages/skill-builder/tests","tmp/*"]
+pathIgnorePatterns = ["packages/skill-builder/tests", "tmp/*"]
 
 
 [install.lockfile]
