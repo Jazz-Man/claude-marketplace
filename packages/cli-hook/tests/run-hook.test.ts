@@ -45,8 +45,6 @@ function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === "object" && value !== null;
 }
 
-// Typed view of the spawned hook's deny output, or null when the emission
-// is not a PreToolUse decision payload.
 function hookDecision(
   raw: string,
 ): { permissionDecision: string; permissionDecisionReason: string } | null {
@@ -166,7 +164,6 @@ describe("router v2 (projectRoot env)", () => {
     const prev = process.env.CLAUDE_PROJECT_DIR;
     delete process.env.CLAUDE_PROJECT_DIR;
     try {
-      // cwd /proj is the project → inside-write allow
       expect(runHook(bashPayload("tee /proj/out x"))).toBeNull();
     } finally {
       if (prev !== undefined) {
@@ -202,7 +199,6 @@ describe("router v2 (CLAUDE_PROJECT_DIR zone)", () => {
     const prev = process.env.CLAUDE_PROJECT_DIR;
     process.env.CLAUDE_PROJECT_DIR = "/zone-a";
     try {
-      // Write inside /zone-a only: allowed iff the env arm wins over cwd.
       expect(
         runHook({
           cwd: "/zone-b",

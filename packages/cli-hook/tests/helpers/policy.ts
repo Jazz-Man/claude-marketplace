@@ -1,8 +1,6 @@
 import { parseCommand } from "../../src/core/ast.ts";
 import type { Policy, PolicyCheckResult } from "../../src/core/policy.ts";
 
-// Shared policy-test harness: parse a command, run it through a policy with a
-// fake project cwd, and pull the deny reason out of the PreToolUse output.
 export function policyCheck(
   policy: Policy,
   command: string,

@@ -1,5 +1,3 @@
-// Obfuscation/injection substrings. Pipe-to-exec, eval, and dot-sourcing
-// are owned by no-inline-scripts; these are the signals that hide intent.
 const INJECTION_SUBSTRINGS = [
   "/dev/tcp/",
   "/dev/udp/",
@@ -10,9 +8,6 @@ const INJECTION_SUBSTRINGS = [
   "HISTSIZE=0",
 ];
 
-// Raw control bytes are never legitimate command text; \v and \f are
-// invisible to that byte class and ride the whitespace rule instead —
-// whitespace outside " \t\n\r" hides word boundaries from a visual read.
 function isControlByte(code: number): boolean {
   return (code >= 1 && code <= 8) || (code >= 14 && code <= 31) || code === 127;
 }
@@ -21,9 +16,6 @@ const ASCII_WHITESPACE = " \t\n\r";
 const ANY_WHITESPACE = /\s/u;
 const WORD_SPLIT = /\s+/u;
 
-// The four hit-classes keep the scan's fixed precedence: the first
-// non-null wins, so a command carrying several signals reports the
-// earliest class' reason.
 function substringHit(raw: string): string | null {
   for (const needle of INJECTION_SUBSTRINGS) {
     if (raw.includes(needle)) {

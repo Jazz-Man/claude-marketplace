@@ -9,7 +9,6 @@ export function boundaryReason(token: string, absPath: string): string {
   return reason;
 }
 
-// Keyed by Tier so the compiler enforces a reason for every tier.
 export const TIER_REASONS: Record<Tier, (token: string) => string> = {
   "git-config": (token) =>
     `Filesystem policy: writing "${token}" is blocked — git configuration changes belong to the user (git-readonly owns the CLI path too).`,
@@ -27,8 +26,6 @@ export const TIER_REASONS: Record<Tier, (token: string) => string> = {
     `Filesystem policy: "${token}" is a protected Claude settings file — agents must not read or change the guard's own configuration.`,
 };
 
-// DENY reasons carry no advisory tails; asks must tell the user what
-// confirming means — that phrasing is the exception, never a disable tail.
 export const askReason = (verb: string, token: string) =>
   `Filesystem policy: confirm with the user before ${verb} ("${token}"). This call needs explicit user approval.`;
 

@@ -75,7 +75,6 @@ describe("context", () => {
         }),
       ),
     ).toBeNull();
-    // projectRoot carves an allowed zone even outside $HOME
     expect(
       decisionOf(
         policyCheck(filesystemPolicy, "tee /workspace/repo/x x", {

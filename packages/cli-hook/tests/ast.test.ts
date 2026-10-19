@@ -94,9 +94,6 @@ describe("parseCommand (redirects, words, functionDefs)", () => {
   });
 });
 
-// Walk pins: verdict-coupling shapes that must not drift silently
-// (truncation posture, heredoc args coupling, glob fragment words,
-// substitution invariants, elif traversal, quoted-heredoc blindness).
 describe("parseCommand (walk pins)", () => {
   it("truncates past the nesting limit — buried commands stay invisible (accepted fail-open)", () => {
     const deep = `${"( ".repeat(257)}bash -c 'echo hi'${" )".repeat(257)}`;

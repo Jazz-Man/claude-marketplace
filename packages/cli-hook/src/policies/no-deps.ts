@@ -2,7 +2,6 @@ import { baseName } from "../core/ast.ts";
 import { deny } from "../core/decision.ts";
 import type { Policy } from "../core/policy.ts";
 
-// Deny when args start with any listed prefix (whole words). [] = any args.
 const MUTATIONS: Record<string, readonly (readonly string[])[]> = {
   brew: [
     ["install"],

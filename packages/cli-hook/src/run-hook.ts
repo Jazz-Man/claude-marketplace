@@ -13,13 +13,11 @@ import { gitReadonlyPolicy } from "./policies/git-readonly.ts";
 import { noDepsPolicy } from "./policies/no-deps.ts";
 import { noInlineScriptsPolicy } from "./policies/no-inline-scripts.ts";
 
-// Registry order is fixed: the first non-null decision wins. Absolutes
-// (deny-only hard rules) run before the filesystem zone policy.
 const POLICIES: Policy[] = [
-  noDepsPolicy, // absolutes first: deny-only, owner's hard rules
+  noDepsPolicy,
   gitReadonlyPolicy,
   noInlineScriptsPolicy,
-  filesystemPolicy, // v2: deny | ask, runs last
+  filesystemPolicy,
 ];
 
 const READ_TOOLS = new Set(["Read"]);
@@ -82,6 +80,6 @@ export function runHook(input: unknown): SyncHookJSONOutput | null {
     }
     return null;
   } catch {
-    return null; // fail-open: a broken guard must not break tool usage
+    return null;
   }
 }

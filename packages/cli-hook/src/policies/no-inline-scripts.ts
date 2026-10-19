@@ -4,8 +4,6 @@ import * as ast from "../core/ast.ts";
 import { deny } from "../core/decision.ts";
 import type { Policy } from "../core/policy.ts";
 
-// Long flags match exactly; short flags also match clustered spellings
-// (`python -uc`, `bash -ic`).
 const INTERPRETERS: Record<
   string,
   { longs: readonly string[]; shorts: readonly string[] }
@@ -26,15 +24,10 @@ const INTERPRETERS: Record<
   zsh: { longs: [], shorts: ["c"] },
 };
 
-// Clustered short flags like `-uc`/`-ic` (letters only, no values).
 const SHORT_FLAG_CLUSTER = /^-[A-Za-z]+$/u;
 
-// `deno` spells inline code as a subcommand: `deno eval '…'`.
 const EVAL_SUBCOMMANDS = new Set(["deno"]);
 
-// Wrappers whose argument list may carry the interpreter inline: xargs/find
-// take it as data (`xargs sh -c '…'`, `find -exec bash -c '…`'); env/sudo/nohup
-// prefixes also land here when the parser does not flatten them.
 const WRAPPERS = new Set([
   "env",
   "find",
@@ -61,21 +54,11 @@ function isInlineArg(lname: string, arg: string): boolean {
   );
 }
 
-// Stdin-fed script: an interpreter invoked with no arguments reads piped or
-// heredoc-fed code; a bare "-" argument names stdin explicitly.
 const readsStdinScript = (args: readonly string[]) =>
   args.length === 0 || args.includes("-");
 
-// NAME=VALUE assignment token — the same wrapper-noise class intents.ts'
-// intentOf scan skips (mirrored, not imported: merging the two unwrap
-// rules would couple the policies).
 const isAssignment = (token: string) => Object.keys(parseEnv(token)).length > 0;
 
-// Stdin-fed script via a heredoc-family operator: `<<`/`<<-` feed the body,
-// `<<<` feeds a here-string — on an interpreter the fed operand IS inline
-// code. The delimiter rides unit args, so the match keys on the redirect
-// target equaling an arg; a real file arg colliding with some heredoc's
-// delimiter denies too (deny-leaning, rare).
 const FED_OPERATORS = new Set(["<<", "<<-", "<<<"]);
 
 const heredocFed = (
@@ -87,13 +70,6 @@ const heredocFed = (
       FED_OPERATORS.has(redirect.operator) && args.includes(redirect.target),
   );
 
-// Wrapper-prefixed heredoc: under env/nice/nohup/… the interpreter hides in
-// the wrapper's args and the heredoc Redirect attaches to the WRAPPER unit,
-// so the plain heredoc check keyed on the unit name never sees it. The scan
-// skips the same noise classes as intents.ts' intentOf (`-`-tokens,
-// NAME=VALUE assignments, unknown bare tokens); a first interpreter-name
-// token next to a real heredoc denies — the evidence stays in the unit's
-// own args/redirects, where the delimiter rides.
 function wrapperHeredocViolates(
   lname: string,
   args: readonly string[],

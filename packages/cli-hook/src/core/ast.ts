@@ -14,21 +14,8 @@ function wordLike(node: object): node is WordLike {
   );
 }
 
-// Strip a trailing version suffix from a command name: python3.13 → python,
-// node20 → node, perl5.34 → perl. Policies look tools up by this base name so
-// versioned binaries cannot sidestep a table keyed on the plain name.
 const VERSION_SUFFIX = /\d+(?:\.\d+)*$/u;
 
-// A word value that IS a whole-token substitution: command substitution
-// ($(...), arithmetic $((...)) matches the same shape), legacy backticks,
-// process substitution (<(...), >(...)). ONLY whole words drop from the
-// args view: the substitution's own Command units are walked in full, so
-// the raw text is already represented — and left in place it would trip
-// the filesystem policy's raw-$ fail-closed deny on daily commands
-// (`echo $(git log --oneline)`). A substitution SPLICED into a larger
-// word (`/etc/pass$(echo wd)`) must KEEP riding the arg: the concatenated
-// path exists in no unit's args, and the fail-closed gate must see it.
-// Plain $VAR/${VAR} stay: the fail-closed variable gate classifies THOSE.
 const WHOLE_WORD_SUBST =
   /^(?:\$\([\s\S]*\)|`[\s\S]*`|<\([\s\S]*\)|>\([\s\S]*\))$/u;
 
@@ -57,10 +44,6 @@ function redirectWord(
   return redirect.target;
 }
 
-// Redirection targets of one command, from Command.redirects (prefix and
-// suffix redirect nodes in source order). Redirect targets stay out of unit
-// args (wordValues skips Redirect nodes), so this view is additive to the
-// args view, not double-counting; the walk visits each redirect once.
 function collectRedirects(
   command: unbash.Command,
   out: CommandRedirect[],
@@ -78,16 +61,13 @@ export interface CommandUnit {
   name: string;
 }
 
-// One redirection of one command: the direction lives in the operator
-// (`>`/`>>`/`2>` write, `<` read) and the target is the word redirected to.
-// These are NOT arguments — CommandUnit deliberately excludes them.
 export interface CommandRedirect {
   operator: string;
   target: string;
 }
 
 export interface ParsedCommand {
-  functionDefs: string[]; // inline function definition names (any form)
+  functionDefs: string[];
   raw: string;
   redirects: CommandRedirect[];
   units: CommandUnit[];
@@ -102,23 +82,6 @@ function parseOrNull(command: string): unbash.ParsedScript | null {
   }
 }
 
-// One unbash parse, two views: `units` (name+args per Command node) and
-// `words` (every word-like string). unbash never throws on malformed input —
-// best-effort scripts are walked (a typo'd quote must not let /etc/passwd
-// through); null is returned only on an actual throw. Past the parser's
-// nesting limit the tree truncates; no verdict hangs on the `errors` array —
-// returning null would map to allow for the whole command in the hook's
-// fail-open catch. Invariants the walk relies on:
-//   - forEachChild yields canonical children once; the derived args/redirects
-//     Command views alias the same nodes — walking them too would double-emit
-//     every arg-position subtree.
-//   - Embedded syntax resolves lazily on access; quoted-delimiter heredoc
-//     bodies have no parts and reach neither units nor words (owned by
-//     no-inline-scripts' heredoc-fed rule).
-//   - Heredoc delimiters are wordLike and ride unit args, so heredoc-fed
-//     detection keys on redirect target == arg.
-//   - `words` is a diagnostic view; containment is the only safe
-//     consumption.
 export function parseCommand(command: string): ParsedCommand | null {
   const parsed = parseOrNull(command);
   if (parsed === null) {

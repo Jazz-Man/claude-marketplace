@@ -59,4 +59,4 @@ style = "error"
 "import/exports-last" = "off"
 "typescript/prefer-readonly-parameter-types" = "off"
 "unicorn/no-null" = "off"
-"local/no-comments" = ["error", { allow = [] }]
+"local/no-comments" = ["error", { allow = ["@effect-diagnostics"] }]

@@ -39,8 +39,6 @@ const UNCONDITIONAL = new Set([
   "update-server-info",
 ]);
 
-// subcommand → mutating flags; a BARE FIRST arg (branch/tag creation) also
-// denies. Bare `git branch` / `git tag` (listing) have no args → allow.
 const MUTATING_FLAGS: Record<string, Set<string>> = {
   branch: new Set([
     "-d",
@@ -75,7 +73,6 @@ const MUTATING_FLAGS: Record<string, Set<string>> = {
   ]),
 };
 
-// subcommand → mutating first args
 const MUTATING_SUBS: Record<string, Set<string>> = {
   notes: new Set(["add", "append", "remove", "edit", "copy", "prune"]),
   reflog: new Set(["expire", "delete"]),
@@ -109,8 +106,6 @@ const CONFIG_MUTATING_FLAGS = new Set([
 const SYMBOLIC_REF_FLAGS = new Set(["-d", "--delete"]);
 const REPLACE_FLAGS = new Set(["-d", "--delete", "--edit", "-g", "--graft"]);
 
-// git's global options (man git) precede the subcommand; walking past them
-// keeps `git -C . push` from hiding the subcommand behind a flag.
 const GLOBAL_VALUE_FLAGS = new Set([
   "-c",
   "-C",
@@ -137,8 +132,6 @@ interface GitCall {
   sub: string;
 }
 
-// Advance for a known leading global flag: the flag's own token count, or
-// null when the flag is unknown (fail-open: no opinion).
 function globalAdvance(arg: string): number | null {
   if (GLOBAL_VALUE_FLAGS.has(arg)) {
     return 2;
@@ -149,8 +142,6 @@ function globalAdvance(arg: string): number | null {
   return null;
 }
 
-// The subcommand plus the args that follow it, or null when the leading run
-// holds an unknown flag (fail-open: no opinion).
 function gitCall(args: readonly string[]): GitCall | null {
   const [arg] = args;
   if (arg === undefined) {
@@ -173,7 +164,6 @@ function gitUnitCall(unit: CommandUnit): GitCall | null {
   return gitCall(unit.args);
 }
 
-// Long flags may arrive in --opt=value form; match the option part too.
 function hasMutatingFlag(flags: Set<string>, args: readonly string[]): boolean {
   return args.some((arg) => {
     if (flags.has(arg)) {
@@ -184,8 +174,6 @@ function hasMutatingFlag(flags: Set<string>, args: readonly string[]): boolean {
   });
 }
 
-// Bare `git stash` IS push, and so is a flags-only stash (`git stash -u`);
-// `git stash list` / `git stash show` stay readable.
 function stashViolates(subs: Set<string>, args: readonly string[]): boolean {
   const [firstArg] = args;
   const flagsOnly = args.length === 0 || firstArg?.startsWith("-") === true;
@@ -195,7 +183,6 @@ function stashViolates(subs: Set<string>, args: readonly string[]): boolean {
   return subs.has(firstArg ?? "");
 }
 
-// git config <key> <value> (two non-flag args) writes; flags above write too.
 function configViolates(args: readonly string[]): boolean {
   if (args.some((arg) => CONFIG_MUTATING_FLAGS.has(arg))) {
     return true;
@@ -203,8 +190,6 @@ function configViolates(args: readonly string[]): boolean {
   return args.filter((arg) => !arg.startsWith("-")).length >= 2;
 }
 
-// Mutation by subcommand family: listed subcommand sets (stash special-cased),
-// then the single-subcommand rules.
 function subFamilyMutating(sub: string, args: readonly string[]): boolean {
   const subs = MUTATING_SUBS[sub];
   if (subs !== undefined) {
@@ -213,7 +198,6 @@ function subFamilyMutating(sub: string, args: readonly string[]): boolean {
   return singleSubMutating(sub, args);
 }
 
-// Listed families deny on their mutating first arg.
 function listedSubMutating(
   sub: string,
   subs: Set<string>,
@@ -261,8 +245,6 @@ export const gitReadonlyPolicy: Policy = {
   check(cmd) {
     for (const unit of cmd.units) {
       const call = gitUnitCall(unit);
-      // `git hook` reads and runs .git/hooks entries BY NAME — no path
-      // appears in args for the filesystem scan to catch.
       if (call !== null && call.sub.toLowerCase() === "hook") {
         return deny(GIT_HOOK_REASON);
       }
