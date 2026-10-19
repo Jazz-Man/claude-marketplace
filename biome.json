@@ -2,13 +2,19 @@
   "$schema": "https://biomejs.dev/schemas/2.5.15/schema.json",
   "assist": {
     "actions": {
+      "preset": "all",
       "source": {
         "noDuplicateClasses": "on",
         "organizeImports": "on",
+        "preset": "all",
         "useSortedAttributes": "on",
+        "useSortedEnumMembers": "on",
         "useSortedInterfaceMembers": "on",
         "useSortedKeys": "on",
-        "useSortedProperties": "on"
+        "useSortedPackageJson": "on",
+        "useSortedProperties": "on",
+        "useSortedSelectionSet": "on",
+        "useSortedTypeFields": "on"
       }
     },
     "enabled": true
@@ -17,15 +23,25 @@
     "ignoreUnknown": true
   },
   "formatter": {
+    "attributePosition": "multiline",
     "enabled": true,
+    "expand": "always",
+    "formatWithErrors": false,
     "indentStyle": "space",
-    "indentWidth": 2
+    "indentWidth": 2,
+    "lineEnding": "lf",
+    "trailingNewline": true
   },
   "javascript": {
     "formatter": {
+      "arrowParentheses": "always",
+      "jsxQuoteStyle": "double",
+      "operatorLinebreak": "after",
       "quoteStyle": "double"
     },
-    "globals": ["Bun"]
+    "globals": [
+      "Bun"
+    ]
   },
 
   "linter": {
@@ -84,7 +100,9 @@
       "assist": {
         "enabled": false
       },
-      "includes": ["packages/cli-hook/tests/fixtures/**"],
+      "includes": [
+        "packages/cli-hook/tests/fixtures/**"
+      ],
       "linter": {
         "enabled": false
       }
