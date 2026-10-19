@@ -54,7 +54,7 @@ const MUTATIONS: Record<string, readonly (readonly string[])[]> = {
   ],
   deno: [["add"], ["install"], ["cache"], ["upgrade"]],
   gem: [["install"], ["uninstall"], ["update"]],
-  "go": [["install"], ["get"], ["mod", "tidy"], ["mod", "download"]],
+  go: [["install"], ["get"], ["mod", "tidy"], ["mod", "download"]],
   npm: [
     ["install"],
     ["i"],
@@ -119,7 +119,7 @@ const MUTATIONS: Record<string, readonly (readonly string[])[]> = {
     ["package", "update"],
     ["package", "resolve"],
   ],
-  "uv": [
+  uv: [
     ["add"],
     ["remove"],
     ["sync"],

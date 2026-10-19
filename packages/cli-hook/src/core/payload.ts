@@ -17,14 +17,6 @@ function stringField(
   return undefined;
 }
 
-export interface ParsedHookInput {
-  command: string | undefined;
-  cwd: PreToolUseHookInput["cwd"];
-  filePath: string | undefined;
-  hookEventName: string;
-  toolName: string;
-}
-
 interface ToolFields {
   command: string | undefined;
   filePath: string | undefined;
@@ -38,6 +30,14 @@ function toolFields(data: unknown): ToolFields {
     command: stringField(data, "command"),
     filePath: stringField(data, "file_path", "notebook_path"),
   };
+}
+
+export interface ParsedHookInput {
+  command: string | undefined;
+  cwd: PreToolUseHookInput["cwd"];
+  filePath: string | undefined;
+  hookEventName: string;
+  toolName: string;
 }
 
 export function toHookInput(data: unknown): ParsedHookInput | null {

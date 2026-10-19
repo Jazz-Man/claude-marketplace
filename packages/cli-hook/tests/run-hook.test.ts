@@ -3,51 +3,13 @@ import process from "node:process";
 
 import { runHook } from "../src/run-hook.ts";
 import { decisionOf, reasonOf } from "./helpers/policy.ts";
-
-const MAIN = `${import.meta.dir}/../src/main.ts`;
-
-function bashPayload(command: string) {
-  return {
-    cwd: "/proj",
-    hook_event_name: "PreToolUse",
-    tool_input: { command },
-    tool_name: "Bash",
-  };
-}
-
-function filePayload(tool_name: string, filePath: string) {
-  return {
-    cwd: "/proj",
-    hook_event_name: "PreToolUse",
-    tool_input: { file_path: filePath },
-    tool_name,
-  };
-}
-
-async function spawnHook(
-  raw: string,
-): Promise<{ code: number | null; stdout: string }> {
-  const proc = Bun.spawn(["bun", MAIN], {
-    env: {
-      ...Bun.env,
-      CLAUDE_PROJECT_DIR: "/proj",
-    },
-    stderr: "pipe",
-    stdin: new Blob([raw]),
-    stdout: "pipe",
-  });
-  const stdout = await new Response(proc.stdout).text();
-  const code = await proc.exited;
-  return { code, stdout };
-}
+import { bashPayload, filePayload, spawnHook } from "./helpers/utils.ts";
 
 function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === "object" && value !== null;
 }
 
-function hookDecision(
-  raw: string,
-): { permissionDecision: string; permissionDecisionReason: string } | null {
+function hookDecision(raw: string) {
   const parsed: unknown = JSON.parse(raw);
   if (!isRecord(parsed)) {
     return null;

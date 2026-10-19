@@ -109,15 +109,6 @@ function homeTier(restHome: string, base: string): Tier | null {
   return personalTier(restHome, base, seg);
 }
 
-export type Tier =
-  | "secrets"
-  | "settings"
-  | "git-config"
-  | "git-hooks"
-  | "personal"
-  | "macos-library"
-  | "macos-personal";
-
 function secretsTier(base: string): Tier | null {
   if (isSecretBasename(base) || SECRETS_BASENAMES.has(base.toLowerCase())) {
     return "secrets";
@@ -142,6 +133,15 @@ function projectSettingsTier(absPath: string): Tier | null {
   }
   return null;
 }
+
+export type Tier =
+  | "secrets"
+  | "settings"
+  | "git-config"
+  | "git-hooks"
+  | "personal"
+  | "macos-library"
+  | "macos-personal";
 
 export function tierOf(absPath: string): Tier | null {
   const base = basename(absPath);

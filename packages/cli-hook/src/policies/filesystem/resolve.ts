@@ -49,41 +49,6 @@ const TMP_PREFIXES = [
   "/private/var/tmp/",
 ];
 
-export function homeVarToTilde(token: string): string | null {
-  if (token.startsWith("${HOME}")) {
-    return `~${token.slice(7)}`;
-  }
-  if (HOME_HEAD.test(token)) {
-    return `~${token.slice(5)}`;
-  }
-  return null;
-}
-
-export function tildeUser(token: string): boolean {
-  return token.startsWith("~") && token !== "~" && !token.startsWith("~/");
-}
-
-export function unresolvedVar(token: string): boolean {
-  const anchored = homeVarToTilde(token);
-  if (anchored === null) {
-    return token.includes("$");
-  }
-  return (
-    anchored.includes("$") || (anchored !== "~" && !anchored.startsWith("~/"))
-  );
-}
-
-export function pathCandidates(arg: string): string[] {
-  if (arg.startsWith("@")) {
-    return [arg.slice(1)];
-  }
-  const pair = splitPair(arg);
-  if (pair === null) {
-    return proseCandidates(arg);
-  }
-  return pairCandidates(arg, pair);
-}
-
 function proseCandidates(arg: string): string[] {
   if (arg.startsWith("-")) {
     return [];
@@ -135,6 +100,41 @@ function midAtCandidates(arg: string): string[] {
     return [arg, arg.slice(midAt + 2)];
   }
   return [arg];
+}
+
+export function homeVarToTilde(token: string): string | null {
+  if (token.startsWith("${HOME}")) {
+    return `~${token.slice(7)}`;
+  }
+  if (HOME_HEAD.test(token)) {
+    return `~${token.slice(5)}`;
+  }
+  return null;
+}
+
+export function tildeUser(token: string): boolean {
+  return token.startsWith("~") && token !== "~" && !token.startsWith("~/");
+}
+
+export function unresolvedVar(token: string): boolean {
+  const anchored = homeVarToTilde(token);
+  if (anchored === null) {
+    return token.includes("$");
+  }
+  return (
+    anchored.includes("$") || (anchored !== "~" && !anchored.startsWith("~/"))
+  );
+}
+
+export function pathCandidates(arg: string): string[] {
+  if (arg.startsWith("@")) {
+    return [arg.slice(1)];
+  }
+  const pair = splitPair(arg);
+  if (pair === null) {
+    return proseCandidates(arg);
+  }
+  return pairCandidates(arg, pair);
 }
 
 export function inAllowedZone(

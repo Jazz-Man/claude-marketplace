@@ -1,4 +1,13 @@
-import * as unbash from "unbash";
+import {
+  type Command,
+  forEachChild,
+  type HereDocDelimiter,
+  type ParsedScript,
+  parse,
+  type Redirection,
+  type SyntaxNode,
+  type Word,
+} from "unbash";
 
 interface WordLike {
   text: string;
@@ -36,23 +45,28 @@ function wordValues(node: unknown): string[] {
 }
 
 function redirectWord(
-  redirect: unbash.Redirection,
-): unbash.Word | unbash.HereDocDelimiter | undefined {
+  redirect: Redirection,
+): Word | HereDocDelimiter | undefined {
   if (redirect.type === "HereDoc") {
     return redirect.delimiter;
   }
   return redirect.target;
 }
 
-function collectRedirects(
-  command: unbash.Command,
-  out: CommandRedirect[],
-): void {
+function collectRedirects(command: Command, out: CommandRedirect[]): void {
   for (const redirect of command.redirects) {
     const word = redirectWord(redirect);
     if (word !== undefined && wordLike(word)) {
       out.push({ operator: redirect.operator, target: word.value });
     }
+  }
+}
+
+function parseOrNull(command: string): ParsedScript | null {
+  try {
+    return parse(command);
+  } catch {
+    return null;
   }
 }
 
@@ -74,14 +88,6 @@ export interface ParsedCommand {
   words: string[];
 }
 
-function parseOrNull(command: string): unbash.ParsedScript | null {
-  try {
-    return unbash.parse(command);
-  } catch {
-    return null;
-  }
-}
-
 export function parseCommand(command: string): ParsedCommand | null {
   const parsed = parseOrNull(command);
   if (parsed === null) {
@@ -91,8 +97,8 @@ export function parseCommand(command: string): ParsedCommand | null {
   const words: string[] = [];
   const redirects: CommandRedirect[] = [];
   const functionDefs: string[] = [];
-  // biome-ignore lint/complexity/noExcessiveCognitiveComplexity: the branches mirror the collected views; extracting them would reorder the units/words traversal
-  const visit = (node: unbash.SyntaxNode): void => {
+
+  const visit = (node: SyntaxNode): void => {
     if (wordLike(node)) {
       words.push(node.value);
     }
@@ -106,7 +112,7 @@ export function parseCommand(command: string): ParsedCommand | null {
     if (node.type === "Function") {
       functionDefs.push(node.name.value);
     }
-    unbash.forEachChild(node, visit);
+    forEachChild(node, visit);
   };
   visit(parsed);
   return { functionDefs, raw: command, redirects, units, words };

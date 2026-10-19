@@ -20,7 +20,7 @@ const INTERPRETERS: Record<
   python: { longs: [], shorts: ["c"] },
   python3: { longs: [], shorts: ["c"] },
   ruby: { longs: [], shorts: ["e"] },
-  "sh": { longs: [], shorts: ["c"] },
+  sh: { longs: [], shorts: ["c"] },
   zsh: { longs: [], shorts: ["c"] },
 };
 
