@@ -55,7 +55,7 @@ const MUTATIONS: Record<string, readonly (readonly string[])[]> = {
   ],
   deno: [["add"], ["install"], ["cache"], ["upgrade"]],
   gem: [["install"], ["uninstall"], ["update"]],
-  go: [["install"], ["get"], ["mod", "tidy"], ["mod", "download"]],
+  "go": [["install"], ["get"], ["mod", "tidy"], ["mod", "download"]],
   npm: [
     ["install"],
     ["i"],
@@ -120,7 +120,7 @@ const MUTATIONS: Record<string, readonly (readonly string[])[]> = {
     ["package", "update"],
     ["package", "resolve"],
   ],
-  uv: [
+  "uv": [
     ["add"],
     ["remove"],
     ["sync"],
@@ -159,7 +159,7 @@ function mutates(name: string, args: string[]): boolean {
   return prefixes.some(
     (prefix) =>
       prefix.length <= args.length &&
-      prefix.every((w, i) => w === args[i]?.toLowerCase()),
+      prefix.every((word, index) => word === args[index]?.toLowerCase()),
   );
 }
 

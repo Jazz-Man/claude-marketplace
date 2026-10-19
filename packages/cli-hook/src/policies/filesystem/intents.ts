@@ -1,6 +1,6 @@
 import { parseEnv } from "node:util";
 
-import { baseName, type ParsedCommand } from "../../core/ast.ts";
+import * as ast from "../../core/ast.ts";
 
 // NAME=VALUE assignment token: a wrapper's variable assignments ride the
 // prefix region, they are never the command. node:util parseEnv detects
@@ -17,25 +17,25 @@ const INTENTS: Record<string, Intent> = {
   cat: "read",
   chmod: "write",
   chown: "write",
-  cp: "write",
-  dd: "write",
-  df: "read",
+  "cp": "write",
+  "dd": "write",
+  "df": "read",
   diff: "read",
-  du: "read",
+  "du": "read",
   file: "read",
   find: "read",
   grep: "read",
   head: "read",
   install: "write",
   less: "read",
-  ln: "write",
-  ls: "read",
+  "ln": "write",
+  "ls": "read",
   md5sum: "read",
   mkdir: "write",
   more: "read",
-  mv: "write",
-  rg: "read",
-  rm: "delete",
+  "mv": "write",
+  "rg": "read",
+  "rm": "delete",
   rmdir: "delete",
   rsync: "write",
   shasum: "read",
@@ -48,7 +48,7 @@ const INTENTS: Record<string, Intent> = {
   tree: "read",
   truncate: "write",
   unlink: "delete",
-  wc: "read",
+  "wc": "read",
 };
 
 // Network tools deny on the unwrapped unit name alone (spec §7.3 blanket):
@@ -85,6 +85,23 @@ function isScanNoise(token: string): boolean {
   return token.startsWith("-") || isAssignment(token);
 }
 
+// Intent resolution for one non-noise wrapper-region token: the INTENTS hit
+// resolves the command, otherwise a NETWORK_TOOLS basename arms the network
+// flag. Both key on the version-stripped base name.
+function resolveToken(
+  token: string,
+  network: string | null,
+): { intent: Intent | null; network: string | null } {
+  const known = INTENTS[ast.baseName(token)];
+  if (known !== undefined) {
+    return { intent: known, network };
+  }
+  if (network === null && NETWORK_TOOLS.has(ast.baseName(token))) {
+    return { intent: null, network: ast.baseName(token) };
+  }
+  return { intent: null, network };
+}
+
 // Unwrap transparent wrappers across their own options and env assignments
 // (`env X=1 tee`, `nice -n 5 cp`, `timeout 10 rm`, `xargs -I{} rm`,
 // `env -u X sudo …`). The scan walks the prefix region left-to-right:
@@ -100,22 +117,20 @@ function unwrapScan(
 ): Unwrapped {
   let sudo = sudoIn;
   let network = networkIn;
-  let i = 0;
-  while (i < args.length) {
-    const t = args[i] ?? "";
-    if (t === "sudo") {
-      sudo = true;
-    } else if (!isScanNoise(t)) {
-      const known = INTENTS[baseName(t)];
-      if (known !== undefined) {
-        return { intent: known, network, rest: args.slice(i + 1), sudo };
+  for (const [index, token] of args.entries()) {
+    sudo ||= token === "sudo";
+    if (token !== "sudo" && !isScanNoise(token)) {
+      const resolved = resolveToken(token, network);
+      if (resolved.intent !== null) {
+        return {
+          intent: resolved.intent,
+          network: resolved.network,
+          rest: args.slice(index + 1),
+          sudo,
+        };
       }
-      if (network === null && NETWORK_TOOLS.has(baseName(t))) {
-        network = baseName(t);
-      }
-      // unknown bare token: possible option value — noise, keep scanning
+      ({ network } = resolved);
     }
-    i += 1;
   }
   return { intent: null, network, rest: args, sudo };
 }
@@ -130,7 +145,7 @@ interface Unwrapped {
 export type Intent = "read" | "write" | "delete";
 
 export function intentOf(name: string, args: string[]): Unwrapped {
-  const base = baseName(name);
+  const base = ast.baseName(name);
   const intent: Intent | null = INTENTS[base] ?? null;
   let network: string | null = null;
   if (NETWORK_TOOLS.has(base)) {
@@ -147,14 +162,14 @@ export function intentOf(name: string, args: string[]): Unwrapped {
 // operator+target pairs; unit args never carry them): `< x` is a read,
 // every other redirection is a write.
 export function redirectTargets(
-  cmd: ParsedCommand,
+  cmd: ast.ParsedCommand,
 ): { intent: Intent; token: string }[] {
   const out: { intent: Intent; token: string }[] = [];
-  for (const r of cmd.redirects) {
-    if (r.operator === "<") {
-      out.push({ intent: "read", token: r.target });
+  for (const redirect of cmd.redirects) {
+    if (redirect.operator === "<") {
+      out.push({ intent: "read", token: redirect.target });
     } else {
-      out.push({ intent: "write", token: r.target });
+      out.push({ intent: "write", token: redirect.target });
     }
   }
   return out;

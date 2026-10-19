@@ -4,18 +4,16 @@ import { isAbsolute, join, normalize } from "node:path";
 import type { PolicyContext } from "../../core/policy.ts";
 
 // $HOME with a name boundary: $HOMEevil is a DIFFERENT (unset) variable.
-const HOME_HEAD = /^\$HOME(?![A-Za-z0-9_])/;
-// Flag-headed token: bare flags stay skipped, --flag=value yields its value.
-const FLAG_HEAD = /^-/;
+const HOME_HEAD = /^\$HOME(?![A-Za-z0-9_])/u;
 
-function expandHomeToken(t: string): string | null {
+function expandHomeToken(token: string): string | null {
   if (HOME === "") {
     return null;
   }
-  if (t === "~") {
+  if (token === "~") {
     return normalize(HOME);
   }
-  return normalize(join(HOME, t.slice(2)));
+  return normalize(join(HOME, token.slice(2)));
 }
 
 // The single `=`-pair splitter. Bun.Cookie.parse splits a token at the
@@ -36,8 +34,8 @@ function splitPair(token: string): NameValue | null {
     return null;
   }
   try {
-    const c = Bun.Cookie.parse(token);
-    return { name: c.name, value: c.value };
+    const cookie = Bun.Cookie.parse(token);
+    return { name: cookie.name, value: cookie.value };
   } catch {
     return null;
   }
@@ -111,42 +109,67 @@ export function pathCandidates(arg: string): string[] {
   }
   const pair = splitPair(arg);
   if (pair === null) {
-    if (FLAG_HEAD.test(arg)) {
-      return [];
-    }
-    return [arg];
+    return proseCandidates(arg);
   }
+  return pairCandidates(arg, pair);
+}
+
+// Flag-headed token: bare flags stay skipped, --flag=value yields its value.
+function proseCandidates(arg: string): string[] {
+  if (arg.startsWith("-")) {
+    return [];
+  }
+  return [arg];
+}
+
+function pairCandidates(arg: string, pair: NameValue): string[] {
   const { name, value } = pair;
-  if (FLAG_HEAD.test(name)) {
-    let truncated = value;
-    if (value.startsWith("@")) {
-      truncated = value.slice(1);
-    }
-    // Deny-union: Cookie.parse truncates the value
-    // at the first `;`, so the tail's evidence ($VAR, suffix matches, ..-
-    // climbs) survives ONLY in the raw token — when the arg carries a `;`,
-    // judge BOTH the truncated candidate and the full value side of arg;
-    // the strictest hit wins downstream. (The `;` test runs on arg, not
-    // the parsed value — the parsed value can never carry one.)
-    if (!arg.includes(";")) {
-      return [truncated];
-    }
-    const full = arg.slice(arg.indexOf("=") + 1);
-    if (full.startsWith("@")) {
-      return [truncated, full.slice(1)];
-    }
-    return [truncated, full];
+  if (name.startsWith("-")) {
+    return flagPairCandidates(arg, value);
   }
+  return valuePairCandidates(arg, value);
+}
+
+function flagPairCandidates(arg: string, value: string): string[] {
+  let truncated = value;
   if (value.startsWith("@")) {
-    const truncated = value.slice(1); // NAME=@path upload shape
-    if (!arg.includes(";")) {
-      return [truncated];
-    }
-    return [truncated, arg.slice(arg.indexOf("=@") + 2)];
+    truncated = value.slice(1);
   }
-  // Mid-token =@ (a=b=@/etc/passwd): the pair value does not START with @,
-  // so the prose branch would swallow the tail — union it back; the prose
-  // token itself stays a candidate too.
+  // Deny-union: Cookie.parse truncates the value
+  // at the first `;`, so the tail's evidence ($VAR, suffix matches, ..-
+  // climbs) survives ONLY in the raw token — when the arg carries a `;`,
+  // judge BOTH the truncated candidate and the full value side of arg;
+  // the strictest hit wins downstream. (The `;` test runs on arg, not
+  // the parsed value — the parsed value can never carry one.)
+  if (!arg.includes(";")) {
+    return [truncated];
+  }
+  return unionFullValue(arg, truncated);
+}
+
+function unionFullValue(arg: string, truncated: string): string[] {
+  const full = arg.slice(arg.indexOf("=") + 1);
+  if (full.startsWith("@")) {
+    return [truncated, full.slice(1)];
+  }
+  return [truncated, full];
+}
+
+function valuePairCandidates(arg: string, value: string): string[] {
+  if (!value.startsWith("@")) {
+    return midAtCandidates(arg);
+  }
+  const truncated = value.slice(1); // NAME=@path upload shape
+  if (!arg.includes(";")) {
+    return [truncated];
+  }
+  return [truncated, arg.slice(arg.indexOf("=@") + 2)];
+}
+
+// Mid-token =@ (a=b=@/etc/passwd): the pair value does not START with @,
+// so the prose branch would swallow the tail — union it back; the prose
+// token itself stays a candidate too.
+function midAtCandidates(arg: string): string[] {
   const midAt = arg.indexOf("=@");
   if (midAt !== -1) {
     return [arg, arg.slice(midAt + 2)];
@@ -169,8 +192,11 @@ export function inAllowedZone(
 }
 
 export function isTmpPath(absPath: string): boolean {
-  const p = absPath.toLowerCase(); // /TMP is /tmp on the case-insensitive root
-  return p === "/tmp" || TMP_PREFIXES.some((pre) => p.startsWith(pre));
+  const lowercased = absPath.toLowerCase(); // /TMP is /tmp on the case-insensitive root
+  return (
+    lowercased === "/tmp" ||
+    TMP_PREFIXES.some((pre) => lowercased.startsWith(pre))
+  );
 }
 
 // Same teaching language as no-inline-scripts (which points script files at
@@ -185,16 +211,16 @@ export function expandToken(
   token: string,
   context: PolicyContext,
 ): string | null {
-  const t = homeVarToTilde(token) ?? token;
-  if (t === "~" || t.startsWith("~/")) {
-    return expandHomeToken(t);
+  const anchored = homeVarToTilde(token) ?? token;
+  if (anchored === "~" || anchored.startsWith("~/")) {
+    return expandHomeToken(anchored);
   }
-  if (isAbsolute(t)) {
-    return normalize(t);
+  if (isAbsolute(anchored)) {
+    return normalize(anchored);
   }
   // Path-shaped or bare: both are file arguments of the inspected command
   // and resolve against its working directory.
-  return normalize(join(context.cwd, t));
+  return normalize(join(context.cwd, anchored));
 }
 
 // Frozen at module load: home does not change mid-session.

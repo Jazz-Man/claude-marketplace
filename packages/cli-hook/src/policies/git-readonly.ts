@@ -137,26 +137,33 @@ interface GitCall {
   sub: string;
 }
 
+// Advance for a known leading global flag: the flag's own token count, or
+// null when the flag is unknown (fail-open: no opinion).
+function globalAdvance(arg: string): number | null {
+  if (GLOBAL_VALUE_FLAGS.has(arg)) {
+    return 2;
+  }
+  if (arg.includes("=") || GLOBAL_FLAG_ONLY.has(arg)) {
+    return 1;
+  }
+  return null;
+}
+
 // The subcommand plus the args that follow it, or null when the leading run
 // holds an unknown flag (fail-open: no opinion).
 function gitCall(args: readonly string[]): GitCall | null {
-  let i = 0;
-  while (i < args.length) {
-    const arg = args[i];
-    if (arg === undefined) {
-      return null;
-    }
-    if (GLOBAL_VALUE_FLAGS.has(arg)) {
-      i += 2; // the flag and its value
-    } else if (!arg.startsWith("-")) {
-      return { rest: args.slice(i + 1), sub: arg };
-    } else if (arg.includes("=") || GLOBAL_FLAG_ONLY.has(arg)) {
-      i += 1; // self-contained --opt=value, or a known flag-only global
-    } else {
-      return null;
-    }
+  const [arg] = args;
+  if (arg === undefined) {
+    return null;
   }
-  return null;
+  if (!arg.startsWith("-")) {
+    return { rest: args.slice(1), sub: arg };
+  }
+  const advance = globalAdvance(arg);
+  if (advance === null) {
+    return null;
+  }
+  return gitCall(args.slice(advance));
 }
 
 function gitUnitCall(unit: CommandUnit): GitCall | null {
@@ -168,12 +175,12 @@ function gitUnitCall(unit: CommandUnit): GitCall | null {
 
 // Long flags may arrive in --opt=value form; match the option part too.
 function hasMutatingFlag(flags: Set<string>, args: readonly string[]): boolean {
-  return args.some((a) => {
-    if (flags.has(a)) {
+  return args.some((arg) => {
+    if (flags.has(arg)) {
       return true;
     }
-    const eq = a.indexOf("=");
-    return eq !== -1 && flags.has(a.slice(0, eq));
+    const equalsIndex = arg.indexOf("=");
+    return equalsIndex !== -1 && flags.has(arg.slice(0, equalsIndex));
   });
 }
 
@@ -190,10 +197,46 @@ function stashViolates(subs: Set<string>, args: readonly string[]): boolean {
 
 // git config <key> <value> (two non-flag args) writes; flags above write too.
 function configViolates(args: readonly string[]): boolean {
-  if (args.some((a) => CONFIG_MUTATING_FLAGS.has(a))) {
+  if (args.some((arg) => CONFIG_MUTATING_FLAGS.has(arg))) {
     return true;
   }
-  return args.filter((a) => !a.startsWith("-")).length >= 2;
+  return args.filter((arg) => !arg.startsWith("-")).length >= 2;
+}
+
+// Mutation by subcommand family: listed subcommand sets (stash special-cased),
+// then the single-subcommand rules.
+function subFamilyMutating(sub: string, args: readonly string[]): boolean {
+  const subs = MUTATING_SUBS[sub];
+  if (subs !== undefined) {
+    return listedSubMutating(sub, subs, args);
+  }
+  return singleSubMutating(sub, args);
+}
+
+// Listed families deny on their mutating first arg.
+function listedSubMutating(
+  sub: string,
+  subs: Set<string>,
+  args: readonly string[],
+): boolean {
+  if (sub === "stash") {
+    return stashViolates(subs, args);
+  }
+  const [firstArg] = args;
+  return subs.has(firstArg ?? "");
+}
+
+function singleSubMutating(sub: string, args: readonly string[]): boolean {
+  if (sub === "config") {
+    return configViolates(args);
+  }
+  if (sub === "symbolic-ref") {
+    return args.some((arg) => SYMBOLIC_REF_FLAGS.has(arg));
+  }
+  if (sub === "replace") {
+    return args.some((arg) => REPLACE_FLAGS.has(arg));
+  }
+  return false;
 }
 
 function mutating(sub: string, args: readonly string[]): boolean {
@@ -205,23 +248,7 @@ function mutating(sub: string, args: readonly string[]): boolean {
   if (flags !== undefined) {
     return hasMutatingFlag(flags, args) || firstArg?.startsWith("-") === false;
   }
-  const subs = MUTATING_SUBS[sub];
-  if (subs !== undefined) {
-    if (sub === "stash") {
-      return stashViolates(subs, args);
-    }
-    return subs.has(firstArg ?? "");
-  }
-  if (sub === "config") {
-    return configViolates(args);
-  }
-  if (sub === "symbolic-ref") {
-    return args.some((a) => SYMBOLIC_REF_FLAGS.has(a));
-  }
-  if (sub === "replace") {
-    return args.some((a) => REPLACE_FLAGS.has(a));
-  }
-  return false;
+  return subFamilyMutating(sub, args);
 }
 
 export const GIT_READONLY_REASON =

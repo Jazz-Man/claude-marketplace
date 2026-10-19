@@ -1,18 +1,23 @@
-import {
-  forEachChild,
-  parse,
-  type ParsedScript,
-  type SyntaxNode,
-} from "unbash";
+import * as unbash from "unbash";
 
-function wordLike(obj: Record<string, unknown>): boolean {
-  return typeof obj.text === "string" && typeof obj.value === "string";
+interface WordLike {
+  text: string;
+  value: string;
+}
+
+function wordLike(node: object): node is WordLike {
+  return (
+    "text" in node &&
+    typeof node.text === "string" &&
+    "value" in node &&
+    typeof node.value === "string"
+  );
 }
 
 // Strip a trailing version suffix from a command name: python3.13 → python,
 // node20 → node, perl5.34 → perl. Policies look tools up by this base name so
 // versioned binaries cannot sidestep a table keyed on the plain name.
-const VERSION_SUFFIX = /\d+(?:\.\d+)*$/;
+const VERSION_SUFFIX = /\d+(?:\.\d+)*$/u;
 
 // A word value that IS a whole-token substitution: command substitution
 // ($(...), arithmetic $((...)) matches the same shape), legacy backticks,
@@ -25,26 +30,31 @@ const VERSION_SUFFIX = /\d+(?:\.\d+)*$/;
 // path exists in no unit's args, and the fail-closed gate must see it.
 // Plain $VAR/${VAR} stay: the fail-closed variable gate classifies THOSE.
 const WHOLE_WORD_SUBST =
-  /^(?:\$\([\s\S]*\)|`[\s\S]*`|<\([\s\S]*\)|>\([\s\S]*\))$/;
+  /^(?:\$\([\s\S]*\)|`[\s\S]*`|<\([\s\S]*\)|>\([\s\S]*\))$/u;
 
 function wordValues(node: unknown): string[] {
   if (node === null || typeof node !== "object") {
     return [];
   }
-  const obj = node as Record<string, unknown>;
-  if (wordLike(obj)) {
-    if (WHOLE_WORD_SUBST.test(obj.value as string)) {
+  if (wordLike(node)) {
+    if (WHOLE_WORD_SUBST.test(node.value)) {
       return [];
     }
-    return [obj.value as string];
+    return [node.value];
   }
-  // Redirect targets are never arguments: the Redirect node nests inside the
-  // same `suffix` array, and the structured `redirects` view already carries
-  // them.
-  if (obj.type === "Redirect") {
+  if ("type" in node && node.type === "Redirect") {
     return [];
   }
-  return Object.values(obj).flatMap(wordValues);
+  return Object.values(node).flatMap((value) => wordValues(value));
+}
+
+function redirectWord(
+  redirect: unbash.Redirection,
+): unbash.Word | unbash.HereDocDelimiter | undefined {
+  if (redirect.type === "HereDoc") {
+    return redirect.delimiter;
+  }
+  return redirect.target;
 }
 
 // Redirection targets of one command, from Command.redirects (prefix and
@@ -52,31 +62,13 @@ function wordValues(node: unknown): string[] {
 // args (wordValues skips Redirect nodes), so this view is additive to the
 // args view, not double-counting; the walk visits each redirect once.
 function collectRedirects(
-  node: Record<string, unknown>,
+  command: unbash.Command,
   out: CommandRedirect[],
 ): void {
-  const list = node.redirects;
-  if (!Array.isArray(list)) {
-    return;
-  }
-  for (const r of list) {
-    if (r !== null && typeof r === "object") {
-      const redirect = r as Record<string, unknown>;
-      const { operator, target, delimiter } = redirect;
-      // Heredocs are a Redirection with NO target — the wordLike
-      // HereDocDelimiter rides `.delimiter` instead (value is the UNQUOTED
-      // delimiter, `quoted` flags the <<'EOF' form; `<<-` folds into the
-      // operator). Emitting it with the same {operator, target} record keeps
-      // one redirection view downstream.
-      const word = (target ?? delimiter) as Record<string, unknown> | null;
-      if (
-        typeof operator === "string" &&
-        word !== null &&
-        typeof word === "object" &&
-        wordLike(word)
-      ) {
-        out.push({ operator, target: word.value as string });
-      }
+  for (const redirect of command.redirects) {
+    const word = redirectWord(redirect);
+    if (word !== undefined && wordLike(word)) {
+      out.push({ operator: redirect.operator, target: word.value });
     }
   }
 }
@@ -102,6 +94,14 @@ export interface ParsedCommand {
   words: string[];
 }
 
+function parseOrNull(command: string): unbash.ParsedScript | null {
+  try {
+    return unbash.parse(command);
+  } catch {
+    return null;
+  }
+}
+
 // One unbash parse, two views: `units` (name+args per Command node) and
 // `words` (every word-like string). unbash never throws on malformed input —
 // best-effort scripts are walked (a typo'd quote must not let /etc/passwd
@@ -120,10 +120,8 @@ export interface ParsedCommand {
 //   - `words` is a diagnostic view; containment is the only safe
 //     consumption.
 export function parseCommand(command: string): ParsedCommand | null {
-  let ast: ParsedScript;
-  try {
-    ast = parse(command);
-  } catch {
+  const parsed = parseOrNull(command);
+  if (parsed === null) {
     return null;
   }
   const units: CommandUnit[] = [];
@@ -131,36 +129,23 @@ export function parseCommand(command: string): ParsedCommand | null {
   const redirects: CommandRedirect[] = [];
   const functionDefs: string[] = [];
   // biome-ignore lint/complexity/noExcessiveCognitiveComplexity: the branches mirror the collected views; extracting them would reorder the units/words traversal
-  const visit = (node: unknown): void => {
-    if (node === null || typeof node !== "object") {
-      return;
+  const visit = (node: unbash.SyntaxNode): void => {
+    if (wordLike(node)) {
+      words.push(node.value);
     }
-    const obj = node as Record<string, unknown>;
-    if (wordLike(obj)) {
-      words.push(obj.value as string);
-    }
-    if (
-      obj.type === "Command" &&
-      obj.name !== null &&
-      typeof obj.name === "object"
-    ) {
-      const name = obj.name as Record<string, unknown>;
-      if (typeof name.value === "string") {
-        units.push({ args: wordValues(obj.suffix), name: name.value });
+    if (node.type === "Command") {
+      const { name } = node;
+      if (name !== undefined) {
+        units.push({ args: wordValues(node.suffix), name: name.value });
       }
-      collectRedirects(obj, redirects);
+      collectRedirects(node, redirects);
     }
-    // unbash types EVERY definition form (parens, named, `function` keyword,
-    // mutual) as a Function node — one branch covers them all.
-    if (obj.type === "Function") {
-      const fname = obj.name as Record<string, unknown> | null;
-      if (fname !== null && typeof fname.value === "string") {
-        functionDefs.push(fname.value);
-      }
+    if (node.type === "Function") {
+      functionDefs.push(node.name.value);
     }
-    forEachChild(node as SyntaxNode, visit);
+    unbash.forEachChild(node, visit);
   };
-  visit(ast);
+  visit(parsed);
   return { functionDefs, raw: command, redirects, units, words };
 }
 

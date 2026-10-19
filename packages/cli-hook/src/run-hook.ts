@@ -3,7 +3,7 @@ import process from "node:process";
 import type { SyncHookJSONOutput } from "@cc-sdd/agent-types";
 
 import { parseCommand } from "./core/ast.ts";
-import { type ParsedHookInput, toHookInput } from "./core/payload.ts";
+import * as hookPayload from "./core/payload.ts";
 import type { Policy } from "./core/policy.ts";
 import {
   checkFilePath,
@@ -25,12 +25,14 @@ const POLICIES: Policy[] = [
 const READ_TOOLS = new Set(["Read"]);
 const WRITE_TOOLS = new Set(["Edit", "Write", "NotebookEdit"]);
 
-function projectRootOf(payload: ParsedHookInput): string {
+function projectRootOf(payload: hookPayload.ParsedHookInput): string {
   // @effect-diagnostics-next-line processEnv:off
   return process.env.CLAUDE_PROJECT_DIR ?? payload.cwd;
 }
 
-function routeBash(payload: ParsedHookInput): SyncHookJSONOutput | null {
+function routeBash(
+  payload: hookPayload.ParsedHookInput,
+): SyncHookJSONOutput | null {
   if (payload.command === undefined) {
     return null;
   }
@@ -50,7 +52,9 @@ function routeBash(payload: ParsedHookInput): SyncHookJSONOutput | null {
   return null;
 }
 
-function routeFileTool(payload: ParsedHookInput): SyncHookJSONOutput | null {
+function routeFileTool(
+  payload: hookPayload.ParsedHookInput,
+): SyncHookJSONOutput | null {
   if (payload.filePath === undefined) {
     return null;
   }
@@ -66,7 +70,7 @@ function routeFileTool(payload: ParsedHookInput): SyncHookJSONOutput | null {
 
 export function runHook(input: unknown): SyncHookJSONOutput | null {
   try {
-    const payload = toHookInput(input);
+    const payload = hookPayload.toHookInput(input);
     if (payload === null || payload.hookEventName !== "PreToolUse") {
       return null;
     }

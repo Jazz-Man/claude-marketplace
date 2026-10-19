@@ -14,24 +14,20 @@ const INJECTION_SUBSTRINGS = [
 // invisible to that byte class and ride the whitespace rule instead —
 // whitespace outside " \t\n\r" hides word boundaries from a visual read.
 function isControlByte(code: number): boolean {
-  return (
-    (code >= 0x01 && code <= 0x08) ||
-    (code >= 0x0e && code <= 0x1f) ||
-    code === 0x7f
-  );
+  return (code >= 1 && code <= 8) || (code >= 14 && code <= 31) || code === 127;
 }
 
 const ASCII_WHITESPACE = " \t\n\r";
-const ANY_WHITESPACE = /\s/;
-const WORD_SPLIT = /\s+/;
+const ANY_WHITESPACE = /\s/u;
+const WORD_SPLIT = /\s+/u;
 
 // The four hit-classes keep the scan's fixed precedence: the first
 // non-null wins, so a command carrying several signals reports the
 // earliest class' reason.
 function substringHit(raw: string): string | null {
-  for (const s of INJECTION_SUBSTRINGS) {
-    if (raw.includes(s)) {
-      return s;
+  for (const needle of INJECTION_SUBSTRINGS) {
+    if (raw.includes(needle)) {
+      return needle;
     }
   }
   if (raw.includes("\0")) {
@@ -41,8 +37,8 @@ function substringHit(raw: string): string | null {
 }
 
 function controlHit(raw: string): string | null {
-  for (const ch of raw) {
-    if (isControlByte(ch.codePointAt(0) ?? 0)) {
+  for (const char of raw) {
+    if (isControlByte(char.codePointAt(0) ?? 0)) {
       return "control characters";
     }
   }
@@ -59,8 +55,8 @@ function pathOverrideHit(raw: string): string | null {
 }
 
 function whitespaceHit(raw: string): string | null {
-  for (const ch of raw) {
-    if (ANY_WHITESPACE.test(ch) && !ASCII_WHITESPACE.includes(ch)) {
+  for (const char of raw) {
+    if (ANY_WHITESPACE.test(char) && !ASCII_WHITESPACE.includes(char)) {
       return "non-ASCII whitespace";
     }
   }

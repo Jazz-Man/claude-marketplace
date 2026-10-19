@@ -60,11 +60,11 @@ const MACOS_PERSONAL_DIRS = new Set([
 const SECRET_SUFFIXES = [".pem", ".key", ".p12", ".pfx", ".secret", ".secrets"];
 
 function isSecretBasename(base: string): boolean {
-  const b = base.toLowerCase(); // root APFS is case-insensitive: .ENV is .env
+  const lowercased = base.toLowerCase(); // root APFS is case-insensitive: .ENV is .env
   return (
-    b === ".env" ||
-    b.startsWith(".env.") ||
-    SECRET_SUFFIXES.some((s) => b.endsWith(s))
+    lowercased === ".env" ||
+    lowercased.startsWith(".env.") ||
+    SECRET_SUFFIXES.some((suffix) => lowercased.endsWith(suffix))
   );
 }
 
@@ -72,12 +72,41 @@ function isSecretBasename(base: string): boolean {
 // Comparisons run lowercase: the root APFS volume is case-insensitive, so
 // .GIT/hooks IS .git/hooks.
 function gitTier(absPath: string): Tier | null {
-  const p = absPath.toLowerCase();
-  if (p.endsWith("/.git/config")) {
+  const lowercased = absPath.toLowerCase();
+  if (lowercased.endsWith("/.git/config")) {
     return "git-config";
   }
-  if (p.includes("/.git/hooks/") || p.endsWith("/.git/hooks")) {
+  if (
+    lowercased.includes("/.git/hooks/") ||
+    lowercased.endsWith("/.git/hooks")
+  ) {
     return "git-hooks";
+  }
+  return null;
+}
+
+// Tier by first home-relative segment alone: macOS personal content dirs
+// and secret subpaths deny on the segment.
+function segmentTier(seg: string): Tier | null {
+  if (MACOS_PERSONAL_DIRS.has(seg)) {
+    return "macos-personal";
+  }
+  if (SECRETS_SUBPATHS.has(seg)) {
+    return "secrets";
+  }
+  return null;
+}
+
+function personalTier(
+  restHome: string,
+  base: string,
+  seg: string,
+): Tier | null {
+  if (PERSONAL_BASENAMES.has(base.toLowerCase()) && !restHome.includes("/")) {
+    return "personal";
+  }
+  if (PERSONAL_HOME_SUBPATHS.has(seg)) {
+    return "personal";
   }
   return null;
 }
@@ -90,23 +119,15 @@ function homeTier(restHome: string, base: string): Tier | null {
     return "macos-library";
   }
   const seg = lower.split("/")[0] ?? "";
-  if (MACOS_PERSONAL_DIRS.has(seg)) {
-    return "macos-personal";
-  }
-  if (SECRETS_SUBPATHS.has(seg)) {
-    return "secrets";
+  const dirTier = segmentTier(seg);
+  if (dirTier !== null) {
+    return dirTier;
   }
   // lower: ~/.CLAUDE.json is ~/.claude.json on the root APFS volume
   if (lower === ".claude.json" || lower === ".claude/settings.json") {
     return "settings";
   }
-  if (PERSONAL_BASENAMES.has(base.toLowerCase()) && !restHome.includes("/")) {
-    return "personal";
-  }
-  if (PERSONAL_HOME_SUBPATHS.has(seg)) {
-    return "personal";
-  }
-  return null;
+  return personalTier(restHome, base, seg);
 }
 
 export type Tier =
@@ -118,24 +139,22 @@ export type Tier =
   | "macos-library" // ~/Library: read+write denied (Keychains, Safari, Mail)
   | "macos-personal"; // macOS content folders: write/delete denied, read allowed
 
-export function tierOf(absPath: string): Tier | null {
-  const base = basename(absPath);
-  const git = gitTier(absPath);
-  if (git !== null) {
-    return git;
-  }
+function secretsTier(base: string): Tier | null {
   // lowercase lookup: credentials.JSON is credentials.json on root APFS
   if (isSecretBasename(base) || SECRETS_BASENAMES.has(base.toLowerCase())) {
     return "secrets";
   }
-  const underHome =
-    HOME !== "" && (absPath === HOME || absPath.startsWith(`${HOME}/`));
-  if (underHome) {
-    const homeTierHit = homeTier(absPath.slice(HOME.length + 1), base);
-    if (homeTierHit !== null) {
-      return homeTierHit;
-    }
+  return null;
+}
+
+function tierUnderHome(absPath: string, base: string): Tier | null {
+  if (HOME === "" || (absPath !== HOME && !absPath.startsWith(`${HOME}/`))) {
+    return null;
   }
+  return homeTier(absPath.slice(HOME.length + 1), base);
+}
+
+function projectSettingsTier(absPath: string): Tier | null {
   // Settings files outside $HOME (project-level .claude/) — lowercase:
   // .Claude/settings.local.json is the same file on the root APFS volume.
   const lower = absPath.toLowerCase();
@@ -146,4 +165,14 @@ export function tierOf(absPath: string): Tier | null {
     return "settings";
   }
   return null;
+}
+
+export function tierOf(absPath: string): Tier | null {
+  const base = basename(absPath);
+  return (
+    gitTier(absPath) ??
+    secretsTier(base) ??
+    tierUnderHome(absPath, base) ??
+    projectSettingsTier(absPath)
+  );
 }

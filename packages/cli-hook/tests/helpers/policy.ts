@@ -6,9 +6,10 @@ import type { Policy, PolicyCheckResult } from "../../src/core/policy.ts";
 export function policyCheck(
   policy: Policy,
   command: string,
-  cwd = "/proj",
-  projectRoot = cwd,
+  paths: { cwd?: string; projectRoot?: string } = {},
 ): PolicyCheckResult {
+  const cwd = paths.cwd ?? "/proj";
+  const projectRoot = paths.projectRoot ?? cwd;
   const cmd = parseCommand(command);
   if (cmd === null) {
     return null;
@@ -21,9 +22,9 @@ export function decisionOf(result: PolicyCheckResult): "deny" | "ask" | null {
   if (out?.hookEventName !== "PreToolUse") {
     return null;
   }
-  const d = out.permissionDecision;
-  if (d === "deny" || d === "ask") {
-    return d;
+  const decision = out.permissionDecision;
+  if (decision === "deny" || decision === "ask") {
+    return decision;
   }
   return null;
 }

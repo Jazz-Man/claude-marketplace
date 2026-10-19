@@ -50,21 +50,23 @@ describe("toHookInput", () => {
     expect(toHookInput({ ...PAYLOAD, cwd: 42 })).toBeNull();
     expect(toHookInput({ ...PAYLOAD, cwd: "" })).toBeNull();
   });
+});
 
+describe("toHookInput (tool_input fields)", () => {
   it("extracts file_path and notebook_path", () => {
-    const r1 = toHookInput({
+    const fileResult = toHookInput({
       cwd: "/p",
       hook_event_name: "PreToolUse",
       tool_input: { file_path: "/etc/passwd" },
       tool_name: "Read",
     });
-    expect(r1?.filePath).toBe("/etc/passwd");
-    const r2 = toHookInput({
+    expect(fileResult?.filePath).toBe("/etc/passwd");
+    const notebookResult = toHookInput({
       cwd: "/p",
       hook_event_name: "PreToolUse",
       tool_input: { notebook_path: "/p/n.ipynb" },
       tool_name: "NotebookEdit",
     });
-    expect(r2?.filePath).toBe("/p/n.ipynb");
+    expect(notebookResult?.filePath).toBe("/p/n.ipynb");
   });
 });

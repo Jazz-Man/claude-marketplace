@@ -29,23 +29,23 @@ export const TIER_REASONS: Record<Tier, (token: string) => string> = {
 
 // DENY reasons carry no advisory tails; asks must tell the user what
 // confirming means — that phrasing is the exception, never a disable tail.
-export const ASK_REASON = (verb: string, token: string) =>
+export const askReason = (verb: string, token: string) =>
   `Filesystem policy: confirm with the user before ${verb} ("${token}"). This call needs explicit user approval.`;
 
-export const PATH_RULE_REASON = (bin: string) =>
+export const pathRuleReason = (bin: string) =>
   `Filesystem policy: running binaries by absolute path ("${bin}") is blocked — commands are on PATH by name.`;
 
-export const UNRESOLVED_VAR_REASON = (token: string) =>
+export const unresolvedVarReason = (token: string) =>
   `Filesystem policy: "${token}" contains a shell variable the guard cannot resolve.`;
 
-export const TILDE_USER_REASON = (token: string) =>
+export const tildeUserReason = (token: string) =>
   `Filesystem policy: "${token}" uses a tilde-user path — only ~ and ~/ are resolvable inside the guard.`;
 
 export const SUDO_REASON =
   "Filesystem policy: sudo is blocked — privilege escalation is never an agent operation; every needed command runs under the user account.";
 
-export const INJECTION_REASON = (pattern: string) =>
+export const injectionReason = (pattern: string) =>
   `Filesystem policy: command contains a blocked obfuscation/injection pattern ("${pattern}").`;
 
-export const NETWORK_REASON = (name: string) =>
+export const networkReason = (name: string) =>
   `Network command blocked: "${name}" — fetching pages/docs goes through the web MCP tools; anything else, the user runs it and pastes the result.`;

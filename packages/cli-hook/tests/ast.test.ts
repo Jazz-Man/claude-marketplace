@@ -51,7 +51,7 @@ describe("parseCommand", () => {
 describe("parseCommand (redirects, words, functionDefs)", () => {
   it("keeps redirect targets out of unit args but records them", () => {
     const parsed = parseCommand("git log > $(mktemp)");
-    expect(parsed?.units.map((u) => u.name)).toEqual(["git", "mktemp"]);
+    expect(parsed?.units.map((unit) => unit.name)).toEqual(["git", "mktemp"]);
     expect(parsed?.units[0]?.args).toEqual(["log"]);
     expect(parsed?.redirects).toEqual([{ operator: ">", target: "$(mktemp)" }]);
   });
@@ -102,7 +102,7 @@ describe("parseCommand (walk pins)", () => {
     const deep = `${"( ".repeat(257)}bash -c 'echo hi'${" )".repeat(257)}`;
     const parsed = parseCommand(deep);
     expect(parsed).not.toBeNull();
-    expect(parsed?.units.some((u) => u.name === "bash")).toBe(false);
+    expect(parsed?.units.some((unit) => unit.name === "bash")).toBe(false);
   });
 
   it("rides the heredoc delimiter in unit args AND the redirects view (heredoc-fed detection couples them)", () => {
@@ -116,7 +116,7 @@ describe("parseCommand (walk pins)", () => {
 
   it("keeps unquoted heredoc bodies visible to the walk", () => {
     const parsed = parseCommand("cat <<EOF\nhello $(whoami)\nEOF");
-    expect(parsed?.units.map((u) => u.name)).toEqual(["cat", "whoami"]);
+    expect(parsed?.units.map((unit) => unit.name)).toEqual(["cat", "whoami"]);
     expect(parsed?.words).toContain("hello ");
   });
 
@@ -125,7 +125,9 @@ describe("parseCommand (walk pins)", () => {
     expect(parsed?.units).toHaveLength(1);
     expect(parsed?.words).not.toContain("rm");
   });
+});
 
+describe("parseCommand (walk pins — globs, substitutions, elif)", () => {
   it("splits unquoted globs into fragment words while args keep the full value", () => {
     expect(parseCommand("ls [a-z].txt")?.units[0]?.args).toEqual(["[a-z].txt"]);
     expect(parseCommand("ls [a-z].txt")?.words).toContain("a-z");
@@ -134,9 +136,9 @@ describe("parseCommand (walk pins)", () => {
       "--filter=[$(cmd)]",
     ]);
     expect(
-      parseCommand("ls --filter=[$(cmd)]")?.units.map((u) => u.name),
+      parseCommand("ls --filter=[$(cmd)]")?.units.map((unit) => unit.name),
     ).toEqual(["ls", "cmd"]);
-    expect(parseCommand("ls \\*")?.units[0]?.args).toEqual(["*"]);
+    expect(parseCommand(String.raw`ls \*`)?.units[0]?.args).toEqual(["*"]);
   });
 
   it("keeps spliced substitutions riding args for the fail-closed gate", () => {

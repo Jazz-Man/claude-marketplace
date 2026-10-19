@@ -8,17 +8,17 @@ import type {
   PolicyContext,
 } from "../../core/policy.ts";
 import { injectionHit } from "./guards.ts";
-import { type Intent, intentOf, redirectTargets } from "./intents.ts";
+import * as intents from "./intents.ts";
 import {
-  ASK_REASON,
+  askReason,
   boundaryReason,
-  INJECTION_REASON,
-  NETWORK_REASON,
-  PATH_RULE_REASON,
+  injectionReason,
+  networkReason,
+  pathRuleReason,
   SUDO_REASON,
   TIER_REASONS,
-  TILDE_USER_REASON,
-  UNRESOLVED_VAR_REASON,
+  tildeUserReason,
+  unresolvedVarReason,
 } from "./reasons.ts";
 import {
   expandToken,
@@ -28,11 +28,11 @@ import {
   tildeUser,
   unresolvedVar,
 } from "./resolve.ts";
-import { type Tier, tierOf } from "./tiers.ts";
+import * as tiers from "./tiers.ts";
 
 // Tiers that gate on intent: reads pass, writes/deletes deny. The remaining
 // tiers (secrets, settings, git-hooks, macos-library) deny at ANY intent.
-const WRITE_ONLY_TIERS = new Set<Tier>([
+const WRITE_ONLY_TIERS = new Set<tiers.Tier>([
   "personal",
   "git-config",
   "macos-personal",
@@ -41,16 +41,16 @@ const WRITE_ONLY_TIERS = new Set<Tier>([
 // A glued short-flag path value (`tar -C/etc`, `tar -C=/etc`): tar's
 // re-rooting directory rides the flag with no space, so pathCandidates sees
 // a bare flag.
-const GLUED_DIR_FLAG = /^-C.+/;
+const GLUED_DIR_FLAG = /^-C.+/u;
 // The `=` separator a glued `-C=` value keeps after the flag slice.
-const LEADING_EQUALS = /^=/;
+const LEADING_EQUALS = /^=/u;
 
 // Scope rules above the zone boundary: the filesystem root denies for ANY
 // intent (reads included), and the home directory as
 // a whole denies writes and deletes. Whole-home READS ask instead, at the
 // tail of candidateDecision.
 function scopeDenyOrAsk(
-  intent: Intent,
+  intent: intents.Intent,
   abs: string,
   token: string,
 ): PolicyCheckResult {
@@ -67,33 +67,48 @@ function scopeDenyOrAsk(
   return null;
 }
 
-// One resolved path candidate of one argument, judged with the command's
-// intent: a decision, or null. Unresolvable $-shapes and tilde-user
-// spellings fail closed BEFORE classification — these
+interface CandidateInput {
+  arg: string;
+  candidate: string;
+  context: PolicyContext;
+  intent: intents.Intent | null;
+}
+
+// $-shape and tilde-user gates: fail closed BEFORE classification — these
 // name paths bash resolves outside every lexical class the guard has.
-function candidateDecision(
-  candidate: string,
-  arg: string,
-  intent: Intent | null,
-  context: PolicyContext,
-): PolicyCheckResult {
+function unresolvedGate(candidate: string, arg: string): PolicyCheckResult {
   if (unresolvedVar(candidate)) {
-    return deny(UNRESOLVED_VAR_REASON(arg));
+    return deny(unresolvedVarReason(arg));
   }
   if (tildeUser(candidate)) {
-    return deny(TILDE_USER_REASON(arg));
+    return deny(tildeUserReason(arg));
   }
-  const abs = expandToken(candidate, context);
-  if (abs === null) {
+  return null;
+}
+
+// Tier gates: a non-write-only tier denies at any intent; a write-only tier
+// denies writes and deletes (null tier = unclassified, no opinion).
+function tierGate(
+  tier: tiers.Tier | null,
+  arg: string,
+  intent: intents.Intent | null,
+): PolicyCheckResult {
+  if (tier === null) {
     return null;
   }
-  const tier = tierOf(abs);
-  if (tier !== null && !WRITE_ONLY_TIERS.has(tier)) {
+  if (!WRITE_ONLY_TIERS.has(tier)) {
     return deny(TIER_REASONS[tier](arg));
   }
-  if (tier !== null && (intent === "write" || intent === "delete")) {
+  if (intent === "write" || intent === "delete") {
     return deny(TIER_REASONS[tier](arg));
   }
+  return null;
+}
+
+// Zone and scope tail of one resolved candidate: scope rules above the
+// boundary, then the zone boundary, then the whole-home read ask.
+function scopedDecision(input: CandidateInput, abs: string): PolicyCheckResult {
+  const { arg, context, intent } = input;
   if (intent !== null) {
     const scoped = scopeDenyOrAsk(intent, abs, arg);
     if (scoped !== null) {
@@ -104,9 +119,29 @@ function candidateDecision(
     return deny(boundaryReason(arg, abs));
   }
   if (intent === "read" && abs === HOME) {
-    return ask(ASK_REASON("reading the home directory as a whole", arg));
+    return ask(askReason("reading the home directory as a whole", arg));
   }
   return null;
+}
+
+// One resolved path candidate of one argument, judged with the command's
+// intent: a decision, or null.
+function classifiedDecision(input: CandidateInput): PolicyCheckResult {
+  const { arg, candidate, context, intent } = input;
+  const abs = expandToken(candidate, context);
+  if (abs === null) {
+    return null;
+  }
+  return tierGate(tiers.tierOf(abs), arg, intent) ?? scopedDecision(input, abs);
+}
+
+// One resolved path candidate of one argument, judged with the command's
+// intent: a decision, or null. Unresolvable $-shapes and tilde-user
+// spellings fail closed BEFORE classification.
+function candidateDecision(input: CandidateInput): PolicyCheckResult {
+  return (
+    unresolvedGate(input.candidate, input.arg) ?? classifiedDecision(input)
+  );
 }
 
 // One argument's path candidates: the glued -C directory value, then the
@@ -124,18 +159,16 @@ function argCandidates(arg: string): string[] {
 // One argument of one unwrapped command unit: a decision, or null. URLs are
 // not path candidates.
 function argDecision(
-  rest: string[],
-  i: number,
-  intent: Intent | null,
+  arg: string,
+  intent: intents.Intent | null,
   context: PolicyContext,
 ): PolicyCheckResult {
-  const arg = rest[i] ?? "";
   if (arg.includes("://")) {
     return null;
   }
   return severityUnion(
     argCandidates(arg).map((candidate) =>
-      candidateDecision(candidate, arg, intent, context),
+      candidateDecision({ arg, candidate, context, intent }),
     ),
   );
 }
@@ -153,11 +186,24 @@ function severityUnion(hits: PolicyCheckResult[]): PolicyCheckResult {
     ) {
       return hit;
     }
-    if (askHit === null) {
-      askHit = hit;
-    }
+    askHit ??= hit;
   }
   return askHit;
+}
+
+// The fail-closed name gates one command unit passes before any intent walk:
+// unresolvable $-shapes, tilde-user spellings, absolute-path invocations.
+function nameGate(name: string): PolicyCheckResult {
+  if (unresolvedVar(name)) {
+    return deny(unresolvedVarReason(name));
+  }
+  if (tildeUser(name)) {
+    return deny(tildeUserReason(name));
+  }
+  if (isAbsolute(name)) {
+    return deny(pathRuleReason(name));
+  }
+  return null;
 }
 
 // One command unit: the fail-closed name gates (unresolvable $-shapes,
@@ -167,25 +213,21 @@ function unitDecision(
   unit: CommandUnit,
   context: PolicyContext,
 ): PolicyCheckResult {
-  if (unresolvedVar(unit.name)) {
-    return deny(UNRESOLVED_VAR_REASON(unit.name));
+  const gate = nameGate(unit.name);
+  if (gate !== null) {
+    return gate;
   }
-  if (tildeUser(unit.name)) {
-    return deny(TILDE_USER_REASON(unit.name));
-  }
-  if (isAbsolute(unit.name)) {
-    return deny(PATH_RULE_REASON(unit.name));
-  }
-  const { intent, rest, sudo, network } = intentOf(unit.name, unit.args);
+  const { intent, network, rest, sudo } = intents.intentOf(
+    unit.name,
+    unit.args,
+  );
   if (sudo) {
     return deny(SUDO_REASON);
   }
   if (network !== null) {
-    return deny(NETWORK_REASON(network));
+    return deny(networkReason(network));
   }
-  return severityUnion(
-    rest.map((_, i) => argDecision(rest, i, intent, context)),
-  );
+  return severityUnion(rest.map((arg) => argDecision(arg, intent, context)));
 }
 
 // Tool-channel entry: file_path is a literal path — no $-decomposition,
@@ -199,23 +241,14 @@ export function checkFilePath(
   if (abs === null) {
     return null;
   }
-  const tier = tierOf(abs);
-  if (tier === null) {
+  const tier = tiers.tierOf(abs);
+  if (tier === null || (WRITE_ONLY_TIERS.has(tier) && intent === "read")) {
+    // An unclassified path gates on the zone alone; under a write-only tier
+    // the tier says nothing about reads — the zone boundary still gates them.
     if (inAllowedZone(abs, context)) {
       return null;
     }
     return deny(boundaryReason(filePath, abs));
-  }
-  if (WRITE_ONLY_TIERS.has(tier)) {
-    if (intent === "write") {
-      return deny(TIER_REASONS[tier](filePath));
-    }
-    // The write-only tier says nothing about reads — the zone boundary
-    // still gates them.
-    if (!inAllowedZone(abs, context)) {
-      return deny(boundaryReason(filePath, abs));
-    }
-    return null;
   }
   return deny(TIER_REASONS[tier](filePath));
 }
@@ -224,11 +257,16 @@ export const filesystemPolicy: Policy = {
   check(cmd, context) {
     const injection = injectionHit(cmd.raw);
     if (injection !== null) {
-      return deny(INJECTION_REASON(injection));
+      return deny(injectionReason(injection));
     }
     const unitHits = cmd.units.map((unit) => unitDecision(unit, context));
-    const redirectHits = redirectTargets(cmd).map((r) =>
-      candidateDecision(r.token, r.token, r.intent, context),
+    const redirectHits = intents.redirectTargets(cmd).map((redirect) =>
+      candidateDecision({
+        arg: redirect.token,
+        candidate: redirect.token,
+        context,
+        intent: redirect.intent,
+      }),
     );
     return severityUnion([...unitHits, ...redirectHits]);
   },

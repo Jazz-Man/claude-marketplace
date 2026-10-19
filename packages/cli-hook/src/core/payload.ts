@@ -1,13 +1,17 @@
 import type { PreToolUseHookInput } from "@cc-sdd/agent-types";
 
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return typeof value === "object" && value !== null;
+}
+
 function stringField(
-  ti: Record<string, unknown>,
+  record: Record<string, unknown>,
   ...keys: string[]
 ): string | undefined {
   for (const key of keys) {
-    const v = ti[key];
-    if (typeof v === "string") {
-      return v;
+    const value = record[key];
+    if (typeof value === "string") {
+      return value;
     }
   }
   return undefined;
@@ -23,31 +27,38 @@ export interface ParsedHookInput {
   toolName: string;
 }
 
+interface ToolFields {
+  command: string | undefined;
+  filePath: string | undefined;
+}
+
+function toolFields(data: unknown): ToolFields {
+  if (!isRecord(data)) {
+    return { command: undefined, filePath: undefined };
+  }
+  return {
+    command: stringField(data, "command"),
+    filePath: stringField(data, "file_path", "notebook_path"),
+  };
+}
+
 // Narrow the runtime-parsed hook payload (Bun.stdin.json() output) into a
 // typed shape, or null when it is not a hook payload we can reason about
 // (fail-open starts here). Nothing parses text: the runtime already did.
 export function toHookInput(data: unknown): ParsedHookInput | null {
-  if (data === null || typeof data !== "object") {
+  if (!isRecord(data)) {
     return null;
   }
-  const obj = data as Record<string, unknown>;
-  if (typeof obj.hook_event_name !== "string") {
+  if (
+    typeof data.hook_event_name !== "string" ||
+    typeof data.tool_name !== "string"
+  ) {
     return null;
   }
-  if (typeof obj.tool_name !== "string") {
-    return null;
-  }
-  let command: string | undefined;
-  let filePath: string | undefined;
-  const toolInput = obj.tool_input;
-  if (toolInput !== null && typeof toolInput === "object") {
-    const ti = toolInput as Record<string, unknown>;
-    command = stringField(ti, "command");
-    filePath = stringField(ti, "file_path", "notebook_path");
-  }
+  const { command, filePath } = toolFields(data.tool_input);
   // cwd is a required field of the SDK's PreToolUseHookInput (BaseHookInput);
   // a payload without a usable cwd is not a payload we can reason about.
-  const { cwd } = obj;
+  const { cwd } = data;
   if (typeof cwd !== "string" || cwd === "") {
     return null;
   }
@@ -55,7 +66,7 @@ export function toHookInput(data: unknown): ParsedHookInput | null {
     command,
     cwd,
     filePath,
-    hookEventName: obj.hook_event_name,
-    toolName: obj.tool_name,
+    hookEventName: data.hook_event_name,
+    toolName: data.tool_name,
   };
 }

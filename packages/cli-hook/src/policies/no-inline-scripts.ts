@@ -1,10 +1,6 @@
 import { parseEnv } from "node:util";
 
-import {
-  baseName,
-  type CommandRedirect,
-  type CommandUnit,
-} from "../core/ast.ts";
+import * as ast from "../core/ast.ts";
 import { deny } from "../core/decision.ts";
 import type { Policy } from "../core/policy.ts";
 
@@ -26,12 +22,12 @@ const INTERPRETERS: Record<
   python: { longs: [], shorts: ["c"] },
   python3: { longs: [], shorts: ["c"] },
   ruby: { longs: [], shorts: ["e"] },
-  sh: { longs: [], shorts: ["c"] },
+  "sh": { longs: [], shorts: ["c"] },
   zsh: { longs: [], shorts: ["c"] },
 };
 
 // Clustered short flags like `-uc`/`-ic` (letters only, no values).
-const SHORT_FLAG_CLUSTER = /^-[A-Za-z]+$/;
+const SHORT_FLAG_CLUSTER = /^-[A-Za-z]+$/u;
 
 // `deno` spells inline code as a subcommand: `deno eval '…'`.
 const EVAL_SUBCOMMANDS = new Set(["deno"]);
@@ -60,7 +56,8 @@ function isInlineArg(lname: string, arg: string): boolean {
     return true;
   }
   return (
-    SHORT_FLAG_CLUSTER.test(arg) && table.shorts.some((s) => arg.includes(s))
+    SHORT_FLAG_CLUSTER.test(arg) &&
+    table.shorts.some((short) => arg.includes(short))
   );
 }
 
@@ -83,10 +80,11 @@ const FED_OPERATORS = new Set(["<<", "<<-", "<<<"]);
 
 const heredocFed = (
   args: readonly string[],
-  redirects: readonly CommandRedirect[],
+  redirects: readonly ast.CommandRedirect[],
 ) =>
   redirects.some(
-    (r) => FED_OPERATORS.has(r.operator) && args.includes(r.target),
+    (redirect) =>
+      FED_OPERATORS.has(redirect.operator) && args.includes(redirect.target),
   );
 
 // Wrapper-prefixed heredoc: under env/nice/nohup/… the interpreter hides in
@@ -99,15 +97,15 @@ const heredocFed = (
 function wrapperHeredocViolates(
   lname: string,
   args: readonly string[],
-  redirects: readonly CommandRedirect[],
+  redirects: readonly ast.CommandRedirect[],
 ): boolean {
   if (!WRAPPERS.has(lname)) {
     return false;
   }
   const wrapped = args.find(
-    (t) =>
-      !(t.startsWith("-") || isAssignment(t)) &&
-      INTERPRETERS[baseName(t.toLowerCase())] !== undefined,
+    (token) =>
+      !(token.startsWith("-") || isAssignment(token)) &&
+      INTERPRETERS[ast.baseName(token.toLowerCase())] !== undefined,
   );
   return wrapped !== undefined && heredocFed(args, redirects);
 }
@@ -115,7 +113,7 @@ function wrapperHeredocViolates(
 function interpreterViolates(
   name: string,
   args: readonly string[],
-  redirects: readonly CommandRedirect[],
+  redirects: readonly ast.CommandRedirect[],
 ): boolean {
   if (EVAL_SUBCOMMANDS.has(name)) {
     return args[0] === "eval";
@@ -133,12 +131,12 @@ function wrapperViolates(lname: string, args: readonly string[]): boolean {
   if (!WRAPPERS.has(lname)) {
     return false;
   }
-  return args.some((arg, i) => {
-    const next = args[i + 1];
+  return args.some((arg, index) => {
+    const next = args[index + 1];
     if (next === undefined) {
       return false;
     }
-    const candidate = baseName(arg.toLowerCase());
+    const candidate = ast.baseName(arg.toLowerCase());
     if (candidate === "eval") {
       return true;
     }
@@ -152,15 +150,15 @@ function wrapperViolates(lname: string, args: readonly string[]): boolean {
 }
 
 function unitViolates(
-  unit: CommandUnit,
-  redirects: readonly CommandRedirect[],
+  unit: ast.CommandUnit,
+  redirects: readonly ast.CommandRedirect[],
 ): boolean {
   const lname = unit.name.toLowerCase();
   if (lname === "eval") {
     return true;
   }
   return (
-    interpreterViolates(baseName(lname), unit.args, redirects) ||
+    interpreterViolates(ast.baseName(lname), unit.args, redirects) ||
     wrapperViolates(lname, unit.args) ||
     wrapperHeredocViolates(lname, unit.args, redirects)
   );
