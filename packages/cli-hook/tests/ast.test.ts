@@ -1,4 +1,5 @@
 import { describe, expect, it } from "bun:test";
+
 import { parseCommand } from "../src/core/ast.ts";
 
 describe("parseCommand", () => {

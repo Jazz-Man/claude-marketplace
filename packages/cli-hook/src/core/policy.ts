@@ -1,4 +1,5 @@
 import type { SyncHookJSONOutput } from "@cc-sdd/agent-types";
+
 import type { ParsedCommand } from "./ast.ts";
 
 export type PolicyCheckResult = SyncHookJSONOutput | null;

@@ -1,4 +1,5 @@
 import { parseEnv } from "node:util";
+
 import { baseName, type ParsedCommand } from "../../core/ast.ts";
 
 // NAME=VALUE assignment token: a wrapper's variable assignments ride the

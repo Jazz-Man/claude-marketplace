@@ -1,5 +1,6 @@
 import { homedir } from "node:os";
 import { isAbsolute, join, normalize } from "node:path";
+
 import type { PolicyContext } from "../../core/policy.ts";
 
 // $HOME with a name boundary: $HOMEevil is a DIFFERENT (unset) variable.

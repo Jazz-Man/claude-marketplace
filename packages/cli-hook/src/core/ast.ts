@@ -1,7 +1,7 @@
 import {
   forEachChild,
-  type ParsedScript,
   parse,
+  type ParsedScript,
   type SyntaxNode,
 } from "unbash";
 

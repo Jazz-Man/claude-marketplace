@@ -1,4 +1,5 @@
 import { basename } from "node:path";
+
 import { HOME } from "./resolve.ts";
 
 // ---- Tier tables ----

@@ -1,5 +1,7 @@
 import process from "node:process";
+
 import type { SyncHookJSONOutput } from "@cc-sdd/agent-types";
+
 import { parseCommand } from "./core/ast.ts";
 import { type ParsedHookInput, toHookInput } from "./core/payload.ts";
 import type { Policy } from "./core/policy.ts";

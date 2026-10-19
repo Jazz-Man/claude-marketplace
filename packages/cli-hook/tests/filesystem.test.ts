@@ -1,5 +1,6 @@
 import { describe, expect, it } from "bun:test";
 import { homedir } from "node:os";
+
 import { filesystemPolicy } from "../src/policies/filesystem/policy.ts";
 import {
   ASK_REASON,

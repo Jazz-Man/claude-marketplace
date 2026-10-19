@@ -1,5 +1,6 @@
 import { describe, expect, it } from "bun:test";
 import process from "node:process";
+
 import { runHook } from "../src/run-hook.ts";
 import { decisionOf, reasonOf } from "./helpers/policy.ts";
 

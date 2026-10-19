@@ -1,6 +1,7 @@
 import { homedir } from "node:os";
 import { resolve } from "node:path";
 import process from "node:process";
+
 import { name as packageName } from "./package.json";
 
 const binName = packageName.split("/").at(1);

@@ -1,4 +1,5 @@
 import { describe, expect, it } from "bun:test";
+
 import { noDepsPolicy, REASON } from "../src/policies/no-deps.ts";
 import { ALLOW, DENY } from "./fixtures/no-deps.ts";
 import { policyCheck, reasonOf } from "./helpers/policy.ts";

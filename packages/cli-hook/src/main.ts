@@ -1,4 +1,5 @@
 import process from "node:process";
+
 import { runHook } from "./run-hook.ts";
 
 (async () => {

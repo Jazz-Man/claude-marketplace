@@ -1,4 +1,5 @@
 import { describe, expect, it } from "bun:test";
+
 import { ask, decision, deny } from "../src/core/decision.ts";
 import { decisionOf } from "./helpers/policy.ts";
 

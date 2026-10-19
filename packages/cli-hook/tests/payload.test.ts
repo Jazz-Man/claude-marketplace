@@ -1,4 +1,5 @@
 import { describe, expect, it } from "bun:test";
+
 import { toHookInput } from "../src/core/payload.ts";
 
 const PAYLOAD = {

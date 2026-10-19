@@ -1,4 +1,5 @@
 import { parseEnv } from "node:util";
+
 import {
   baseName,
   type CommandRedirect,
