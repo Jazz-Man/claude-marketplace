@@ -15,3 +15,37 @@ optional = true
 dev = true
 peer = true
 auto = "auto"
+
+[fmt]
+sortImports = true
+ignorePatterns = ["**/*.md", "packages/cli-hook/tests/fixtures/**"]
+
+[lint]
+# plugins = ["./lint/plugin.ts"]
+ignorePatterns = ["packages/cli-hook/tests/fixtures/**"]
+
+[lint.categories]
+correctness = "error"
+suspicious = "error"
+pedantic = "error"
+style = "error"
+
+[lint.rules]
+"eslint/no-console" = "off"
+"eslint/no-template-curly-in-string" = "off"
+"eslint/no-magic-numbers" = "off"
+"eslint/no-ternary" = "error"
+"eslint/curly" = ["error", "all"]
+"eslint/sort-keys" = "error"
+"eslint/no-unused-vars" = "error"
+"eslint/max-lines-per-function" = ["error", { max = 50 }]
+"eslint/max-lines" = ["error", { max = 500 }]
+"eslint/id-length" = ["error", { min = 3, exceptions = [] }]
+"eslint/no-process-env" = "off"
+"import/no-namespace" = "off"
+"import/no-nodejs-modules" = "off"
+"oxc/no-barrel-file" = "error"
+"react/jsx-sort-props" = "error"
+"one-var" = "off"
+# "local/no-comments" = ["error", { allow = [] }]
+# "local/exports-last" = "error"

@@ -29,6 +29,7 @@ comment policy mechanically enforceable for the first time.
 | D5 | Zero new dependencies. | Everything is built-in rules plus ONE local plugin file. npm ESLint plugins would be installs — forbidden; if ever wanted, the owner installs. Sole owner-made addition: `@types/eslint` (9.6.1, root devDependencies) for typing the plugin — installed by the owner, part of the fixed set. |
 | D6 | **`.zed/` is the owner's editor configuration — agents never touch it.** | No modification of any kind, in this migration or after. Read-only observation (D1's note) is the only interaction ever. |
 | D7 | **Severity doctrine (the owner's universal linter principle): every enabled rule emits `error`.** Warnings become errors; anything that would emit `info` becomes `warn`. The owner's release valve is an explicit per-rule `"off"` — never a downgrade to warn. | `[lint.categories]` sets every enabled category explicitly to `"error"`; the config contains zero `warn` entries; `--max-warnings 0` guards the gate against future defaults sneaking in at warn/info. |
+| D8 | **Exports-ordering doctrine overturned (owner, 2026-10-19): exports are NOT forced to the end of the file — inline `export` on a declaration anywhere is the owner's taste.** The mechanical ordering requirement is on imports only: all imports at the top of the file (`import/first`), sorted (`[fmt] sortImports`). | The plugin carries ONE rule (`no-comments`). Both `local/exports-last` and native `import/exports-last` are out. `code-style.md`'s useExportsLast/no-trailing-export-blocks section is rewritten in §7's docs pass; the old biome-era rule text dies there. |
 
 ## 3. Target architecture
 
@@ -36,7 +37,7 @@ comment policy mechanically enforceable for the first time.
 bunfig.toml            single source of lint/format truth ([lint], [fmt] appended
                        to the existing file; [test]/[install] untouched)
 lint/plugin.ts         local ESLint plugin (typed via the owner-installed
-                       @types/eslint): no-comments + exports-last
+                       @types/eslint): no-comments (sole rule, D8)
 lint/plugin.test.ts    its tests (bun test)
 biome.json             FROZEN (D1): read by plugins/biome-lsp only, until the
                        bridge is retired (follow-up bean)
@@ -106,7 +107,7 @@ value. JSON/TS files are formatted.
 | `noUndeclaredVariables` (+checkTypes) | on | type-check gate (`tsc`/`bun check`) subsumes it; do not enable `no-undef` for TS | subsumed |
 | `noTernary` | error | `eslint/no-ternary = "error"` | mapped |
 | `useBlockStatements` | error | `eslint/curly = ["error", "all"]` | mapped |
-| `useExportsLast` | error | local plugin `local/exports-last = "error"` | mapped (custom port) |
+| `useExportsLast` | error | dropped per D8 — inline exports anywhere; imports-at-top via `import/first = "error"` added instead | overturned |
 | `useNamingConvention` | off | `eslint/id-length = ["error", { min: 3, ... }]` | **new, stronger** (D-decision in chat); exceptions only from the probe report, each owner-approved |
 | `noCommentText` | error | subsumed by `local/no-comments` | subsumed |
 | `useSingleJsDocAsterisk` | error | moot under `no-comments` | subsumed |
@@ -135,7 +136,7 @@ TypeScript, typed with the owner-installed `@types/eslint` (a bun-lint plugin
 IS an ESLint plugin; the package provides `Rule.RuleModule`/`Rule.RuleContext`).
 Bun imports TS natively, so the plugin ships as `.ts`. Zero comments in its
 own source, loaded via `[lint].plugins = ["./lint/plugin.ts"]`.
-Two rules:
+One rule (D8 removed the exports-last port):
 
 ### 5.1 `local/no-comments` (error)
 
@@ -154,28 +155,24 @@ comment whose trimmed text starts with any listed prefix passes. The built-in
 allowlist above always applies and cannot be removed via options.
 
 **Anti-circumvention**: a comment matching the allowlist that disables the
-plugin's own rules (its text mentions `no-comments` or `exports-last`) is
-still an error — not weakenable by options. Message carries no bypass
-instructions, per the repo's deny-reason doctrine: "Comments are not allowed."
+plugin's own rule (its text mentions `no-comments`) is still an error — not
+weakenable by options. Message carries no bypass instructions, per the repo's
+deny-reason doctrine: "Comments are not allowed."
 
-### 5.2 `local/exports-last` (error)
-
-Port of Biome's `useExportsLast` plus the code-style rule against trailing
-`export {}` blocks: walk top-level `Program` body; if any export statement
-(`ExportNamedDeclaration`, `ExportDefaultDeclaration`) appears before a
-non-export top-level statement, or any standalone trailing export block
-exists, report. Inline `export` on declarations is the only accepted shape
-(matches `.claude/rules/code-style.md`).
-
-### 5.3 Tests
+### 5.2 Tests
 
 `lint/plugin.test.ts` (bun test): every allowlisted prefix passes; every other
 comment form (line, trailing, block, JSDoc) errors; the `allow` option admits
 extra prefixes and does not weaken the self-disable guard; the guard itself
-fires; exports-last covers before-declaration, trailing-block, and clean
-inline-export shapes. Tests are data-driven literal arrays (repo fixture
-style); the plugin file itself is linted by the repo config (self-hosting
-must stay green).
+fires. Tests are data-driven literal arrays (repo fixture style); the plugin
+file itself is linted by the repo config (self-hosting must stay green).
+
+### 5.3 Import ordering (the surviving ordering doctrine, D8)
+
+Inline exports live wherever their declarations live. The mechanical gate is
+imports-only: `import/first = "error"` (nothing but comments/imports before
+the first import block ends) plus `[fmt] sortImports = true` for grouping and
+order.
 
 ## 6. Migration sequence (commit boundaries)
 
@@ -239,8 +236,8 @@ Each step ends at a stop point; the owner reviews and commits.
 4. `claude plugin validate .` — passes.
 5. Invariant greps + Revision-9 twin checks — byte-identical pass.
 6. Live smokes: plant a comment in a src file → `bun lint` errors with the
-   no-comments message; plant `const x = 1` → `id-length` errors; trailing
-   `export {}` → `exports-last` errors.
+   no-comments message; plant `const x = 1` → `id-length` errors; an import
+   after a non-import statement → `import/first` errors.
 7. `biome.json` — `git diff` empty across the whole migration.
 
 ## 10. Files map

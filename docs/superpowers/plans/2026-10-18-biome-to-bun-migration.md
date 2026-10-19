@@ -30,7 +30,7 @@ The five failure modes below are the spec's §12, each pinned to the task whose 
 1. **Formatter churn reaching markdown despite the exclusion** — twin checks and invariant greps break on byte drift. Pinned: Task 2 step 4 runs the full battery after `bun fmt` and asserts zero markdown files in `git status`.
 2. **`id-length` exception creep** — short-name exceptions silently entering config. Pinned: Task 1 produces the exception list in the probe report; nothing enters `[lint.rules]` before the owner approves it at the stop point.
 3. **pedantic+style noise burying signal** — triage deferred or done as silent omissions. Pinned: Task 1's probe report carries a per-rule table (count, sample, decision) covering every diagnostic; Task 2 lands only decisions the owner approved.
-4. **Plugin self-hosting traps** — the plugin or its tests failing their own rules. Pinned: Task 3 step 6 runs `bun lint` with both local rules on and asserts the plugin and test files report nothing.
+4. **Plugin self-hosting traps** — the plugin or its tests failing their own rules. Pinned: Task 3 step 6 runs `bun lint` with the local rule on and asserts the plugin and test files report nothing.
 5. **`bun lint` coverage surprises** — files outside expectations (root scripts, stray dirs) getting linted or missed. Pinned: Task 1 step 5 diffs the linted-file inventory against the repo tree.
 
 ---
@@ -87,7 +87,6 @@ style = "error"
 "unicorn/no-process-env" = "off"
 "import/no-nodejs-modules" = "off"
 "local/no-comments" = ["error", { allow = [] }]
-"local/exports-last" = "error"
 ```
 
 Notes: the `plugins` line references a file created in Task 3 — until then `bun lint` exits with a load error; that is expected at this stage and the inventory in Step 3 runs with the plugin line commented out (`# plugins = ["./lint/plugin.js"]`), then restored. Names from Step 1 replace or confirm the off-parity rows; absent probe rows are omitted. `id-length.exceptions` starts empty and is filled ONLY from the owner-approved list. Do NOT run `bun fmt` (the reformat is Task 2; `bun fmt --check` is red at this stop point by design).
@@ -114,7 +113,7 @@ Diff that file list against the repo's `.ts/.tsx/.js/.jsx` files outside `node_m
 
 - [ ] **Step 5: Write the probe report and STOP**
 
-`probe-report.md` sections: resolved probe rows · noise triage table · D7 audit findings · id-length exception list (every flagged short name, each with the keeping/renaming recommendation) · coverage surprises · proposed final `[lint.rules]` diff. Restore the `plugins` line.
+`probe-report.md` sections: resolved probe rows · noise triage table · D7 audit findings · id-length exception list (every flagged short name, each with the keeping/renaming recommendation) · coverage surprises · proposed final `[lint.rules]` diff. The `plugins` line and both `local/*` rule lines stay COMMENTED OUT at this stop point (owner ruling 2026-10-18: a config referencing a not-yet-created plugin breaks `bun lint` for every later verification — the lines are uncommented by Task 3 when the plugin file exists).
 
 **Stop point — owner reviews the report, rules on every `off`/exception, then commits.**
 Suggested: `chore(lint): bun lint/fmt config from parity probe`
@@ -133,7 +132,15 @@ Suggested: `chore(lint): bun lint/fmt config from parity probe`
 
 - [ ] **Step 1: Apply owner-approved config deltas**
 
-Edit `[lint.rules]` per the probe-report rulings (offs, `id-length.exceptions`, `max-lines*` values). Severity doctrine holds: only `"error"`/`"off"`.
+Edit `[lint.rules]` in bunfig.toml to the owner-approved post-probe shape (stop-point rulings, ledger 2026-10-19):
+
+- `"eslint/max-lines" = ["error", { max = 400 }]` (was 500 — Biome parity)
+- `"eslint/id-length" = ["error", { min = 3 }]` — the exceptions key is dropped entirely (zero-exceptions ruling; all 56 renames are Task 3 code work)
+- Add the ten Class A offs at their registry names (resolve via `bun lint --rules`, which now runs: capitalized-comments, one-var [already off], func-style, import/no-named-export, import/group-exports, unicorn/no-null, no-inline-comments, sort-imports, import/prefer-default-export, typescript/prefer-readonly-parameter-types)
+- Add `"import/first" = "error"` (D8: imports at file top; sorting stays with `[fmt] sortImports`)
+- Delete the commented-out `# "local/exports-last" = "error"` marker line (doctrine overturned, D8)
+
+Severity doctrine holds: only `"error"`/`"off"`.
 
 - [ ] **Step 2: Reformat**
 
@@ -172,7 +179,7 @@ Suggested: `Switch formatter to bun fmt; mechanical reformat (md excluded)`
 
 **Interfaces:**
 - Consumes: `[lint].plugins` pointing at `./lint/plugin.ts` (Task 1), the `fix`-class findings list (probe report).
-- Produces: `local/no-comments` (options: additive `allow: string[]`; built-in allowlist `eslint-disable`/`eslint-enable`/`prettier-ignore`/`@ts-`/`biome-ignore`; anti-circumvention guard for its own rule names) and `local/exports-last` (inline exports on declarations only, exports last in file, no standalone export blocks).
+- Produces: `local/no-comments` (options: additive `allow: string[]`; built-in allowlist `eslint-disable`/`eslint-enable`/`prettier-ignore`/`@ts-`/`biome-ignore`; anti-circumvention guard for its own rule name). Sole plugin rule — exports-last was removed by owner ruling D8.
 
 - [ ] **Step 1: Create `lint/plugin.ts` exactly as:**
 
@@ -183,11 +190,6 @@ interface NoCommentsOptions {
   allow?: string[];
 }
 
-interface StatementLike {
-  type: string;
-  declaration?: unknown;
-}
-
 const SYSTEM_PREFIXES: readonly string[] = [
   "eslint-disable",
   "eslint-enable",
@@ -196,7 +198,7 @@ const SYSTEM_PREFIXES: readonly string[] = [
   "biome-ignore",
 ];
 
-const GUARDED_RULE_NAMES: readonly string[] = ["no-comments", "exports-last"];
+const GUARDED_RULE_NAMES: readonly string[] = ["no-comments"];
 
 function trimmedText(comment: { value: string }): string {
   return comment.value.replace(/^\*+/, "").trim();
@@ -204,14 +206,6 @@ function trimmedText(comment: { value: string }): string {
 
 function startsWithAny(text: string, prefixes: readonly string[]): boolean {
   return prefixes.some((prefix) => text.startsWith(prefix));
-}
-
-function isExportStatement(statement: StatementLike): boolean {
-  return (
-    statement.type === "ExportNamedDeclaration" ||
-    statement.type === "ExportDefaultDeclaration" ||
-    statement.type === "ExportAllDeclaration"
-  );
 }
 
 const noComments: Rule.RuleModule = {
@@ -252,55 +246,13 @@ const noComments: Rule.RuleModule = {
   },
 };
 
-const exportsLast: Rule.RuleModule = {
-  meta: {
-    type: "problem",
-    docs: { description: "Exported declarations must come last in the file" },
-    schema: [],
-    messages: {
-      notLast: "Exports must be the last declarations in the file.",
-      notInline: "Standalone export statements are not allowed.",
-    },
-  },
-  create(context) {
-    return {
-      Program(program) {
-        const body = program.body;
-        let lastNonExportIndex = -1;
-        for (let index = 0; index < body.length; index += 1) {
-          if (!isExportStatement(body[index])) {
-            lastNonExportIndex = index;
-          }
-        }
-        for (let index = 0; index < body.length; index += 1) {
-          const statement = body[index];
-          if (statement.type === "ExportAllDeclaration") {
-            context.report({ node: statement, messageId: "notInline" });
-            continue;
-          }
-          if (
-            statement.type === "ExportNamedDeclaration" &&
-            statement.declaration === null
-          ) {
-            context.report({ node: statement, messageId: "notInline" });
-            continue;
-          }
-          if (isExportStatement(statement) && index < lastNonExportIndex) {
-            context.report({ node: statement, messageId: "notLast" });
-          }
-        }
-      },
-    };
-  },
-};
-
 export default {
   meta: { name: "local" },
-  rules: { "no-comments": noComments, "exports-last": exportsLast },
+  rules: { "no-comments": noComments },
 };
 ```
 
-Typed via the owner-installed `@types/eslint` (a bun-lint plugin IS an ESLint plugin). The file contains zero comments by construction (self-hosting) and `export default` inline at the bottom (its own `exports-last` shape). Contingency: if the TS file fails to load through `[lint].plugins`, fall back to an identical `lint/plugin.js` with the types dropped — never to comments.
+Typed via the owner-installed `@types/eslint` (a bun-lint plugin IS an ESLint plugin). The file contains zero comments by construction (self-hosting); `export default` sits at the bottom inline. Immediately after creating it, UNCOMMENT the two bunfig.toml lines (`plugins`, `"local/no-comments"`) — they were left commented at the Task 1 stop point precisely so this task activates them (the `local/exports-last` marker line is deleted in Task 2 per D8). Contingency: if the TS file fails to load through `[lint].plugins`, fall back to an identical `lint/plugin.js` with the types dropped — never to comments.
 
 - [ ] **Step 2: Create `lint/plugin.test.ts` exactly as:**
 
@@ -310,7 +262,6 @@ import type { Rule } from "eslint";
 import plugin from "./plugin";
 
 const noComments: Rule.RuleModule = plugin.rules["no-comments"];
-const exportsLast: Rule.RuleModule = plugin.rules["exports-last"];
 
 const loc = { line: 1, column: 1 };
 
@@ -374,7 +325,7 @@ test("allow option admits extra prefixes only", () => {
 test("self-disable guard fires and options cannot weaken it", () => {
   const guarded = [
     " eslint-disable-next-line local/no-comments",
-    " biome-ignore local/exports-last",
+    " eslint-disable local/no-comments",
   ];
   for (const value of guarded) {
     expect(runNoComments([{ type: "Line", value, loc }])).toBe(1);
@@ -382,36 +333,9 @@ test("self-disable guard fires and options cannot weaken it", () => {
   }
 });
 
-function runExportsLast(body: object[]): string[] {
-  const messages: string[] = [];
-  const context = {
-    options: [] as unknown[],
-    report: (descriptor: { messageId: string }) => {
-      messages.push(descriptor.messageId);
-    },
-  } as unknown as Rule.RuleContext;
-  exportsLast.create(context).Program({ type: "Program", body } as never);
-  return messages;
-}
-
-const declaration = { type: "FunctionDeclaration" };
-const inlineExport = { type: "ExportNamedDeclaration", declaration };
-const specifiersOnly = { type: "ExportNamedDeclaration", declaration: null };
-const exportAll = { type: "ExportAllDeclaration" };
-const defaultExport = { type: "ExportDefaultDeclaration", declaration };
-
-test("exports-last accepts inline exports at the bottom", () => {
-  expect(runExportsLast([declaration, declaration, inlineExport])).toEqual([]);
-  expect(runExportsLast([declaration, defaultExport])).toEqual([]);
-});
-
-test("exports-last rejects export before a non-export statement", () => {
-  expect(runExportsLast([inlineExport, declaration])).toEqual(["notLast"]);
-});
-
-test("exports-last rejects standalone export forms anywhere", () => {
-  expect(runExportsLast([declaration, specifiersOnly])).toEqual(["notInline"]);
-  expect(runExportsLast([declaration, exportAll])).toEqual(["notInline"]);
+test("plugin shape: single rule, local namespace", () => {
+  expect(plugin.meta.name).toBe("local");
+  expect(Object.keys(plugin.rules)).toEqual(["no-comments"]);
 });
 ```
 
@@ -497,7 +421,7 @@ Suggested: `Sweep: delete all comments from src and tests`
 
 - [ ] **Step 1: `.claude/rules/code-style.md`**
 
-Rewrite the comments section: comments are forbidden and mechanically enforced by `local/no-comments` (`bunfig.toml [lint]`, options `allow` for owner-added prefixes; `biome-ignore` permanently allowed); delete the 2026-09-29 Biome background paragraph. Point the exports-last section at `local/exports-last` instead of Biome's `useExportsLast`; keep the no-trailing-export-blocks rule text.
+Rewrite the comments section: comments are forbidden and mechanically enforced by `local/no-comments` (`bunfig.toml [lint]`, options `allow` for owner-added prefixes; `biome-ignore` permanently allowed); delete the 2026-09-29 Biome background paragraph. Rewrite the exports section per D8: inline `export` on declarations anywhere in the file is the accepted style (exports are NOT forced to the file end); the ordering requirement is imports-only — all imports at the top (`import/first`) and sorted (`sortImports`). Delete the useExportsLast/no-trailing-export-blocks text.
 
 - [ ] **Step 2: `.claude/rules/tech.md`**
 
@@ -524,7 +448,7 @@ git diff -- biome.json
 git status --porcelain | grep -E "\.(md|mdx)$"
 ```
 
-Expected: lint clean; fmt-check clean; tests green; validate passes; biome diff empty; no markdown in status. Plus the invariant greps + twin checks per `CLAUDE.md` §Verification (byte-identical pass). Live smokes per spec §9.6: plant a `// x` comment in a package src file → `bun lint` reports `local/no-comments`; plant `const ab = 1;`-style 2-char name → `eslint/id-length`; append `export { };`-style block → `local/exports-last`. Remove the plants afterwards.
+Expected: lint clean; fmt-check clean; tests green; validate passes; biome diff empty; no markdown in status. Plus the invariant greps + twin checks per `CLAUDE.md` §Verification (byte-identical pass). Live smokes per spec §9.6: plant a `// x` comment in a package src file → `bun lint` reports `local/no-comments`; plant `const ab = 1;`-style 2-char name → `eslint/id-length`; add an import statement after a non-import statement → `import/first`. Remove the plants afterwards.
 
 **Stop point — owner reviews, commits (include the bean file), and the migration is done.**
 Suggested: `Docs: wire verification to bun lint/fmt; freeze biome bridge`
