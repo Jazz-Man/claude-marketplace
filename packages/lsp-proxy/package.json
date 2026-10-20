@@ -1,0 +1,12 @@
+{
+  "devDependencies": {
+    "@cc-sdd/bin-builder": "workspace:*"
+  },
+  "name": "@cc-sdd/lsp-proxy",
+  "private": true,
+  "scripts": {
+    "build-bin": "bun build.ts",
+    "sync-extensions": "bun src/sync-extensions.ts"
+  },
+  "type": "module"
+}

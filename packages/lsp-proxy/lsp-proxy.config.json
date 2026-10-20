@@ -1,0 +1,37 @@
+{
+  "servers": [
+    {
+      "args": ["--stdio"],
+      "command": "vtsls",
+      "extensionToLanguage": {
+        ".cjs": "javascript",
+        ".js": "javascript",
+        ".jsx": "javascriptreact",
+        ".mjs": "javascript",
+        ".ts": "typescript",
+        ".tsx": "typescriptreact"
+      },
+      "initializationOptions": {},
+      "name": "vtsls",
+      "settings": {}
+    },
+    {
+      "args": ["lsp-proxy"],
+      "command": "biome",
+      "extensionToLanguage": {
+        ".cjs": "javascript",
+        ".css": "css",
+        ".js": "javascript",
+        ".json": "json",
+        ".jsonc": "json",
+        ".jsx": "javascriptreact",
+        ".mjs": "javascript",
+        ".ts": "typescript",
+        ".tsx": "typescriptreact"
+      },
+      "initializationOptions": {},
+      "name": "biome",
+      "settings": {}
+    }
+  ]
+}
