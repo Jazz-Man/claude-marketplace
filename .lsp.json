@@ -1,9 +1,6 @@
 {
   "typescript": {
-    "args": [
-      "--lsp",
-      "--stdio"
-    ],
+    "args": ["--lsp", "--stdio"],
     "command": "./node_modules/@effect/tsgo-darwin-arm64/lib/tsc",
     "extensionToLanguage": {
       ".cjs": "javascript",
@@ -71,9 +68,7 @@
           "experimental": {
             "enableProjectDiagnostics": true
           },
-          "pluginPaths": [
-            "./node_modules"
-          ]
+          "pluginPaths": ["./node_modules"]
         },
         "updateImportsOnFileMove": {
           "enabled": "always"

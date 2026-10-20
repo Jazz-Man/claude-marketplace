@@ -39,9 +39,6 @@
         "bun-types": "1.4.4-canary.20261018T141114"
       }
     },
-    "packages": [
-      "packages/*",
-      "skills/*"
-    ]
+    "packages": ["packages/*", "skills/*"]
   }
 }

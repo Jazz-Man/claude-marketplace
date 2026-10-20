@@ -1,8 +1,6 @@
 {
   "biome": {
-    "args": [
-      "lsp-proxy"
-    ],
+    "args": ["lsp-proxy"],
     "command": "biome",
     "extensionToLanguage": {
       ".cjs": "javascript",
