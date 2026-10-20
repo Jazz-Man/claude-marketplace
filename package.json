@@ -7,7 +7,8 @@
     "@tsconfig/bun": "catalog:types",
     "@types/bun": "catalog:types",
     "@types/node": "catalog:types",
-    "bun-types": "catalog:types"
+    "bun-types": "catalog:types",
+    "vscode-languageserver-types": "catalog:types"
   },
   "name": "cc-sdd",
   "peerDependencies": {
@@ -36,7 +37,8 @@
         "@tsconfig/bun": "1.0.11",
         "@types/bun": "1.4.2",
         "@types/node": "26.6.3",
-        "bun-types": "1.4.4-canary.20261018T141114"
+        "bun-types": "1.4.4-canary.20261018T141114",
+        "vscode-languageserver-types": "3.18.4"
       }
     },
     "packages": ["packages/*", "skills/*"]
