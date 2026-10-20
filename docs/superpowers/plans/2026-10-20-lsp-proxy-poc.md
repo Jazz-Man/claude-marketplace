@@ -20,6 +20,7 @@
 - Style guards (biome preset "all", verified via `rtk proxy biome check`): object literals with sorted keys, inline exports with helpers-first/exports-last file order, functions ≤ 50 lines, identifiers ≥ 2 chars, no `any`. Commands must use literal paths (the filesystem PreToolUse guard blocks unresolved shell variables and command substitution).
 - Per-task verification: package `bun test`, `rtk proxy biome check <touched paths>`, `bun check` (from the package or repo root as appropriate).
 - All new files land in `packages/lsp-proxy/`, `packages/bin-builder/`, and `plugins/lsp-proxy/` only.
+- Runtime state dir `~/.local/state/lsp-proxy/` (pidfile registry, D11) is written by the proxy and swept by `--kill-all`; it stays inside `$HOME` (allowed zone). No custom types for Bun.spawn results — use `typeof Bun.spawn` and `Bun.Subprocess<"pipe", "pipe", "inherit">` (owner directive, verified in `node_modules/.bun/bun-types@1.4.2/.../bun.d.ts`).
 
 ## Review Focus
 
@@ -1704,7 +1705,7 @@ Note: `offsetOf` uses UTF-16 code units (`String.slice` semantics), matching LSP
 
 **Interfaces:**
 - Consumes: `encodeFrame`, `createDecoder`, `JsonRpcMessage` from `./framing.ts`; `ServerConfig` from `./config.ts`.
-- Produces: `type DownstreamHandlers = { onExit: (code: number | null) => void; onMessage: (message: JsonRpcMessage) => void }`, `class Downstream { constructor(config, handlers); start(): void; send(message): void; kill(): void; readonly name: string }`.
+- Produces: `type DownstreamHandlers = { onExit: (exitCode: number | null, signalCode: number | string | null) => void; onMessage: (message: JsonRpcMessage) => void }`, `class Downstream { constructor(config, handlers, spawn?); start(): void; send(message): void; kill(signal?): void; abort(): void; get pid(): number | undefined; readonly name: string }` — spawn injection typed natively as `typeof Bun.spawn`, the child as `Bun.Subprocess<"pipe", "pipe", "inherit">` (D11: no custom process types; `onExit` callback + `AbortSignal` per server).
 
 - [ ] **Step 1: The stub-server fixture (test infrastructure, not TDD'd itself)**
 
@@ -1908,85 +1909,85 @@ async function waitFor(condition: () => boolean, timeoutMs = 5000): Promise<void
 `packages/lsp-proxy/src/downstream.ts`:
 
 ```ts
+import process from "node:process";
+
 import type { ServerConfig } from "./config.ts";
 import { createDecoder, encodeFrame, type JsonRpcMessage } from "./framing.ts";
 
 export type DownstreamHandlers = {
-  onExit: (code: number | null) => void;
+  onExit: (exitCode: number | null, signalCode: number | string | null) => void;
   onMessage: (message: JsonRpcMessage) => void;
 };
 
-type SpawnedProcess = {
-  exited: Promise<number>;
-  kill?: (signal?: number | string) => void;
-  stdin: { flush(): void; write(chunk: Uint8Array): number | Promise<number> };
-  stdout: AsyncIterable<Uint8Array>;
-};
-
-type SpawnFn = (options: {
-  cmd: string[];
-  env?: Record<string, string>;
-  stderr: "inherit";
-  stdin: "pipe";
-  stdout: "pipe";
-}) => SpawnedProcess;
-
-const defaultSpawn: SpawnFn = (options) =>
-  (Bun.spawn as unknown as SpawnFn)({
-    ...options,
-    cmd: options.cmd,
-  });
+type PipedSubprocess = Bun.Subprocess<"pipe", "pipe", "inherit">;
 
 export class Downstream {
   readonly name: string;
   private readonly config: ServerConfig;
   private readonly handlers: DownstreamHandlers;
-  private readonly spawnFn: SpawnFn;
-  private process: SpawnedProcess | undefined;
+  private readonly spawn: typeof Bun.spawn;
+  private readonly controller = new AbortController();
+  private child: PipedSubprocess | undefined;
 
   constructor(
     config: ServerConfig,
     handlers: DownstreamHandlers,
-    spawnFn: SpawnFn = defaultSpawn,
+    spawn: typeof Bun.spawn = Bun.spawn,
   ) {
     this.config = config;
     this.handlers = handlers;
     this.name = config.name;
-    this.spawnFn = spawnFn;
+    this.spawn = spawn;
+  }
+
+  get pid(): number | undefined {
+    return this.child?.pid;
   }
 
   start(): void {
-    const spawned = this.spawnFn({
+    const child = this.spawn({
       cmd: [this.config.command, ...(this.config.args ?? [])],
-      ...(this.config.env === undefined ? {} : { env: this.config.env }),
+      ...(this.config.env === undefined
+        ? {}
+        : { env: { ...process.env, ...this.config.env } }),
+      onExit: (_subprocess, exitCode, signalCode) =>
+        this.handlers.onExit(exitCode, signalCode),
+      signal: this.controller.signal,
       stderr: "inherit",
       stdin: "pipe",
       stdout: "pipe",
-    });
-    this.process = spawned;
-    void this.readLoop(spawned);
-    void spawned.exited.then((code) => this.handlers.onExit(code));
+    }) as PipedSubprocess;
+    this.child = child;
+    void this.readLoop(child);
   }
 
   send(message: JsonRpcMessage): void {
-    const process_ = this.process;
-    if (process_ === undefined) {
+    const child = this.child;
+    if (child === undefined) {
       return;
     }
-    process_.stdin.write(encodeFrame(message));
-    process_.stdin.flush();
+    child.stdin.write(encodeFrame(message));
+    child.stdin.flush();
   }
 
-  kill(): void {
-    this.process?.kill?.("SIGTERM");
+  kill(signal: number | string = "SIGTERM"): void {
+    this.child?.kill(signal);
   }
 
-  private async readLoop(spawned: SpawnedProcess): Promise<void> {
+  abort(): void {
+    this.controller.abort();
+  }
+
+  exited(): Promise<number> {
+    return this.child?.exited ?? Promise.resolve(-1);
+  }
+
+  private async readLoop(child: PipedSubprocess): Promise<void> {
     const decode = createDecoder(
       (message) => this.handlers.onMessage(message),
       (reason) => console.error(`[${this.name}] stream: ${reason}`),
     );
-    for await (const chunk of spawned.stdout) {
+    for await (const chunk of child.stdout) {
       decode(chunk);
     }
   }
@@ -2008,7 +2009,7 @@ export class Downstream {
 
 **Interfaces:**
 - Consumes: everything from Tasks 2–9 (`framing`, `config`, `router`, `mux`, `merge`, `capabilities`, `docstore`, `downstream`).
-- Produces: `type ProxyIO = { readChunks: () => AsyncIterable<Uint8Array>; stdout: { flush(): void; write(chunk: Uint8Array): number | Promise<number> } }`, `class LspProxy { constructor(config, io, log); run(): Promise<void>; cascadeShutdown(reason: string): Promise<void> }`.
+- Produces: `type ProxyIO = { readChunks: () => AsyncIterable<Uint8Array>; stdout: { flush(): void; write(chunk: Uint8Array): number | Promise<number> } }`, `type ProxyRegistry = { clear(): void; save(children: number[]): Promise<void> }`, `class LspProxy { constructor(config, io, log, registry?); run(): Promise<void>; cascadeShutdown(reason: string): Promise<void> }`.
 
 - [ ] **Step 1: RED — failing integration tests (Review Focus 3, 4, 5)**
 
@@ -2186,6 +2187,11 @@ export type ProxyIO = {
   stdout: { flush(): void; write(chunk: Uint8Array): number | Promise<number> };
 };
 
+export type ProxyRegistry = {
+  clear(): void;
+  save(children: number[]): Promise<void>;
+};
+
 type Phase = "starting" | "ready" | "stopped";
 
 export class LspProxy {
@@ -2202,12 +2208,19 @@ export class LspProxy {
   private readonly deaths = new Map<string, number>();
   private clientParams: Record<string, unknown> = {};
   private phase: Phase = "starting";
+  private readonly registry: ProxyRegistry | undefined;
   private nextProxyId = 1;
 
-  constructor(config: ProxyConfig, io: ProxyIO, log: (line: string) => void) {
+  constructor(
+    config: ProxyConfig,
+    io: ProxyIO,
+    log: (line: string) => void,
+    registry?: ProxyRegistry,
+  ) {
     this.config = config;
     this.io = io;
     this.log = log;
+    this.registry = registry;
   }
 
   async run(): Promise<void> {
@@ -2287,6 +2300,7 @@ export class LspProxy {
       await this.dropServer(rejected.server);
     }
     this.phase = "ready";
+    await this.saveRegistry();
     this.replyTo(message.id ?? null, {
       capabilities: merge.merged,
       serverInfo: { name: "lsp-proxy", version: "0.1.0" },
@@ -2569,6 +2583,17 @@ export class LspProxy {
     };
     await this.startServer(serverConfig, forwarded);
     await this.replayDocuments(serverConfig);
+    await this.saveRegistry();
+  }
+
+  private currentChildPids(): number[] {
+    return [...this.servers.values()]
+      .map((downstream) => downstream.pid)
+      .filter((pid): pid is number => pid !== undefined);
+  }
+
+  private async saveRegistry(): Promise<void> {
+    await this.registry?.save(this.currentChildPids());
   }
 
   private async replayDocuments(serverConfig: ServerConfig): Promise<void> {
@@ -2596,18 +2621,27 @@ export class LspProxy {
   }
 
   async cascadeShutdown(reason: string): Promise<void> {
-    if (this.phase === "stopped" && this.servers.size === 0) {
-      process.exit(0);
+    if (this.phase === "stopped") {
+      return;
     }
     this.phase = "stopped";
     this.log(`shutting down: ${reason}`);
-    for (const downstream of this.servers.values()) {
+    const stragglers = [...this.servers.values()];
+    for (const downstream of stragglers) {
       downstream.send({ id: this.nextProxyId++, jsonrpc: "2.0", method: "shutdown" });
-      downstream.kill();
+      downstream.kill("SIGTERM");
     }
     this.servers.clear();
-    setTimeout(() => process.exit(0), 100).unref?.();
-    process.exit(0);
+    this.registry?.clear();
+    void Promise.all(stragglers.map((downstream) => downstream.exited()))
+      .catch(() => {})
+      .then(() => process.exit(0));
+    setTimeout(() => {
+      for (const downstream of stragglers) {
+        downstream.kill("SIGKILL");
+      }
+      process.exit(0);
+    }, 2000);
   }
 }
 ```
@@ -2615,12 +2649,12 @@ export class LspProxy {
 Implementation notes (binding):
 - `process` import (`import process from "node:process"`) is required at the top.
 - The duplicated `publishDiagnostics` condition in `handleServerNotification` is a transcription artifact — keep ONE comparison.
-- `cascadeShutdown` double-exit (timeout + direct) is belt-and-braces for the spawned test process; simplify to direct `process.exit(0)` after clearing if the timer form trips lint.
+- `cascadeShutdown` escalation is deliberate (D11): exit fires when every child's `exited()` resolves; the 2s timer SIGKILLs stragglers and force-exits. Never call `process.exit(0)` synchronously at the top of the cascade — the SIGTERM would have no time to land.
 - If `noExcessiveLinesPerFile` trips on this file, split the server-direction methods (`onServerMessage`, `handleServerResponse`, `handleServerRequest`, `handleServerExit`, `replayDocuments`) into `proxy-server.ts` exporting a small `ServerDirection` class that the orchestrator composes — same public interface.
 
 - [ ] **Step 4: `src/main.ts` placeholder for the integration spawn**
 
-`packages/lsp-proxy/src/main.ts` (final form lands in Task 11; the integration tests spawn it now):
+`packages/lsp-proxy/src/main.ts` (the Task 11 stop extends it with `--kill-all` and registry wiring; the integration tests spawn it now):
 
 ```ts
 import process from "node:process";
@@ -2657,7 +2691,320 @@ Run: `cd /Users/vasilsokolik/www/cc-sdd && rtk proxy biome check packages/lsp-pr
 
 ---
 
-### Task 11: `build.ts` wrapper + binary smoke
+### Task 11: `pidfile.ts` registry + `--kill-all` mode (D11)
+
+**Files:**
+- Create: `packages/lsp-proxy/src/pidfile.ts`, `packages/lsp-proxy/tests/pidfile.test.ts`, `packages/lsp-proxy/tests/kill-all.integration.test.ts`
+- Modify: `packages/lsp-proxy/src/main.ts` (final form: `--kill-all` branch + registry wiring)
+
+**Interfaces:**
+- Consumes: `LspProxy`, `ProxyRegistry` from `./proxy.ts` (Task 10), stub fixture (Task 9).
+- Produces: `type PidRecord = { children: number[]; pid: number }`, `registryDir(home): string`, `recordPath(home, pid): string`, `isAlive(pid): boolean`, `saveRecord(home, record): Promise<void>`, `removeRecord(home, pid): void`, `loadRecords(home): Promise<PidRecord[]>`, `killAll(home): Promise<{ killed: number[]; stale: number[] }>`.
+
+- [ ] **Step 1: RED — failing pidfile unit tests**
+
+`packages/lsp-proxy/tests/pidfile.test.ts`:
+
+```ts
+import { describe, expect, it } from "bun:test";
+import { mkdirSync, mkdtempSync, rmSync } from "node:fs";
+import { join } from "node:path";
+import process from "node:process";
+
+import {
+  isAlive,
+  killAll,
+  loadRecords,
+  recordPath,
+  registryDir,
+  saveRecord,
+} from "../src/pidfile.ts";
+
+const repoTmp = join(import.meta.dir, "..", "..", "..", "tmp");
+
+function tempHome(): string {
+  mkdirSync(repoTmp, { recursive: true });
+  return mkdtempSync(join(repoTmp, "lsp-proxy-pid-"));
+}
+
+describe("pidfile registry", () => {
+  it("derives the registry path under .local/state", () => {
+    expect(registryDir("/Users/tester")).toBe("/Users/tester/.local/state/lsp-proxy");
+    expect(recordPath("/Users/tester", 4242)).toBe(
+      "/Users/tester/.local/state/lsp-proxy/4242.json",
+    );
+  });
+
+  it("isAlive detects live vs missing pids", () => {
+    expect(isAlive(process.pid)).toBe(true);
+    expect(isAlive(999_999)).toBe(false);
+  });
+
+  it("saves and loads records round-trip, skipping invalid files", async () => {
+    const home = tempHome();
+    await saveRecord(home, { children: [11, 12], pid: 10 });
+    await Bun.write(join(registryDir(home), "junk.json"), "not json");
+    expect(await loadRecords(home)).toEqual([{ children: [11, 12], pid: 10 }]);
+    rmSync(home, { recursive: true, force: true });
+  });
+
+  it("killAll terminates live pids from the registry and removes files", async () => {
+    const home = tempHome();
+    const spawnSleeper = () =>
+      Bun.spawn(["sleep", "30"], { stderr: "ignore", stdout: "ignore" });
+    const proxy = spawnSleeper();
+    const child = spawnSleeper();
+    await saveRecord(home, { children: [child.pid], pid: proxy.pid });
+    const summary = await killAll(home);
+    expect(summary.killed.sort()).toEqual([child.pid, proxy.pid].sort());
+    await proxy.exited;
+    await child.exited;
+    expect(await loadRecords(home)).toEqual([]);
+    rmSync(home, { recursive: true, force: true });
+  });
+});
+```
+
+- [ ] **Step 2: Run RED**
+
+Run: `cd /Users/vasilsokolik/www/cc-sdd/packages/lsp-proxy && bun test`
+Expected: FAIL — cannot resolve `../src/pidfile.ts`.
+
+- [ ] **Step 3: GREEN — pidfile implementation**
+
+`packages/lsp-proxy/src/pidfile.ts`:
+
+```ts
+import { existsSync, mkdirSync, readdirSync, rmSync } from "node:fs";
+import { join } from "node:path";
+import process from "node:process";
+
+export type PidRecord = {
+  children: number[];
+  pid: number;
+};
+
+export function registryDir(home: string): string {
+  return join(home, ".local", "state", "lsp-proxy");
+}
+
+export function recordPath(home: string, pid: number): string {
+  return join(registryDir(home), `${pid}.json`);
+}
+
+export function isAlive(pid: number): boolean {
+  try {
+    process.kill(pid, 0);
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+function isPidRecord(value: unknown): value is PidRecord {
+  if (typeof value !== "object" || value === null) {
+    return false;
+  }
+  const candidate = value as { children?: unknown; pid?: unknown };
+  return (
+    typeof candidate.pid === "number" &&
+    Array.isArray(candidate.children) &&
+    candidate.children.every((child) => typeof child === "number")
+  );
+}
+
+export async function saveRecord(home: string, record: PidRecord): Promise<void> {
+  mkdirSync(registryDir(home), { recursive: true });
+  await Bun.write(recordPath(home, record.pid), `${JSON.stringify(record)}\n`);
+}
+
+export function removeRecord(home: string, pid: number): void {
+  rmSync(recordPath(home, pid), { force: true });
+}
+
+export async function loadRecords(home: string): Promise<PidRecord[]> {
+  const dir = registryDir(home);
+  if (!existsSync(dir)) {
+    return [];
+  }
+  const records: PidRecord[] = [];
+  for (const entry of readdirSync(dir, { withFileTypes: true })) {
+    if (!entry.isFile() || !entry.name.endsWith(".json")) {
+      continue;
+    }
+    const parsed: unknown = await Bun.file(join(dir, entry.name)).json();
+    if (isPidRecord(parsed)) {
+      records.push(parsed);
+    }
+  }
+  return records;
+}
+
+export async function killAll(
+  home: string,
+): Promise<{ killed: number[]; stale: number[] }> {
+  const killed: number[] = [];
+  const stale: number[] = [];
+  for (const record of await loadRecords(home)) {
+    for (const pid of [...record.children, record.pid]) {
+      if (isAlive(pid)) {
+        process.kill(pid, "SIGTERM");
+        killed.push(pid);
+      }
+    }
+    if (!isAlive(record.pid)) {
+      stale.push(record.pid);
+    }
+    removeRecord(home, record.pid);
+  }
+  return { killed, stale };
+}
+```
+
+- [ ] **Step 4: Run GREEN for the unit tests**
+
+Run: `cd /Users/vasilsokolik/www/cc-sdd/packages/lsp-proxy && bun test tests/pidfile.test.ts` → PASS (4 tests).
+
+- [ ] **Step 5: RED — the `--kill-all` integration test**
+
+`packages/lsp-proxy/tests/kill-all.integration.test.ts`:
+
+```ts
+import { describe, expect, it } from "bun:test";
+import { existsSync, mkdirSync, mkdtempSync, rmSync } from "node:fs";
+import { join } from "node:path";
+import process from "node:process";
+
+import { encodeFrame } from "../src/framing.ts";
+import { waitFor } from "./helpers/wait.ts";
+
+const MAIN = join(import.meta.dir, "..", "src", "main.ts");
+const STUB = join(import.meta.dir, "fixtures", "stub-server.ts");
+const repoTmp = join(import.meta.dir, "..", "..", "..", "tmp");
+
+describe("lsp-proxy --kill-all", () => {
+  it("terminates a running proxy and its downstream children via the registry", async () => {
+    mkdirSync(repoTmp, { recursive: true });
+    const home = mkdtempSync(join(repoTmp, "lsp-proxy-e2e-"));
+    const configPath = join(home, "config.json");
+    const stubArgs = (name: string) => [STUB, name, "{}"];
+    await Bun.write(
+      configPath,
+      JSON.stringify({
+        servers: [
+          {
+            args: stubArgs("alpha"),
+            command: "bun",
+            extensionToLanguage: { ".ts": "typescript" },
+            name: "alpha",
+          },
+          {
+            args: stubArgs("beta"),
+            command: "bun",
+            extensionToLanguage: { ".ts": "typescript" },
+            name: "beta",
+          },
+        ],
+      }),
+    );
+    const proxy = Bun.spawn({
+      cmd: ["bun", MAIN, configPath],
+      env: { ...process.env, HOME: home },
+      stderr: "inherit",
+      stdin: "pipe",
+      stdout: "pipe",
+    });
+    proxy.stdin.write(
+      encodeFrame({
+        id: 1,
+        jsonrpc: "2.0",
+        method: "initialize",
+        params: { capabilities: {} },
+      }),
+    );
+    proxy.stdin.flush();
+    const registryPath = join(home, ".local", "state", "lsp-proxy", `${proxy.pid}.json`);
+    await waitFor(() => existsSync(registryPath));
+    const killer = Bun.spawn({
+      cmd: ["bun", MAIN, "--kill-all"],
+      env: { ...process.env, HOME: home },
+      stderr: "inherit",
+      stdout: "ignore",
+    });
+    await killer.exited;
+    expect(killer.exitCode).toBe(0);
+    await waitFor(() => proxy.exitCode !== null);
+    rmSync(home, { recursive: true, force: true });
+  });
+});
+```
+
+Run: `bun test tests/kill-all.integration.test.ts` → FAIL — `--kill-all` is not a recognized flag yet and the proxy never writes the registry (main.ts has no branch/wiring).
+
+- [ ] **Step 6: GREEN — `main.ts` final form**
+
+`packages/lsp-proxy/src/main.ts` (full replacement of the Task 10 placeholder):
+
+```ts
+import { homedir } from "node:os";
+import { parseArgs } from "node:util";
+import process from "node:process";
+
+import { parseConfig } from "./config.ts";
+import { killAll, removeRecord, saveRecord } from "./pidfile.ts";
+import { LspProxy } from "./proxy.ts";
+
+const { positionals, values } = parseArgs({
+  allowPositionals: true,
+  args: process.argv.slice(2),
+  options: { "kill-all": { type: "boolean" } },
+});
+
+if (values["kill-all"] === true) {
+  const summary = await killAll(homedir());
+  const killed = summary.killed.join(", ") || "-";
+  const stale = summary.stale.join(", ") || "-";
+  console.error(`[lsp-proxy] kill-all: killed ${killed}; stale ${stale}`);
+  process.exit(0);
+}
+
+const defaultConfig = new URL("../lsp-proxy.config.json", import.meta.url);
+const configPath = positionals[0] ?? defaultConfig.pathname;
+const raw: unknown = await Bun.file(configPath).json();
+const parsed = parseConfig(raw);
+if (!parsed.ok) {
+  console.error(`lsp-proxy: invalid config at ${configPath}:\n${parsed.errors.join("\n")}`);
+  process.exit(1);
+}
+
+const home = homedir();
+const registry = {
+  clear: () => removeRecord(home, process.pid),
+  save: async (children: number[]) => {
+    await saveRecord(home, { children, pid: process.pid });
+  },
+};
+const proxy = new LspProxy(
+  parsed.config,
+  { readChunks: () => Bun.stdin.stream(), stdout: Bun.stdout.writer() },
+  (line) => console.error(`[lsp-proxy] ${line}`),
+  registry,
+);
+process.on("SIGTERM", () => {
+  void proxy.cascadeShutdown("SIGTERM");
+});
+await proxy.run();
+```
+
+Run: `cd /Users/vasilsokolik/www/cc-sdd/packages/lsp-proxy && bun test` → ALL suites PASS (pidfile unit + kill-all integration + everything prior).
+
+- [ ] **Step 7: Battery + STOP POINT**
+
+`rtk proxy biome check packages/lsp-proxy` + `bun check` → clean. Owner commits Task 11.
+
+---
+
+### Task 12: `build.ts` wrapper + binary smoke
 
 **Files:**
 - Create: `packages/lsp-proxy/build.ts`
@@ -2704,7 +3051,7 @@ Expected: a framed `initialize` response with `serverInfo.name = "lsp-proxy"` on
 
 ---
 
-### Task 12: `sync-extensions.ts` (D10)
+### Task 13: `sync-extensions.ts` (D10)
 
 **Files:**
 - Create: `packages/lsp-proxy/src/sync-extensions.ts`, `packages/lsp-proxy/tests/sync-extensions.test.ts`
@@ -2902,7 +3249,7 @@ if (isDirectRun) {
 }
 ```
 
-(The default-target URL assumes the repo layout; the real target only exists after Task 13 — until then the CLI errors gracefully when the default target is absent, and tests always pass explicit paths.)
+(The default-target URL assumes the repo layout; the real target only exists after Task 14 — until then the CLI errors gracefully when the default target is absent, and tests always pass explicit paths.)
 
 - [ ] **Step 4: GREEN run + battery**
 
@@ -2912,10 +3259,10 @@ if (isDirectRun) {
 
 ---
 
-### Task 13: plugin registration + full battery + acceptance handoff
+### Task 14: plugin registration + full battery + acceptance handoff
 
 **Files:**
-- Create: `plugins/lsp-proxy/.claude-plugin/plugin.json`, `plugins/lsp-proxy/.lsp.json`, `plugins/lsp-proxy/README.md`
+- Create: `plugins/lsp-proxy/.claude-plugin/plugin.json`, `plugins/lsp-proxy/.lsp.json`, `plugins/lsp-proxy/hooks/hooks.json`, `plugins/lsp-proxy/README.md`
 - Possibly modify: `.claude-plugin/marketplace.json` (only if it enumerates non-sdd plugins)
 
 **Interfaces:**
@@ -3008,7 +3355,30 @@ The `.lsp.json` extension map is generated; never edit it by hand.
 
 Read `.claude-plugin/marketplace.json`. If it enumerates plugins beyond `sdd` (i.e., biome-lsp/security-guard appear), add an `lsp-proxy` entry mirroring their shape. If it carries only the `sdd` entry, make no change.
 
-- [ ] **Step 6: Full verification battery (spec §8)**
+- [ ] **Step 6: SessionEnd hook (D11)**
+
+`plugins/lsp-proxy/hooks/hooks.json` — session-end cleanup runs the built binary; `SessionEnd`'s documented purpose is exactly this, and the command is a fast no-op when the registry is empty:
+
+```json
+{
+  "description": "Session-end cleanup: terminate every lsp-proxy instance and its downstream servers.",
+  "hooks": {
+    "SessionEnd": [
+      {
+        "hooks": [
+          {
+            "command": "lsp-proxy --kill-all",
+            "timeout": 10,
+            "type": "command"
+          }
+        ]
+      }
+    ]
+  }
+}
+```
+
+- [ ] **Step 7: Full verification battery (spec §8)**
 
 1. `cd /Users/vasilsokolik/www/cc-sdd && bun test` — full repo, all green.
 2. `rtk proxy biome check .` — repo clean (52+ files).
@@ -3016,8 +3386,9 @@ Read `.claude-plugin/marketplace.json`. If it enumerates plugins beyond `sdd` (i
 4. `claude plugin validate .` — green with the new plugin present.
 5. `cd /Users/vasilsokolik/www/cc-sdd/packages/cli-hook && bun run build-bin` — still produces the working cli-hook binary (D9 regression guard).
 6. `bun run sync-extensions` — idempotent, `.lsp.json` matches the config union.
+7. `~/.local/bin/lsp-proxy --kill-all` — with an empty registry exits 0 instantly (the populated-registry path is proven by Task 11's integration test).
 
-- [ ] **Step 7: Acceptance handoff (owner-run, D1) — STOP POINT**
+- [ ] **Step 8: Acceptance handoff (owner-run, D1) — STOP POINT**
 
 Agent states readiness; the owner performs the live acceptance:
 
@@ -3025,7 +3396,8 @@ Agent states readiness; the owner performs the live acceptance:
 2. Enable `plugins/lsp-proxy` (plugin manager or `--plugin-dir`), then `/reload-plugins`.
 3. Open a `.ts` file containing one biome-detectable issue and one TypeScript type error → BOTH `<new-diagnostics>` sources must appear.
 4. Hover a symbol → vtsls hover text arrives.
-5. Owner rules GO/NO-GO, updates bean cc-sdd-hi1x, commits Task 13 (plugin files + bean).
+5. Close the session → the SessionEnd hook runs `lsp-proxy --kill-all`; verify no orphaned `vtsls`/`biome` processes remain (`pgrep -fl vtsls; pgrep -fl biome`).
+6. Owner rules GO/NO-GO, updates bean cc-sdd-hi1x, commits Task 14 (plugin files + hooks + bean).
 
 ---
 

@@ -50,6 +50,7 @@ targets.
 | D8 | Development is strictly TDD: RED → GREEN → REFACTOR per module; plan tasks carry explicit RED and GREEN steps. |
 | D9 | Binaries are built through a shared private package `packages/bin-builder/` (`@cc-sdd/bin-builder`): `buildBinary({ entrypoints, binName })` owns the compile config once and writes every binary to `~/.local/bin/<binName>`. `packages/cli-hook/build.ts` is refactored to a thin wrapper (behavior unchanged); `packages/lsp-proxy/build.ts` is the same wrapper with `binName: "lsp-proxy"`. The `.lsp.json` invokes the bare binary name. |
 | D10 | Each downstream server carries its own `extensionToLanguage` map in the proxy config (keys drive routing). The plugin `.lsp.json`'s `extensionToLanguage` is a GENERATED artifact — the `sync-extensions` command unions all server maps into it; the file is never hand-maintained. |
+| D11 | Child-process control uses the documented Bun.spawn surface: `onExit(proc, exitCode, signalCode)` for exit handling, `signal` (AbortSignal) so one abort kills the child tree, explicit `kill(signal)` where needed. A pidfile registry under `~/.local/state/lsp-proxy/` plus a `lsp-proxy --kill-all` mode lets a fresh process terminate every running proxy and its downstream servers; the plugin wires it to a `SessionEnd` hook (that hook event's documented purpose is session-end cleanup). |
 
 ## 4. Architecture
 
@@ -66,9 +67,10 @@ purity is the TDD surface.
 | `docstore.ts` | Track latest open-document texts: apply didChange content changes (full + incremental); feeds respawn replay (6.1) | pure |
 | `merge.ts` | Merge responses per result shape | pure |
 | `capabilities.ts` | `initialize` merge: capability union, pull-diagnostics hiding, sync policy | pure |
-| `downstream.ts` | Spawn + supervise one server (`Bun.spawn`, piped stdin/stdout, stderr inherit, respawn-once) | I/O |
+| `downstream.ts` | Spawn + supervise one server (`Bun.spawn` with native types `typeof Bun.spawn` / `Bun.Subprocess<"pipe","pipe","inherit">`, `onExit`, per-server `AbortSignal`) | I/O |
+| `pidfile.ts` | Registry under `~/.local/state/lsp-proxy/`: save/load/remove `{ pid, children }` records; the `--kill-all` sweep | fs I/O |
 | `proxy.ts` | Orchestration of both directions | I/O |
-| `main.ts` | Load config, wire client I/O (`Bun.stdin`/`Bun.stdout`), start loop | I/O |
+| `main.ts` | Load config, `--kill-all` branch, wire client I/O (`Bun.stdin`/`Bun.stdout`), start loop | I/O |
 | `build.ts` | Thin wrapper over `@cc-sdd/bin-builder` (see 6.4) | I/O |
 | `sync-extensions.ts` | Generate the plugin `.lsp.json` extension map from the config (see 6.6); pure core + thin CLI | file I/O |
 
@@ -155,14 +157,22 @@ pending servers. Server-initiated `$/`-notifications are dropped (log);
 
 ### 6.1 Downstream supervision
 
-- `Bun.spawn({ cmd, args, env: { ...process.env, ...server.env },
-  stdin: "pipe", stdout: "pipe", stderr: "inherit" })`.
+- Spawn via the documented Bun options object: `Bun.spawn({ cmd, env:
+  { ...process.env, ...server.env }, stdin: "pipe", stdout: "pipe",
+  stderr: "inherit", signal, onExit })` — `onExit(proc, exitCode,
+  signalCode)` is the exit event source (no manual `exited.then`
+  polling), and each server gets an `AbortSignal` from its own
+  `AbortController` so `abort()` kills the child natively (D11).
 - The proxy tracks the latest text of every open document (it observes
   all `didOpen`/`didChange` passing through).
 - Server exit → stderr log → single respawn → re-`initialize` → replay
   `didOpen` with the tracked texts. Second death → server marked dead,
   proxy continues without it. All dead → proxy stays alive, client
   requests fail with errors.
+- Teardown: `kill("SIGTERM")` to every child, SIGKILL escalation after a
+  2s grace period; the proxy exits 0 (children are killed explicitly, so
+  bun's parent-waits-for-children behavior never blocks exit; `unref()`
+  is not used).
 
 ### 6.2 Error handling
 
@@ -249,6 +259,7 @@ plugins/lsp-proxy/
 ├── .claude-plugin/plugin.json   # name: lsp-proxy
 ├── .lsp.json                    # minimal, transport only (D3);
 │                                 # extensionToLanguage is GENERATED (D10)
+├── hooks/hooks.json             # SessionEnd -> lsp-proxy --kill-all (D11, 6.7)
 └── README.md                    # build prerequisite + requirements
 ```
 
@@ -309,6 +320,28 @@ thin CLI:
   Invalid config or conflict → stderr message, exit 1, target file
   untouched. Idempotent: running twice produces byte-identical output.
 
+### 6.7 Process lifecycle safety net — `--kill-all` (D11)
+
+Whether Claude Code kills the whole LSP process TREE at session end is
+[Unverified]; a SIGKILLed proxy leaves its children (vtsls, biome)
+orphaned. The net:
+
+- Pidfile registry `~/.local/state/lsp-proxy/<proxy-pid>.json`
+  (`{ pid, children }`): written by the proxy once its servers are
+  initialized, updated after any respawn, removed on clean shutdown.
+- `lsp-proxy --kill-all` (a `parseArgs` boolean flag): loads every
+  record, SIGTERMs children then the proxy pid, removes records (dead
+  pids are swept as stale), logs a summary to stderr, exits 0. Idempotent
+  and a no-op when the registry is empty.
+- Plugin hook `hooks/hooks.json`: the `SessionEnd` event runs
+  `lsp-proxy --kill-all` (timeout 10s). SessionEnd's documented purpose
+  is exactly session-end cleanup; the command is fast and safe to run
+  even when everything already exited.
+- In-process teardown stays primary: SIGTERM to every child with SIGKILL
+  escalation after a 2s grace period; children are killed explicitly, so
+  bun's parent-waits-for-children behavior never blocks the proxy's exit
+  (`unref()` is not used).
+
 ## 7. Process — TDD (D8)
 
 Strict RED → GREEN → REFACTOR per module; plan tasks carry explicit RED
@@ -316,8 +349,9 @@ Strict RED → GREEN → REFACTOR per module; plan tasks carry explicit RED
 pure → I/O:
 
 `framing` → `config` → `router` → `mux` → `merge` → `capabilities` →
-`docstore` → `downstream` → `proxy` → `main` wiring → `build.ts` wrapper →
-`sync-extensions` → plugin registration.
+`docstore` → `downstream` → `proxy` → `pidfile` + `--kill-all` in `main`
+wiring → `build.ts` wrapper → `sync-extensions` → plugin registration
+(including `hooks/hooks.json`).
 
 Task 1 (owner-ordered, before any lsp-proxy module):
 `packages/bin-builder/` (TDD) + the cli-hook `build.ts` refactor, per
@@ -343,6 +377,8 @@ Acceptance is owner-run (D1) per §2.
 4. `claude plugin validate .` — green after the plugin lands.
 5. `cd packages/cli-hook && bun run build-bin` still produces a working
    `~/.local/bin/claude-code-cli-hook` after the builder refactor.
+6. `lsp-proxy --kill-all` — no-op smoke on an empty registry (the
+   populated path is covered by tests; D11).
 6. `bun run sync-extensions` in `packages/lsp-proxy/` — idempotent,
    biome-clean, .lsp.json matches the config union.
 
