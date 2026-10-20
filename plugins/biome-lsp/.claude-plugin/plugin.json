@@ -1,5 +1,7 @@
 {
-  "author": { "name": "Vasyl Sokolyk" },
+  "author": {
+    "name": "Vasyl Sokolyk"
+  },
   "description": "Biome language server for Claude Code: live diagnostics, formatting, and code actions for JS/TS/JSX/TSX/JSON/JSONC/CSS",
   "displayName": "biome-lsp",
   "name": "biome-lsp",

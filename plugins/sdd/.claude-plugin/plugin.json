@@ -1,5 +1,7 @@
 {
-  "author": { "name": "Vasyl Sokolyk" },
+  "author": {
+    "name": "Vasyl Sokolyk"
+  },
   "description": "Kiro-style spec-driven development for Claude Code with subagent-first execution",
   "displayName": "sdd",
   "name": "sdd",
