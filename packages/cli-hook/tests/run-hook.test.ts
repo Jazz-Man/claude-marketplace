@@ -1,4 +1,4 @@
-import { describe, expect, it } from "bun:test";
+import { afterEach, beforeEach, describe, expect, it } from "bun:test";
 import process from "node:process";
 
 import { runHook } from "../src/run-hook.ts";
@@ -31,6 +31,21 @@ function hookDecision(raw: string) {
   };
 }
 
+function isolateProjectDir() {
+  let savedProjectDir: string | undefined;
+  beforeEach(() => {
+    savedProjectDir = process.env.CLAUDE_PROJECT_DIR;
+    delete process.env.CLAUDE_PROJECT_DIR;
+  });
+  afterEach(() => {
+    if (savedProjectDir === undefined) {
+      delete process.env.CLAUDE_PROJECT_DIR;
+    } else {
+      process.env.CLAUDE_PROJECT_DIR = savedProjectDir;
+    }
+  });
+}
+
 describe("runHook (unit)", () => {
   it("denies git writes through the router", () => {
     const decision = decisionOf(runHook(bashPayload("git push")));
@@ -49,28 +64,6 @@ describe("runHook (unit)", () => {
 });
 
 describe("runHook (unit — routing)", () => {
-  it("uses the payload cwd for filesystem decisions", () => {
-    const prev = process.env.CLAUDE_PROJECT_DIR;
-    delete process.env.CLAUDE_PROJECT_DIR;
-    try {
-      const withCwd = {
-        ...bashPayload("cat /payload-root/f"),
-        cwd: "/payload-root",
-      };
-      expect(runHook(withCwd)).toBeNull();
-      const outsideCwd = {
-        ...bashPayload("cat /usr/local/lib/f"),
-        cwd: "/payload-root",
-      };
-      const decision = decisionOf(runHook(outsideCwd));
-      expect(decision).toBe("deny");
-    } finally {
-      if (prev !== undefined) {
-        process.env.CLAUDE_PROJECT_DIR = prev;
-      }
-    }
-  });
-
   it("allows ordinary commands", () => {
     expect(runHook(bashPayload("ls -la"))).toBeNull();
   });
@@ -124,65 +117,61 @@ describe("router v2", () => {
   });
 });
 
-describe("router v2 (projectRoot env)", () => {
-  it("projectRoot falls back to cwd when CLAUDE_PROJECT_DIR is unset", () => {
-    const prev = process.env.CLAUDE_PROJECT_DIR;
-    delete process.env.CLAUDE_PROJECT_DIR;
-    try {
-      expect(runHook(bashPayload("tee /proj/out x"))).toBeNull();
-    } finally {
-      if (prev !== undefined) {
-        process.env.CLAUDE_PROJECT_DIR = prev;
-      }
-    }
+describe("projectRoot resolution (CLAUDE_PROJECT_DIR unset)", () => {
+  isolateProjectDir();
+
+  it("uses the payload cwd for filesystem decisions", () => {
+    const withCwd = {
+      ...bashPayload("cat /payload-root/f"),
+      cwd: "/payload-root",
+    };
+    expect(runHook(withCwd)).toBeNull();
+    const outsideCwd = {
+      ...bashPayload("cat /usr/local/lib/f"),
+      cwd: "/payload-root",
+    };
+    const decision = decisionOf(runHook(outsideCwd));
+    expect(decision).toBe("deny");
+  });
+
+  it("falls back to cwd when CLAUDE_PROJECT_DIR is unset", () => {
+    expect(runHook(bashPayload("tee /proj/out x"))).toBeNull();
+  });
+
+  it("allows Write inside the project via the tool channel", () => {
+    expect(runHook(filePayload("Write", "/proj/src/x.ts"))).toBeNull();
   });
 });
 
-describe("router v2 (CLAUDE_PROJECT_DIR zone)", () => {
+describe("projectRoot resolution (CLAUDE_PROJECT_DIR zone)", () => {
+  isolateProjectDir();
+
   it("projectRoot carves an allowed zone outside $HOME", () => {
-    const prev = process.env.CLAUDE_PROJECT_DIR;
     process.env.CLAUDE_PROJECT_DIR = "/workspace/repo";
-    try {
-      expect(
-        runHook({
-          cwd: "/workspace/repo",
-          hook_event_name: "PreToolUse",
-          tool_input: {
-            command: "tee /workspace/repo/x y",
-          },
-          tool_name: "Bash",
-        }),
-      ).toBeNull();
-    } finally {
-      if (prev === undefined) {
-        delete process.env.CLAUDE_PROJECT_DIR;
-      } else {
-        process.env.CLAUDE_PROJECT_DIR = prev;
-      }
-    }
+    expect(
+      runHook({
+        cwd: "/workspace/repo",
+        hook_event_name: "PreToolUse",
+        tool_input: {
+          command: "tee /workspace/repo/x y",
+        },
+        tool_name: "Bash",
+      }),
+    ).toBeNull();
   });
 
   it("CLAUDE_PROJECT_DIR feeds projectRoot, not the cwd fallback", () => {
-    const prev = process.env.CLAUDE_PROJECT_DIR;
     process.env.CLAUDE_PROJECT_DIR = "/zone-a";
-    try {
-      expect(
-        runHook({
-          cwd: "/zone-b",
-          hook_event_name: "PreToolUse",
-          tool_input: {
-            command: "tee /zone-a/out",
-          },
-          tool_name: "Bash",
-        }),
-      ).toBeNull();
-    } finally {
-      if (prev === undefined) {
-        delete process.env.CLAUDE_PROJECT_DIR;
-      } else {
-        process.env.CLAUDE_PROJECT_DIR = prev;
-      }
-    }
+    expect(
+      runHook({
+        cwd: "/zone-b",
+        hook_event_name: "PreToolUse",
+        tool_input: {
+          command: "tee /zone-a/out",
+        },
+        tool_name: "Bash",
+      }),
+    ).toBeNull();
   });
 });
 
@@ -195,18 +184,6 @@ describe("tool channel", () => {
   it("Edit of home shell rc denies (personal config write)", () => {
     const decision = decisionOf(runHook(filePayload("Edit", "~/.zshrc")));
     expect(decision).toBe("deny");
-  });
-
-  it("Write inside the project allows", () => {
-    const prev = process.env.CLAUDE_PROJECT_DIR;
-    delete process.env.CLAUDE_PROJECT_DIR;
-    try {
-      expect(runHook(filePayload("Write", "/proj/src/x.ts"))).toBeNull();
-    } finally {
-      if (prev !== undefined) {
-        process.env.CLAUDE_PROJECT_DIR = prev;
-      }
-    }
   });
 
   it("Read of .git/hooks denies (any reference)", () => {
