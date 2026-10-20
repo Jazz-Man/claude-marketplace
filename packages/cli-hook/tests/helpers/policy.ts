@@ -4,7 +4,10 @@ import type { Policy, PolicyCheckResult } from "../../src/core/policy.ts";
 export function policyCheck(
   policy: Policy,
   command: string,
-  paths: { cwd?: string; projectRoot?: string } = {},
+  paths: {
+    cwd?: string;
+    projectRoot?: string;
+  } = {},
 ): PolicyCheckResult {
   const cwd = paths.cwd ?? "/proj";
   const projectRoot = paths.projectRoot ?? cwd;
@@ -12,7 +15,10 @@ export function policyCheck(
   if (cmd === null) {
     return null;
   }
-  return policy.check(cmd, { cwd, projectRoot });
+  return policy.check(cmd, {
+    cwd,
+    projectRoot,
+  });
 }
 
 export function decisionOf(result: PolicyCheckResult): "deny" | "ask" | null {

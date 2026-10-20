@@ -25,7 +25,10 @@ function hookDecision(raw: string) {
   ) {
     return null;
   }
-  return { permissionDecision, permissionDecisionReason };
+  return {
+    permissionDecision,
+    permissionDecisionReason,
+  };
 }
 
 describe("runHook (unit)", () => {
@@ -144,7 +147,9 @@ describe("router v2 (CLAUDE_PROJECT_DIR zone)", () => {
         runHook({
           cwd: "/workspace/repo",
           hook_event_name: "PreToolUse",
-          tool_input: { command: "tee /workspace/repo/x y" },
+          tool_input: {
+            command: "tee /workspace/repo/x y",
+          },
           tool_name: "Bash",
         }),
       ).toBeNull();
@@ -165,7 +170,9 @@ describe("router v2 (CLAUDE_PROJECT_DIR zone)", () => {
         runHook({
           cwd: "/zone-b",
           hook_event_name: "PreToolUse",
-          tool_input: { command: "tee /zone-a/out" },
+          tool_input: {
+            command: "tee /zone-a/out",
+          },
           tool_name: "Bash",
         }),
       ).toBeNull();

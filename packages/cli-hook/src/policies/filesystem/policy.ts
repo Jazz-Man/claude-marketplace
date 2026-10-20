@@ -140,7 +140,12 @@ function argDecision(
   }
   return severityUnion(
     argCandidates(arg).map((candidate) =>
-      candidateDecision({ arg, candidate, context, intent }),
+      candidateDecision({
+        arg,
+        candidate,
+        context,
+        intent,
+      }),
     ),
   );
 }

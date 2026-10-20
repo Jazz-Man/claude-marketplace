@@ -61,22 +61,33 @@ const NETWORK_TOOLS = new Set([
 
 const WRAPPERS = new Set(["env", "nice", "nohup", "timeout", "xargs"]);
 
-function isScanNoise(token: string): boolean {
-  return token.startsWith("-") || isAssignment(token);
-}
+const isScanNoise = (token: string) =>
+  token.startsWith("-") || isAssignment(token);
 
 function resolveToken(
   token: string,
   network: string | null,
-): { intent: Intent | null; network: string | null } {
+): {
+  intent: Intent | null;
+  network: string | null;
+} {
   const known = INTENTS[ast.baseName(token)];
   if (known !== undefined) {
-    return { intent: known, network };
+    return {
+      intent: known,
+      network,
+    };
   }
   if (network === null && NETWORK_TOOLS.has(ast.baseName(token))) {
-    return { intent: null, network: ast.baseName(token) };
+    return {
+      intent: null,
+      network: ast.baseName(token),
+    };
   }
-  return { intent: null, network };
+  return {
+    intent: null,
+    network,
+  };
 }
 
 function unwrapScan(
@@ -101,7 +112,12 @@ function unwrapScan(
       ({ network } = resolved);
     }
   }
-  return { intent: null, network, rest: args, sudo };
+  return {
+    intent: null,
+    network,
+    rest: args,
+    sudo,
+  };
 }
 
 interface Unwrapped {
@@ -113,6 +129,11 @@ interface Unwrapped {
 
 export type Intent = "read" | "write" | "delete";
 
+type RedirectTargetsType = Array<{
+  intent: Intent;
+  token: string;
+}>;
+
 export function intentOf(name: string, args: string[]): Unwrapped {
   const base = ast.baseName(name);
   const intent: Intent | null = INTENTS[base] ?? null;
@@ -122,20 +143,29 @@ export function intentOf(name: string, args: string[]): Unwrapped {
   }
   const sudo = name === "sudo";
   if (!WRAPPERS.has(name) && name !== "sudo") {
-    return { intent, network, rest: args, sudo };
+    return {
+      intent,
+      network,
+      rest: args,
+      sudo,
+    };
   }
   return unwrapScan(args, sudo, network);
 }
 
-export function redirectTargets(
-  cmd: ast.ParsedCommand,
-): { intent: Intent; token: string }[] {
-  const out: { intent: Intent; token: string }[] = [];
+export function redirectTargets(cmd: ast.ParsedCommand) {
+  const out: RedirectTargetsType = [];
   for (const redirect of cmd.redirects) {
     if (redirect.operator === "<") {
-      out.push({ intent: "read", token: redirect.target });
+      out.push({
+        intent: "read",
+        token: redirect.target,
+      });
     } else {
-      out.push({ intent: "write", token: redirect.target });
+      out.push({
+        intent: "write",
+        token: redirect.target,
+      });
     }
   }
   return out;

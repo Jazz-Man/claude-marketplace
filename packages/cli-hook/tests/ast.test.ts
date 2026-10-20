@@ -9,28 +9,49 @@ describe("parseCommand", () => {
 
   it("collects units across && and pipelines", () => {
     expect(parseCommand("cd /tmp && git push")?.units).toEqual([
-      { args: ["/tmp"], name: "cd" },
-      { args: ["push"], name: "git" },
+      {
+        args: ["/tmp"],
+        name: "cd",
+      },
+      {
+        args: ["push"],
+        name: "git",
+      },
     ]);
   });
 
   it("collects units across newline separators", () => {
     expect(parseCommand("git add .\ngit push")?.units).toEqual([
-      { args: ["add", "."], name: "git" },
-      { args: ["push"], name: "git" },
+      {
+        args: ["add", "."],
+        name: "git",
+      },
+      {
+        args: ["push"],
+        name: "git",
+      },
     ]);
   });
 
   it("keeps the command name under an env-prefix assignment", () => {
     expect(parseCommand("FOO=1 git push origin")?.units).toEqual([
-      { args: ["push", "origin"], name: "git" },
+      {
+        args: ["push", "origin"],
+        name: "git",
+      },
     ]);
   });
 
   it("collects units from nested substitution scripts (deduped, raw text out of args)", () => {
     expect(parseCommand("echo $(git push)")?.units).toEqual([
-      { args: [], name: "echo" },
-      { args: ["push"], name: "git" },
+      {
+        args: [],
+        name: "echo",
+      },
+      {
+        args: ["push"],
+        name: "git",
+      },
     ]);
   });
 
@@ -53,7 +74,12 @@ describe("parseCommand (redirects, words, functionDefs)", () => {
     const parsed = parseCommand("git log > $(mktemp)");
     expect(parsed?.units.map((unit) => unit.name)).toEqual(["git", "mktemp"]);
     expect(parsed?.units[0]?.args).toEqual(["log"]);
-    expect(parsed?.redirects).toEqual([{ operator: ">", target: "$(mktemp)" }]);
+    expect(parsed?.redirects).toEqual([
+      {
+        operator: ">",
+        target: "$(mktemp)",
+      },
+    ]);
   });
 
   it("keeps equal-valued distinct commands (substitution + real command)", () => {
@@ -97,15 +123,26 @@ describe("parseCommand (redirects, words, functionDefs)", () => {
 describe("parseCommand (walk pins)", () => {
   it("truncates past the nesting limit — buried commands stay invisible (accepted fail-open)", () => {
     const deep = `${"( ".repeat(257)}bash -c 'echo hi'${" )".repeat(257)}`;
+
     const parsed = parseCommand(deep);
+
     expect(parsed).not.toBeNull();
     expect(parsed?.units.some((unit) => unit.name === "bash")).toBe(false);
   });
 
   it("rides the heredoc delimiter in unit args AND the redirects view (heredoc-fed detection couples them)", () => {
     const parsed = parseCommand("bash <<EOF\nls\nEOF");
-    expect(parsed?.units[0]).toEqual({ args: ["EOF"], name: "bash" });
-    expect(parsed?.redirects).toEqual([{ operator: "<<", target: "EOF" }]);
+
+    expect(parsed?.units[0]).toEqual({
+      args: ["EOF"],
+      name: "bash",
+    });
+    expect(parsed?.redirects).toEqual([
+      {
+        operator: "<<",
+        target: "EOF",
+      },
+    ]);
     expect(parseCommand("bash <<'EOF'\nls\nEOF")?.units[0]?.args).toEqual([
       "EOF",
     ]);
@@ -148,10 +185,22 @@ describe("parseCommand (walk pins — globs, substitutions, elif)", () => {
     expect(
       parseCommand("if true; then echo a; elif false; then echo b; fi")?.units,
     ).toEqual([
-      { args: [], name: "true" },
-      { args: ["a"], name: "echo" },
-      { args: [], name: "false" },
-      { args: ["b"], name: "echo" },
+      {
+        args: [],
+        name: "true",
+      },
+      {
+        args: ["a"],
+        name: "echo",
+      },
+      {
+        args: [],
+        name: "false",
+      },
+      {
+        args: ["b"],
+        name: "echo",
+      },
     ]);
   });
 });

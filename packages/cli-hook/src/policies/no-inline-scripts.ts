@@ -6,22 +6,67 @@ import type { Policy } from "../core/policy.ts";
 
 const INTERPRETERS: Record<
   string,
-  { longs: readonly string[]; shorts: readonly string[] }
+  {
+    longs: readonly string[];
+    shorts: readonly string[];
+  }
 > = {
-  bash: { longs: [], shorts: ["c"] },
-  bun: { longs: ["--eval"], shorts: ["e"] },
-  dash: { longs: [], shorts: ["c"] },
-  fish: { longs: [], shorts: ["c"] },
-  ksh: { longs: [], shorts: ["c"] },
-  node: { longs: ["--eval", "--print"], shorts: ["e", "p"] },
-  osascript: { longs: [], shorts: ["e"] },
-  perl: { longs: [], shorts: ["e", "E"] },
-  php: { longs: [], shorts: ["r"] },
-  python: { longs: [], shorts: ["c"] },
-  python3: { longs: [], shorts: ["c"] },
-  ruby: { longs: [], shorts: ["e"] },
-  sh: { longs: [], shorts: ["c"] },
-  zsh: { longs: [], shorts: ["c"] },
+  bash: {
+    longs: [],
+    shorts: ["c"],
+  },
+  bun: {
+    longs: ["--eval"],
+    shorts: ["e"],
+  },
+  dash: {
+    longs: [],
+    shorts: ["c"],
+  },
+  fish: {
+    longs: [],
+    shorts: ["c"],
+  },
+  ksh: {
+    longs: [],
+    shorts: ["c"],
+  },
+  node: {
+    longs: ["--eval", "--print"],
+    shorts: ["e", "p"],
+  },
+  osascript: {
+    longs: [],
+    shorts: ["e"],
+  },
+  perl: {
+    longs: [],
+    shorts: ["e", "E"],
+  },
+  php: {
+    longs: [],
+    shorts: ["r"],
+  },
+  python: {
+    longs: [],
+    shorts: ["c"],
+  },
+  python3: {
+    longs: [],
+    shorts: ["c"],
+  },
+  ruby: {
+    longs: [],
+    shorts: ["e"],
+  },
+  sh: {
+    longs: [],
+    shorts: ["c"],
+  },
+  zsh: {
+    longs: [],
+    shorts: ["c"],
+  },
 };
 
 const SHORT_FLAG_CLUSTER = /^-[A-Za-z]+$/u;

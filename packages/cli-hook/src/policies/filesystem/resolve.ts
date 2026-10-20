@@ -26,7 +26,10 @@ function splitPair(token: string): NameValue | null {
   }
   try {
     const cookie = Bun.Cookie.parse(token);
-    return { name: cookie.name, value: cookie.value };
+    return {
+      name: cookie.name,
+      value: cookie.value,
+    };
   } catch {
     return null;
   }

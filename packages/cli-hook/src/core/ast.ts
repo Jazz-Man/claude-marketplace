@@ -57,7 +57,10 @@ function collectRedirects(command: Command, out: CommandRedirect[]): void {
   for (const redirect of command.redirects) {
     const word = redirectWord(redirect);
     if (word !== undefined && wordLike(word)) {
-      out.push({ operator: redirect.operator, target: word.value });
+      out.push({
+        operator: redirect.operator,
+        target: word.value,
+      });
     }
   }
 }
@@ -105,7 +108,10 @@ export function parseCommand(command: string): ParsedCommand | null {
     if (node.type === "Command") {
       const { name } = node;
       if (name !== undefined) {
-        units.push({ args: wordValues(node.suffix), name: name.value });
+        units.push({
+          args: wordValues(node.suffix),
+          name: name.value,
+        });
       }
       collectRedirects(node, redirects);
     }
@@ -115,7 +121,13 @@ export function parseCommand(command: string): ParsedCommand | null {
     forEachChild(node, visit);
   };
   visit(parsed);
-  return { functionDefs, raw: command, redirects, units, words };
+  return {
+    functionDefs,
+    raw: command,
+    redirects,
+    units,
+    words,
+  };
 }
 
 export function baseName(name: string): string {

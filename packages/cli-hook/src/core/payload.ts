@@ -24,7 +24,10 @@ interface ToolFields {
 
 function toolFields(data: unknown): ToolFields {
   if (!isRecord(data)) {
-    return { command: undefined, filePath: undefined };
+    return {
+      command: undefined,
+      filePath: undefined,
+    };
   }
   return {
     command: stringField(data, "command"),

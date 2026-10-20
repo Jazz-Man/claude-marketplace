@@ -148,7 +148,10 @@ function gitCall(args: readonly string[]): GitCall | null {
     return null;
   }
   if (!arg.startsWith("-")) {
-    return { rest: args.slice(1), sub: arg };
+    return {
+      rest: args.slice(1),
+      sub: arg,
+    };
   }
   const advance = globalAdvance(arg);
   if (advance === null) {

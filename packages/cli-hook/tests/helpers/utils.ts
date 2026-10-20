@@ -3,14 +3,18 @@ const MAIN = `${import.meta.dir}/../../src/main.ts`;
 export const bashPayload = (command: string) => ({
   cwd: "/proj",
   hook_event_name: "PreToolUse",
-  tool_input: { command },
+  tool_input: {
+    command,
+  },
   tool_name: "Bash",
 });
 
 export const filePayload = (tool_name: string, filePath: string) => ({
   cwd: "/proj",
   hook_event_name: "PreToolUse",
-  tool_input: { file_path: filePath },
+  tool_input: {
+    file_path: filePath,
+  },
   tool_name,
 });
 
@@ -26,5 +30,8 @@ export async function spawnHook(raw: string) {
   });
   const stdout = await new Response(proc.stdout).text();
   const code = await proc.exited;
-  return { code, stdout };
+  return {
+    code,
+    stdout,
+  };
 }

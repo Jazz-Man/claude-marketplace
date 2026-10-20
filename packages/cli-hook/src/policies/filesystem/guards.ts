@@ -8,15 +8,14 @@ const INJECTION_SUBSTRINGS = [
   "HISTSIZE=0",
 ];
 
-function isControlByte(code: number): boolean {
-  return (code >= 1 && code <= 8) || (code >= 14 && code <= 31) || code === 127;
-}
+const isControlByte = (code: number) =>
+  (code >= 1 && code <= 8) || (code >= 14 && code <= 31) || code === 127;
 
 const ASCII_WHITESPACE = " \t\n\r";
 const ANY_WHITESPACE = /\s/u;
 const WORD_SPLIT = /\s+/u;
 
-function substringHit(raw: string): string | null {
+function substringHit(raw: string) {
   for (const needle of INJECTION_SUBSTRINGS) {
     if (raw.includes(needle)) {
       return needle;
@@ -28,7 +27,7 @@ function substringHit(raw: string): string | null {
   return null;
 }
 
-function controlHit(raw: string): string | null {
+function controlHit(raw: string) {
   for (const char of raw) {
     if (isControlByte(char.codePointAt(0) ?? 0)) {
       return "control characters";
@@ -37,7 +36,7 @@ function controlHit(raw: string): string | null {
   return null;
 }
 
-function pathOverrideHit(raw: string): string | null {
+function pathOverrideHit(raw: string) {
   for (const word of raw.split(WORD_SPLIT)) {
     if (word.startsWith("PATH=") && !word.includes("$PATH")) {
       return "PATH override";
@@ -46,7 +45,7 @@ function pathOverrideHit(raw: string): string | null {
   return null;
 }
 
-function whitespaceHit(raw: string): string | null {
+function whitespaceHit(raw: string) {
   for (const char of raw) {
     if (ANY_WHITESPACE.test(char) && !ASCII_WHITESPACE.includes(char)) {
       return "non-ASCII whitespace";
@@ -55,11 +54,8 @@ function whitespaceHit(raw: string): string | null {
   return null;
 }
 
-export function injectionHit(raw: string): string | null {
-  return (
-    substringHit(raw) ??
-    controlHit(raw) ??
-    pathOverrideHit(raw) ??
-    whitespaceHit(raw)
-  );
-}
+export const injectionHit = (raw: string) =>
+  substringHit(raw) ??
+  controlHit(raw) ??
+  pathOverrideHit(raw) ??
+  whitespaceHit(raw);
