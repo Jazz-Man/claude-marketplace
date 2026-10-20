@@ -29,9 +29,6 @@
     "rewriteRelativeImportExtensions": true,
     "strictNullChecks": true
   },
-  "exclude": [
-    "node_modules",
-    ".repos"
-  ],
+  "exclude": ["node_modules", ".repos"],
   "extends": "@tsconfig/bun"
 }
