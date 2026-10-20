@@ -49,7 +49,8 @@
     "rules": {
       "complexity": {
         "noExcessiveCognitiveComplexity": "error",
-        "noExcessiveLinesPerFunction": "error"
+        "noExcessiveLinesPerFunction": "error",
+        "noVoid": "error"
       },
       "correctness": {
         "noNodejsModules": "off",
