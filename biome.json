@@ -2,16 +2,13 @@
   "$schema": "https://biomejs.dev/schemas/2.5.15/schema.json",
   "assist": {
     "actions": {
-      "preset": "all",
       "source": {
         "noDuplicateClasses": "on",
         "organizeImports": "on",
-        "preset": "all",
         "useSortedAttributes": "on",
         "useSortedEnumMembers": "on",
         "useSortedInterfaceMembers": "on",
         "useSortedKeys": "on",
-        "useSortedPackageJson": "on",
         "useSortedProperties": "on",
         "useSortedSelectionSet": "on",
         "useSortedTypeFields": "on"
@@ -85,7 +82,7 @@
         "noProcessEnv": "off",
         "noTernary": "error",
         "useBlockStatements": "error",
-        "useExportsLast": "error",
+        "useExportsLast": "off",
         "useNamingConvention": "off"
       },
       "suspicious": {
