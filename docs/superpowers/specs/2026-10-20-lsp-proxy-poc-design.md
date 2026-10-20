@@ -318,8 +318,9 @@ pure → I/O:
 `downstream` → `proxy` → `main` wiring → `build.ts` wrapper →
 `sync-extensions` → plugin registration.
 
-Preceding task: `packages/bin-builder/` (TDD) + the cli-hook `build.ts`
-refactor, per 6.4.
+Task 1 (owner-ordered, before any lsp-proxy module):
+`packages/bin-builder/` (TDD) + the cli-hook `build.ts` refactor, per
+6.4.
 
 Tests: `bun:test`, colocated in `tests/` mirroring modules. Integration
 surface: `tests/fixtures/stub-server.ts` — a small Bun script speaking
