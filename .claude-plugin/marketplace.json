@@ -1,7 +1,9 @@
 {
   "description": "Local marketplace for the sdd, biome-lsp, and security-guard plugins",
   "name": "sdd-local",
-  "owner": { "name": "Vasyl Sokolyk" },
+  "owner": {
+    "name": "Vasyl Sokolyk"
+  },
   "plugins": [
     {
       "description": "Kiro-style spec-driven development for Claude Code with subagent-first execution",
