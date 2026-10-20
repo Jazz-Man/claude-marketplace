@@ -18,6 +18,7 @@
 - No dependency installs by agents. Manifest edits appear as explicit steps; `bun install` and the lockfile are owner actions (Tasks 1 and 2 stop points).
 - Untouchable: `biome.json`, `.zed/`, `plugins/biome-lsp/**` (the owner disables that plugin themselves, D2).
 - Bun-native types only (D11): `Bun.spawn` is called directly with literal options — the return type is inferred (`Subprocess<"pipe","pipe","inherit">`); no custom process types, no injection, no casts. Verified in `node_modules/.bun/bun-types@1.4.2/node_modules/bun-types/bun.d.ts`.
+- Bundled entrypoints (`*/src/main.ts`) must NOT use top-level `await` — bun 1.4.3's `bytecode: true` compilation rejects it (isolated by probe 2026-10-20: bytecode+TLA fails, compile+minify without bytecode succeeds). Wrap in `async function main()` + `void main().catch(...)`. Scripts that are only RUN by bun (`build.ts`, `sync-extensions.ts`, stub fixtures) are unaffected and may keep TLA.
 - Style guards (biome preset "all", verified via `rtk proxy biome check`): object literals with sorted keys, inline exports with helpers-first/exports-last file order, functions ≤ 50 lines, identifiers ≥ 2 chars, no `any`. Shell commands use literal paths (the filesystem PreToolUse guard blocks unresolved shell variables and command substitution).
 - Per-task verification: package `bun test`, `rtk proxy biome check <touched paths>`, `bun check`.
 - All new files land in `packages/lsp-proxy/`, `packages/bin-builder/`, and `plugins/lsp-proxy/` only. No on-disk pid/state files anywhere (D11).
@@ -186,7 +187,7 @@ export async function buildBinary(
 - [ ] **Step 4: Run to verify GREEN**
 
 Run: `cd /Users/vasilsokolik/www/cc-sdd/packages/bin-builder && bun test`
-Expected: PASS (4 tests).
+Expected: PASS (5 tests).
 
 - [ ] **Step 5: Refactor cli-hook's build.ts to the thin wrapper**
 
@@ -2181,23 +2182,29 @@ import { parseConfig } from "./config.ts";
 import { LspProxy } from "./proxy.ts";
 
 const defaultConfig = new URL("../lsp-proxy.config.json", import.meta.url);
-const configArgument = process.argv[2];
-const configPath = configArgument ?? defaultConfig.pathname;
-const raw: unknown = await Bun.file(configPath).json();
-const parsed = parseConfig(raw);
-if (!parsed.ok) {
-  console.error(`lsp-proxy: invalid config at ${configPath}:\n${parsed.errors.join("\n")}`);
+
+void (async () => {
+  const configArgument = process.argv[2];
+  const configPath = configArgument ?? defaultConfig.pathname;
+  const raw: unknown = await Bun.file(configPath).json();
+  const parsed = parseConfig(raw);
+  if (!parsed.ok) {
+    console.error(`lsp-proxy: invalid config at ${configPath}:\n${parsed.errors.join("\n")}`);
+    process.exit(1);
+  }
+  const proxy = new LspProxy(
+    parsed.config,
+    { readChunks: () => Bun.stdin.stream(), stdout: Bun.stdout.writer() },
+    (line) => console.error(`[lsp-proxy] ${line}`),
+  );
+  process.on("SIGTERM", () => {
+    void proxy.cascadeShutdown("SIGTERM");
+  });
+  await proxy.run();
+})().catch((error: unknown) => {
+  console.error(error);
   process.exit(1);
-}
-const proxy = new LspProxy(
-  parsed.config,
-  { readChunks: () => Bun.stdin.stream(), stdout: Bun.stdout.writer() },
-  (line) => console.error(`[lsp-proxy] ${line}`),
-);
-process.on("SIGTERM", () => {
-  void proxy.cascadeShutdown("SIGTERM");
 });
-await proxy.run();
 ```
 
 - [ ] **Step 4: GREEN — proxy implementation**

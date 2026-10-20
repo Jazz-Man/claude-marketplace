@@ -269,6 +269,11 @@ deps) owns the build logic once instead of per-package copies:
   untouched.
 - `packages/lsp-proxy/build.ts` → the same wrapper with
   `binName: "lsp-proxy"`.
+- Constraint (isolated by probe, 2026-10-20, bun 1.4.3): `bytecode: true`
+  compilation rejects top-level `await` in the entrypoint — bundled
+  `main.ts` files wrap their body in `async function main()` +
+  `void main().catch(...)` instead. Run-only scripts (`build.ts`,
+  `sync-extensions.ts`, test fixtures) keep top-level await freely.
 - Workspace wiring: consumers declare `@cc-sdd/bin-builder:
   "workspace:*"` in `devDependencies` (manifest edits are planned
   steps; `bun install` and the lockfile are owner actions — agents

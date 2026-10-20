@@ -1,0 +1,8 @@
+{
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "name": "@cc-sdd/bin-builder",
+  "private": true,
+  "type": "module"
+}

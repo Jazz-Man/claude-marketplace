@@ -3,7 +3,8 @@
     "unbash": "catalog:core"
   },
   "devDependencies": {
-    "@cc-sdd/agent-types": "workspace:*"
+    "@cc-sdd/agent-types": "workspace:*",
+    "@cc-sdd/bin-builder": "workspace:*"
   },
   "name": "@cc-sdd/claude-code-cli-hook",
   "private": true,
