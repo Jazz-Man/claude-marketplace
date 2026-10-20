@@ -22,7 +22,7 @@
   "formatter": {
     "attributePosition": "multiline",
     "enabled": true,
-    "expand": "always",
+    "expand": "auto",
     "formatWithErrors": false,
     "indentStyle": "space",
     "indentWidth": 2,
@@ -36,9 +36,7 @@
       "operatorLinebreak": "after",
       "quoteStyle": "double"
     },
-    "globals": [
-      "Bun"
-    ]
+    "globals": ["Bun"]
   },
 
   "linter": {
@@ -97,9 +95,7 @@
       "assist": {
         "enabled": false
       },
-      "includes": [
-        "packages/cli-hook/tests/fixtures/**"
-      ],
+      "includes": ["packages/cli-hook/tests/fixtures/**"],
       "linter": {
         "enabled": false
       }
