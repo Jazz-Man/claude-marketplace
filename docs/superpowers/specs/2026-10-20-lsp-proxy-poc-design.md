@@ -63,6 +63,7 @@ purity is the TDD surface.
 | `config.ts` | Load + validate `lsp-proxy.config.json` | file read injected |
 | `router.ts` | (URI, method) → set of downstream servers: extension map keys + declared-capability filter | pure |
 | `mux.ts` | Pending-request table: client id → (server, server id); cancel tracking | pure |
+| `docstore.ts` | Track latest open-document texts: apply didChange content changes (full + incremental); feeds respawn replay (6.1) | pure |
 | `merge.ts` | Merge responses per result shape | pure |
 | `capabilities.ts` | `initialize` merge: capability union, pull-diagnostics hiding, sync policy | pure |
 | `downstream.ts` | Spawn + supervise one server (`Bun.spawn`, piped stdin/stdout, stderr inherit, respawn-once) | I/O |
@@ -141,7 +142,7 @@ sequenceDiagram
 | Set arrays: `definition`, `references`, `documentSymbol`, `codeAction` | Concatenate; `codeAction/resolve` routed back to the originating server |
 | `completion` | Merge `CompletionList`: `items` concatenated, `isIncomplete` = OR; a null list counts as empty |
 | `hover` | Contents joined (all `MarkupContent` → joined with blank line) |
-| Single-document results: `formatting`, `rangeFormatting` | First non-null by config priority; remaining pending requests cancelled with `$/cancelRequest` |
+| Single-document results: `formatting`, `rangeFormatting` | Servers are asked sequentially in config-priority order; the first non-null result wins (lower-priority servers are never asked, so no cancellations are needed) |
 | Unknown methods | First non-null by priority (see 5.3) |
 | Per-server null | Skipped; per-server error → merge the successes; all errored → error to client |
 | `publishDiagnostics` | Forwarded to the client as-is from each server, no dedup |
@@ -315,7 +316,7 @@ Strict RED → GREEN → REFACTOR per module; plan tasks carry explicit RED
 pure → I/O:
 
 `framing` → `config` → `router` → `mux` → `merge` → `capabilities` →
-`downstream` → `proxy` → `main` wiring → `build.ts` wrapper →
+`docstore` → `downstream` → `proxy` → `main` wiring → `build.ts` wrapper →
 `sync-extensions` → plugin registration.
 
 Task 1 (owner-ordered, before any lsp-proxy module):
