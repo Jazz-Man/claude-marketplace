@@ -20,7 +20,7 @@
 - Bun-native types only (D11): `Bun.spawn` is called directly with literal options — the return type is inferred (`Subprocess<"pipe","pipe","inherit">`); no custom process types, no injection, no casts. Verified in `node_modules/.bun/bun-types@1.4.2/node_modules/bun-types/bun.d.ts`.
 - Bundled entrypoints (`*/src/main.ts`) must NOT use top-level `await` — bun 1.4.3's `bytecode: true` compilation rejects it (isolated by probe 2026-10-20: bytecode+TLA fails, compile+minify without bytecode succeeds). Wrap in `async function main()` + `void main().catch(...)`. Scripts that are only RUN by bun (`build.ts`, `sync-extensions.ts`, stub fixtures) are unaffected and may keep TLA.
 - Style guards (biome preset "all", verified via `rtk proxy biome check`): object literals with sorted keys, inline exports with helpers-first/exports-last file order, functions ≤ 50 lines, identifiers ≥ 2 chars, no `any`. Shell commands use literal paths (the filesystem PreToolUse guard blocks unresolved shell variables and command substitution).
-- Per-task verification: package `bun test`, `rtk proxy biome check <touched paths>`, `bun check`.
+- Per-task verification: package `bun test`, `rtk proxy biome check <touched paths>`, `bun check --strict` (owner-added gate, 2026-10-20: strict index-access checking is part of the truth; the rest of the repo is already strict-clean).
 - All new files land in `packages/lsp-proxy/`, `packages/bin-builder/`, and `plugins/lsp-proxy/` only. No on-disk pid/state files anywhere (D11).
 
 ## Review Focus
@@ -829,6 +829,8 @@ Run: `cd /Users/vasilsokolik/www/cc-sdd/packages/lsp-proxy && bun test` → FAIL
 `packages/lsp-proxy/src/router.ts`:
 
 ```ts
+import { parse } from "node:path";
+
 import type { ProxyConfig, ServerConfig } from "./config.ts";
 
 export type ServerCapabilities = Record<string, unknown>;
@@ -846,14 +848,19 @@ export const METHOD_CAPABILITY: Record<string, string> = {
 };
 
 export function extensionOf(uri: string): string | undefined {
-  const withoutQuery = uri.split(/[?#]/, 1)[0];
-  const slash = withoutQuery.lastIndexOf("/");
-  const file = slash === -1 ? withoutQuery : withoutQuery.slice(slash + 1);
-  const dot = file.lastIndexOf(".");
-  if (dot <= 0) {
+  try {
+    const { pathname } = new URL(uri);
+    if (pathname === "") {
+      return undefined;
+    }
+    const { ext } = parse(pathname);
+    if (ext === "") {
+      return undefined;
+    }
+    return ext.toLowerCase();
+  } catch {
     return undefined;
   }
-  return file.slice(dot).toLowerCase();
 }
 
 export function serversForDocument(config: ProxyConfig, uri: string): ServerConfig[] {
