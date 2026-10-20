@@ -1,6 +1,6 @@
 # LSP proxy POC — design
 
-Date: 2026-10-20 · Status: approved design (brainstorm sections 1–4, corrected) · Bean: cc-sdd-hi1x
+Date: 2026-10-20 · Status: approved design (brainstorm sections 1–4 corrected; addenda 1–4 folded in) · Bean: cc-sdd-hi1x
 Branch: `feature/lsp-proxy` · Package: `packages/lsp-proxy/` · Plugin: `plugins/lsp-proxy/`
 
 ## 1. Context and problem
@@ -41,22 +41,22 @@ targets.
 | # | Decision |
 |---|---|
 | D1 | Live acceptance with the real pair biome + vtsls; core behavior proven by TDD tests on stub servers. |
-| D2 | Registration as a new sibling plugin `plugins/lsp-proxy/`; the biome-lsp and vtsls Claude Code plugins are disabled/removed by the owner (vtsls already disabled ahead of testing) — never by agents. |
+| D2 | Registration as a new sibling plugin `plugins/lsp-proxy/`; the biome-lsp and vtsls Claude Code plugins are disabled/removed by the owner (vtsls was disabled ahead of testing, then re-enabled temporarily for development sessions) — never by agents. |
 | D3 | Downstream configuration lives ONLY in `packages/lsp-proxy/lsp-proxy.config.json`. The `.lsp.json` carries no `initializationOptions`/`settings` — per-server options and settings are proxy-config fields. |
-| D4 | Full merge semantics: set-valued results concatenate; hover contents join; single-document results resolve by config priority order. |
+| D4 | Full merge semantics: set-valued results concatenate; hover contents join; single-document results resolve by config priority order (asked sequentially, first non-null wins). |
 | D5 | Architecture: modular merge-proxy, eager spawn of all configured servers at `initialize`, parse-everything (every message is decoded to JSON; no raw byte passthrough paths). |
 | D6 | Downstream servers must support incremental sync (`textDocumentSync: 2`); anything else is rejected at startup with a stderr log. |
 | D7 | The proxy hides the client's `textDocument/diagnostic` capability from downstream servers, forcing the push model (`publishDiagnostics`) which the proxy can forward and merge (technique from techee/lsp-proxy). |
 | D8 | Development is strictly TDD: RED → GREEN → REFACTOR per module; plan tasks carry explicit RED and GREEN steps. |
-| D9 | Binaries are built through a shared private package `packages/bin-builder/` (`@cc-sdd/bin-builder`): `buildBinary({ entrypoints, binName })` owns the compile config once and writes every binary to `~/.local/bin/<binName>`. `packages/cli-hook/build.ts` is refactored to a thin wrapper (behavior unchanged); `packages/lsp-proxy/build.ts` is the same wrapper with `binName: "lsp-proxy"`. The `.lsp.json` invokes the bare binary name. |
+| D9 | Binaries are built through a shared private package `packages/bin-builder/` (`@cc-sdd/bin-builder`): `buildBinary({ entrypoints, binName })` owns the compile config once and writes every binary to `~/.local/bin/<binName>`. `packages/cli-hook/build.ts` is refactored to a thin wrapper (behavior unchanged); `packages/lsp-proxy/build.ts` is the same wrapper with `binName: "lsp-proxy"`. The `.lsp.json` invokes the bare binary name. Task 1 of the plan, before any lsp-proxy module. |
 | D10 | Each downstream server carries its own `extensionToLanguage` map in the proxy config (keys drive routing). The plugin `.lsp.json`'s `extensionToLanguage` is a GENERATED artifact — the `sync-extensions` command unions all server maps into it; the file is never hand-maintained. |
-| D11 | Child-process control uses the documented Bun.spawn surface: `onExit(proc, exitCode, signalCode)` for exit handling, `signal` (AbortSignal) so one abort kills the child tree, explicit `kill(signal)` where needed. A pidfile registry under `~/.local/state/lsp-proxy/` plus a `lsp-proxy --kill-all` mode lets a fresh process terminate every running proxy and its downstream servers; the plugin wires it to a `SessionEnd` hook (that hook event's documented purpose is session-end cleanup). |
+| D11 | Process control uses ONLY Bun's native types and surface (verified in `bun-types@1.4.2/bun.d.ts`): `Bun.spawn` called directly (no injection, no casts — `const` generics infer `Subprocess<"pipe","pipe","inherit">` from the literal options), `onExit` callback as the exit event, `AbortSignal` per server, `pid` read straight off the child. The registry of running downstream servers is the in-memory `Map` of server-name → child (pids ride on the `Subprocess` objects; no pidfiles, no JSON state, no state directory, no `--kill-all`). Session teardown needs none of it: empirically (md-lsp-probe, 2026-10-20, `tmp/md-lsp-probe.log`) Claude Code terminates its LSPs with the protocol `shutdown` request immediately followed by SIGTERM — the proxy's existing handlers (shutdown request, exit notification, stdin EOF, SIGTERM) each cascade to the children from memory. Accepted limitation: a SIGKILLed proxy leaves its children orphaned (no recovery mechanism; out of POC). |
 
 ## 4. Architecture
 
 `packages/lsp-proxy/src/` — one module, one responsibility. All modules
-except `downstream.ts`, `proxy.ts`, `main.ts` are pure (no I/O); that
-purity is the TDD surface.
+except `downstream.ts`, `proxy.ts`, `main.ts`, `kill-all.ts` are pure (no
+I/O); that purity is the TDD surface.
 
 | Module | Responsibility | I/O |
 |---|---|---|
@@ -64,15 +64,14 @@ purity is the TDD surface.
 | `config.ts` | Load + validate `lsp-proxy.config.json` | file read injected |
 | `router.ts` | (URI, method) → set of downstream servers: extension map keys + declared-capability filter | pure |
 | `mux.ts` | Pending-request table: client id → (server, server id); cancel tracking | pure |
-| `docstore.ts` | Track latest open-document texts: apply didChange content changes (full + incremental); feeds respawn replay (6.1) | pure |
 | `merge.ts` | Merge responses per result shape | pure |
 | `capabilities.ts` | `initialize` merge: capability union, pull-diagnostics hiding, sync policy | pure |
-| `downstream.ts` | Spawn + supervise one server (`Bun.spawn` with native types `typeof Bun.spawn` / `Bun.Subprocess<"pipe","pipe","inherit">`, `onExit`, per-server `AbortSignal`) | I/O |
-| `pidfile.ts` | Registry under `~/.local/state/lsp-proxy/`: save/load/remove `{ pid, children }` records; the `--kill-all` sweep | fs I/O |
-| `proxy.ts` | Orchestration of both directions | I/O |
-| `main.ts` | Load config, `--kill-all` branch, wire client I/O (`Bun.stdin`/`Bun.stdout`), start loop | I/O |
-| `build.ts` | Thin wrapper over `@cc-sdd/bin-builder` (see 6.4) | I/O |
-| `sync-extensions.ts` | Generate the plugin `.lsp.json` extension map from the config (see 6.6); pure core + thin CLI | file I/O |
+| `docstore.ts` | Track latest open-document texts: apply didChange content changes (full + incremental); feeds respawn replay (6.1) | pure |
+| `downstream.ts` | Spawn + supervise one server — `Bun.spawn` with native types, `onExit`, per-server `AbortSignal`, `kill()`, `pid`, `exited` | I/O |
+| `proxy.ts` | Orchestration of both directions; the `servers: Map<string, Downstream>` IS the in-memory registry (D11) | I/O |
+| `main.ts` | parseArgs (config positional), wire `Bun.stdin`/`Bun.stdout`, SIGTERM handler | I/O |
+| `build.ts` | Thin wrapper over `@cc-sdd/bin-builder` (6.4) | I/O |
+| `sync-extensions.ts` | Generate the plugin `.lsp.json` extension map from the config (6.6); pure core + thin CLI | file I/O |
 
 Data flow: Claude Code → `Bun.stdin` → framing → proxy (routing) → mux
 (new per-server ids) → downstream stdin → downstream stdout → framing →
@@ -116,8 +115,8 @@ sequenceDiagram
   report 2, otherwise that server is rejected at startup with a stderr log
   (D6); `serverInfo` identifies the proxy.
 - `initialized` notification → all servers. `shutdown` → all; respond to
-  the client after all respond. `exit` and client stdin EOF → SIGTERM to
-  children, grace period, SIGKILL, proxy exits 0.
+  the client after all respond. `exit` and client stdin EOF → cascade
+  teardown (6.1).
 
 ### 5.2 Server→client requests
 
@@ -141,7 +140,7 @@ sequenceDiagram
 
 | Result shape / methods | Rule |
 |---|---|
-| Set arrays: `definition`, `references`, `documentSymbol`, `codeAction` | Concatenate; `codeAction/resolve` routed back to the originating server |
+| Set arrays: `definition`, `references`, `documentSymbol`, `codeAction` | Concatenate; `codeAction/resolve` routed back to the originating server (actions are tagged with their origin in `data`) |
 | `completion` | Merge `CompletionList`: `items` concatenated, `isIncomplete` = OR; a null list counts as empty |
 | `hover` | Contents joined (all `MarkupContent` → joined with blank line) |
 | Single-document results: `formatting`, `rangeFormatting` | Servers are asked sequentially in config-priority order; the first non-null result wins (lower-priority servers are never asked, so no cancellations are needed) |
@@ -157,22 +156,37 @@ pending servers. Server-initiated `$/`-notifications are dropped (log);
 
 ### 6.1 Downstream supervision
 
-- Spawn via the documented Bun options object: `Bun.spawn({ cmd, env:
-  { ...process.env, ...server.env }, stdin: "pipe", stdout: "pipe",
-  stderr: "inherit", signal, onExit })` — `onExit(proc, exitCode,
-  signalCode)` is the exit event source (no manual `exited.then`
-  polling), and each server gets an `AbortSignal` from its own
-  `AbortController` so `abort()` kills the child natively (D11).
+- Spawn exactly per the documented options, with native types only (D11):
+
+  ```ts
+  Bun.spawn({
+    cmd: [server.command, ...server.args],
+    env: { ...process.env, ...server.env },
+    onExit: (subprocess, exitCode, signalCode) => { /* exit event */ },
+    signal: perServerAbortController.signal,
+    stderr: "inherit",
+    stdin: "pipe",
+    stdout: "pipe",
+  })
+  ```
+
+  The return value's type is inferred (`Subprocess<"pipe", "pipe",
+  "inherit">`) — no casts, no custom process types. `onExit` may run
+  before `Bun.spawn` returns (documented) — handlers must tolerate that.
+- The proxy keeps the running registry in memory: `servers:
+  Map<string, Downstream>`; each `Downstream` holds its `Subprocess`
+  (hence `pid`). Nothing is written to disk (D11).
 - The proxy tracks the latest text of every open document (it observes
   all `didOpen`/`didChange` passing through).
 - Server exit → stderr log → single respawn → re-`initialize` → replay
   `didOpen` with the tracked texts. Second death → server marked dead,
   proxy continues without it. All dead → proxy stays alive, client
   requests fail with errors.
-- Teardown: `kill("SIGTERM")` to every child, SIGKILL escalation after a
-  2s grace period; the proxy exits 0 (children are killed explicitly, so
-  bun's parent-waits-for-children behavior never blocks exit; `unref()`
-  is not used).
+- Teardown (client `exit`, stdin EOF, proxy SIGTERM): `kill("SIGTERM")`
+  to every child; exit resolves from the children's `exited` promises;
+  any straggler is SIGKILLed after a 2s grace, then the proxy exits 0.
+  Children are killed explicitly, so bun's parent-waits-for-children
+  behavior never blocks exit (`unref()` is not used).
 
 ### 6.2 Error handling
 
@@ -191,40 +205,50 @@ Array order = priority for single-result methods (D4). Each server's
 {
   "servers": [
     {
-      "name": "vtsls",
-      "command": "vtsls",
       "args": ["--stdio"],
+      "command": "vtsls",
       "extensionToLanguage": {
-        ".ts": "typescript", ".tsx": "typescriptreact",
-        ".js": "javascript", ".jsx": "javascriptreact",
-        ".mjs": "javascript", ".cjs": "javascript"
+        ".cjs": "javascript",
+        ".js": "javascript",
+        ".jsx": "javascriptreact",
+        ".mjs": "javascript",
+        ".ts": "typescript",
+        ".tsx": "typescriptreact"
       },
       "initializationOptions": {},
+      "name": "vtsls",
       "settings": {}
     },
     {
-      "name": "biome",
-      "command": "biome",
       "args": ["lsp-proxy"],
+      "command": "biome",
       "extensionToLanguage": {
-        ".ts": "typescript", ".tsx": "typescriptreact",
-        ".js": "javascript", ".jsx": "javascriptreact",
-        ".mjs": "javascript", ".cjs": "javascript",
-        ".json": "json", ".jsonc": "json", ".css": "css"
+        ".cjs": "javascript",
+        ".css": "css",
+        ".js": "javascript",
+        ".json": "json",
+        ".jsonc": "json",
+        ".jsx": "javascriptreact",
+        ".mjs": "javascript",
+        ".ts": "typescript",
+        ".tsx": "typescriptreact"
       },
       "initializationOptions": {},
+      "name": "biome",
       "settings": {}
     }
   ]
 }
 ```
 
-Validation: `name` non-empty and unique; `command` non-empty;
-`extensionToLanguage` non-empty, keys start with `.`, values non-empty;
-two servers mapping the same extension to DIFFERENT languages is a
-validation error; `args`, `env`, `initializationOptions`, `settings`
-optional. The config path is a CLI argument with the package file as
-default.
+Both commands resolve on PATH (verified 2026-10-20: `vtsls` →
+`~/.bun/bin/vtsls`, `biome` → `/opt/homebrew/bin/biome`; bare names,
+PATH inherited from Claude Code). Validation: `name` non-empty and
+unique; `command` non-empty; `extensionToLanguage` non-empty, keys start
+with `.`, values non-empty; two servers mapping the same extension to
+DIFFERENT languages is a validation error; `args`, `env`,
+`initializationOptions`, `settings` optional. The config path is a CLI
+argument with the package file as default.
 
 ### 6.4 Binary builder — shared package (D9)
 
@@ -235,8 +259,8 @@ deps) owns the build logic once instead of per-package copies:
   `packages/cli-hook/build.ts` semantics: `Bun.build` with `compile` +
   `bytecode` + `minify` + `sourcemap: "linked"`, target
   `bun-darwin-arm64`, `autoloadBunfig: false`, `autoloadDotenv: false`,
-  outfile `~/.local/bin/<binName>`, failure → print logs and exit 1.
-  The pure part (options/outfile derivation, error mapping) is
+  outfile `~/.local/bin/<binName>`, failure → throw; wrappers print and
+  exit 1. The pure part (options/outfile derivation, error mapping) is
   unit-tested with `Bun.build` injected; the thin run function stays
   untested I/O.
 - `packages/cli-hook/build.ts` → thin wrapper:
@@ -249,8 +273,8 @@ deps) owns the build logic once instead of per-package copies:
   "workspace:*"` in `devDependencies` (manifest edits are planned
   steps; `bun install` and the lockfile are owner actions — agents
   never install).
-- Task ordering: the shared package (TDD) lands first, together with the
-  cli-hook refactor; the lsp-proxy wrapper consumes it afterwards.
+- Plan ordering: the shared package (TDD) + the cli-hook refactor is
+  Task 1, before any lsp-proxy module.
 
 ### 6.5 Registration — `plugins/lsp-proxy/`
 
@@ -259,7 +283,6 @@ plugins/lsp-proxy/
 ├── .claude-plugin/plugin.json   # name: lsp-proxy
 ├── .lsp.json                    # minimal, transport only (D3);
 │                                 # extensionToLanguage is GENERATED (D10)
-├── hooks/hooks.json             # SessionEnd -> lsp-proxy --kill-all (D11, 6.7)
 └── README.md                    # build prerequisite + requirements
 ```
 
@@ -270,8 +293,8 @@ produced by `sync-extensions` (6.6), never edited by hand:
 ```json
 {
   "lsp-proxy": {
-    "command": "lsp-proxy",
     "args": ["/Users/vasilsokolik/www/cc-sdd/packages/lsp-proxy/lsp-proxy.config.json"],
+    "command": "lsp-proxy",
     "extensionToLanguage": {
       ".cjs": "javascript",
       ".css": "css",
@@ -294,10 +317,8 @@ pattern as the security-guard hook). The absolute config path follows the
 biome-lsp precedent for absolute paths. README documents: `bun run
 build-bin` prerequisite, `bun run sync-extensions` after every config
 edit (D10), `bun` required at build time only (binary is standalone),
-and both downstream commands resolvable on PATH (verified 2026-10-20:
-`vtsls` → `~/.bun/bin/vtsls`, `biome` → `/opt/homebrew/bin/biome`; bare
-names in the proxy config, PATH inherited from Claude Code).
-If `.claude-plugin/marketplace.json` enumerates plugins, add the entry;
+and both downstream commands resolvable on PATH. If
+`.claude-plugin/marketplace.json` enumerates plugins, add the entry;
 `claude plugin validate .` must stay green.
 
 ### 6.6 `sync-extensions` — generated extension map (D10)
@@ -312,35 +333,29 @@ thin CLI:
 - `mergeIntoLspJson(lspJsonText, union)`: parses the plugin `.lsp.json`,
   replaces ONLY the `extensionToLanguage` field of the `lsp-proxy`
   entry, preserves every other field and entry; output is sorted-keys,
-  2-space-indent JSON with trailing newline (biome-clean formatting).
+  2-space-indent JSON with trailing newline, short primitive arrays
+  inlined (biome-clean formatting).
 - CLI: argument parsing via `node:util`'s built-in `parseArgs` (no
-  dependencies; the same handling serves the proxy binary's config-path
-  argument). Defaults — config `<package>/lsp-proxy.config.json`, target
+  dependencies). Defaults — config
+  `<package>/lsp-proxy.config.json`, target
   `<repo>/plugins/lsp-proxy/.lsp.json`; both overridable as positionals.
   Invalid config or conflict → stderr message, exit 1, target file
   untouched. Idempotent: running twice produces byte-identical output.
 
-### 6.7 Process lifecycle safety net — `--kill-all` (D11)
+### 6.7 Session teardown (D11) — no cleanup hook, no flags
 
-Whether Claude Code kills the whole LSP process TREE at session end is
-[Unverified]; a SIGKILLed proxy leaves its children (vtsls, biome)
-orphaned. The net:
-
-- Pidfile registry `~/.local/state/lsp-proxy/<proxy-pid>.json`
-  (`{ pid, children }`): written by the proxy once its servers are
-  initialized, updated after any respawn, removed on clean shutdown.
-- `lsp-proxy --kill-all` (a `parseArgs` boolean flag): loads every
-  record, SIGTERMs children then the proxy pid, removes records (dead
-  pids are swept as stale), logs a summary to stderr, exits 0. Idempotent
-  and a no-op when the registry is empty.
-- Plugin hook `hooks/hooks.json`: the `SessionEnd` event runs
-  `lsp-proxy --kill-all` (timeout 10s). SessionEnd's documented purpose
-  is exactly session-end cleanup; the command is fast and safe to run
-  even when everything already exited.
-- In-process teardown stays primary: SIGTERM to every child with SIGKILL
-  escalation after a 2s grace period; children are killed explicitly, so
-  bun's parent-waits-for-children behavior never blocks the proxy's exit
-  (`unref()` is not used).
+Verified empirically (md-lsp-probe, 2026-10-20, probe log in `tmp/`):
+Claude Code spawns its LSP lazily (at the first action on a matching
+file) and terminates it at session end with the protocol `shutdown`
+request immediately followed by SIGTERM. The proxy therefore needs no
+`--kill-all`, no SessionEnd hook, and no on-disk registry — every
+teardown path it already handles (`shutdown` request, `exit`
+notification, stdin EOF, SIGTERM) cascades to the children from the
+in-memory `servers` Map (6.1). The SIGTERM arrives ~1ms after `shutdown`,
+so the cascade must not depend on completing the shutdown-response dance
+first — killing children starts directly on SIGTERM. A proxy killed with
+SIGKILL would orphan its children; that edge is explicitly out of POC
+(§10).
 
 ## 7. Process — TDD (D8)
 
@@ -349,9 +364,8 @@ Strict RED → GREEN → REFACTOR per module; plan tasks carry explicit RED
 pure → I/O:
 
 `framing` → `config` → `router` → `mux` → `merge` → `capabilities` →
-`docstore` → `downstream` → `proxy` → `pidfile` + `--kill-all` in `main`
-wiring → `build.ts` wrapper → `sync-extensions` → plugin registration
-(including `hooks/hooks.json`).
+`docstore` → `downstream` → `proxy` → `main` wiring → `build.ts` wrapper
+→ `sync-extensions` → plugin registration.
 
 Task 1 (owner-ordered, before any lsp-proxy module):
 `packages/bin-builder/` (TDD) + the cli-hook `build.ts` refactor, per
@@ -359,13 +373,16 @@ Task 1 (owner-ordered, before any lsp-proxy module):
 
 Tests: `bun:test`, colocated in `tests/` mirroring modules. Integration
 surface: `tests/fixtures/stub-server.ts` — a small Bun script speaking
-minimal LSP (initialize → publishDiagnostics → hover/completion), spawned
-by tests via `Bun.spawn`. Integration scenarios: initialize dance with
-two stubs; merged diagnostics from both; extension routing (didOpen only
-to owners); id remapping correctness; `$/cancelRequest`; formatting
+minimal LSP (initialize → publishDiagnostics → hover/completion →
+optional `workspace/configuration` drill), spawned by tests via
+`Bun.spawn`. Integration scenarios: initialize dance with two stubs;
+merged diagnostics from both; extension routing (didOpen only to
+owners); id remapping correctness; `$/cancelRequest`; formatting
 priority; crash → respawn → replay; malformed-frame resync; shutdown
-cascade. `sync-extensions` unit tests: union, conflict error, field
-preservation, idempotency, sorted output.
+cascade; rejected full-sync server; the `workspace/configuration` drill;
+SIGTERM-to-proxy cascades to children (exit-marker stub). `sync-extensions`
+unit tests: union, conflict error, field preservation, idempotency,
+sorted output.
 
 Acceptance is owner-run (D1) per §2.
 
@@ -377,17 +394,15 @@ Acceptance is owner-run (D1) per §2.
 4. `claude plugin validate .` — green after the plugin lands.
 5. `cd packages/cli-hook && bun run build-bin` still produces a working
    `~/.local/bin/claude-code-cli-hook` after the builder refactor.
-6. `lsp-proxy --kill-all` — no-op smoke on an empty registry (the
-   populated path is covered by tests; D11).
-6. `bun run sync-extensions` in `packages/lsp-proxy/` — idempotent,
-   biome-clean, .lsp.json matches the config union.
 
 ## 9. Session constraints
 
 Agent is git-read-only; the owner commits at stop points. `biome.json`
 and `.zed/` are never touched. No dependency additions
 (`vscode-languageserver-types` is already installed for protocol typing;
-framing is hand-rolled). Workspace dependency wiring
+framing is hand-rolled). No custom types where Bun ships them —
+`Bun.spawn` is called directly with literal options and its native
+return type is used as-is (D11). Workspace dependency wiring
 (`@cc-sdd/bin-builder: workspace:*`) is a planned manifest edit; running
 `bun install` and updating the lockfile are owner actions — agents never
 install. Subagent shell commands use literal paths.
@@ -395,6 +410,9 @@ install. Subagent shell commands use literal paths.
 ## 10. Deferred (explicitly out of POC)
 
 Full-sync translation, `workspace/applyEdit` forwarding, diagnostics
-dedup, lazy spawn, byte-level passthrough fast path, config hot-reload
-(including auto-sync of `.lsp.json` on config change), non-darwin
+dedup, lazy spawn of downstream servers, byte-level passthrough fast
+path, config hot-reload (including auto-sync of `.lsp.json` on config
+change), orphan recovery for a SIGKILLed proxy (a `--kill-all` /
+SessionEnd-hook mechanism was dropped 2026-10-20: the client already
+sends `shutdown` + SIGTERM — probe evidence in `tmp/`), non-darwin
 targets, socket transports.
