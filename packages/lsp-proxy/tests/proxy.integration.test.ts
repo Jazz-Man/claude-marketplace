@@ -1,4 +1,4 @@
-import { describe, expect, it } from "bun:test";
+import { afterEach, describe, expect, it } from "bun:test";
 import { existsSync, mkdtempSync, readFileSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
@@ -6,6 +6,7 @@ import process from "node:process";
 
 import {
   boot,
+  cleanupTempConfigs,
   diagnosticTexts,
   initializeSession,
   openDocument,
@@ -17,10 +18,12 @@ import {
 } from "./helpers/proxy-harness.ts";
 import { waitFor } from "./helpers/wait.ts";
 
+afterEach(cleanupTempConfigs);
+
 const TS = { ".ts": "typescript" };
 
 describe("client session", () => {
-  it("initialize: merges capabilities from both stubs and hides pull diagnostics", async () => {
+  it("initialize: merges capabilities from both stubs", async () => {
     const proxy = await boot([stub("alpha", {}, TS), stub("beta", {}, TS)]);
     const response = responseFor(proxy, 1);
     expect(response?.result).toMatchObject({

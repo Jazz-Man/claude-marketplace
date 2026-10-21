@@ -1,4 +1,3 @@
-import { stripPullDiagnostics } from "./capabilities.ts";
 import type { ProxyConfig, ServerConfig } from "./config.ts";
 import type { DocumentStore } from "./docstore.ts";
 import { Downstream } from "./downstream.ts";
@@ -54,6 +53,14 @@ export class ServerSide {
 
   reject(server: string): void {
     this.rejected.add(server);
+  }
+
+  pullCapable(downstreams: Downstream[]): Downstream[] {
+    return downstreams.filter(
+      (downstream) =>
+        this.capabilities.get(downstream.name)?.diagnosticProvider !==
+        undefined,
+    );
   }
 
   prepareReply(server: string): { id: number; reply: Promise<void> } {
@@ -141,11 +148,7 @@ export class ServerSide {
     if (serverConfig === undefined) {
       return;
     }
-    const forwarded = {
-      ...this.host.clientParams,
-      capabilities: stripPullDiagnostics(this.host.clientParams.capabilities),
-    };
-    await this.startServer(serverConfig, forwarded);
+    await this.startServer(serverConfig, this.host.clientParams);
     this.replayDocuments(serverConfig);
   }
 

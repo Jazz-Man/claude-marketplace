@@ -1,4 +1,3 @@
-import { afterEach } from "bun:test";
 import { readdirSync, rmSync } from "node:fs";
 import { join } from "node:path";
 import process from "node:process";
@@ -7,14 +6,15 @@ import type { JsonRpcMessage } from "../../src/framing.ts";
 import { createDecoder, encodeFrame } from "../../src/framing.ts";
 import { waitFor } from "./wait.ts";
 
-afterEach(() => {
-  const testsDir = join(import.meta.dir, "..");
-  for (const entry of readdirSync(testsDir)) {
+const TESTS_DIR = join(import.meta.dir, "..");
+
+export function cleanupTempConfigs(): void {
+  for (const entry of readdirSync(TESTS_DIR)) {
     if (entry.startsWith("tmp-config-")) {
-      rmSync(join(testsDir, entry), { force: true });
+      rmSync(join(TESTS_DIR, entry), { force: true });
     }
   }
-});
+}
 
 const MAIN = join(import.meta.dir, "..", "..", "src", "main.ts");
 const STUB = join(import.meta.dir, "..", "fixtures", "stub-server.ts");
@@ -124,28 +124,26 @@ export function openDocument(
   });
 }
 
-export function publications(proxy: ProxyHandle): JsonRpcMessage[] {
-  return proxy.clientMessages.filter(
+export const publications = (proxy: ProxyHandle) =>
+  proxy.clientMessages.filter(
     (message) => message.method === "textDocument/publishDiagnostics",
   );
-}
 
-export function diagnosticTexts(proxy: ProxyHandle): string {
-  return publications(proxy)
+export const diagnosticTexts = (proxy: ProxyHandle) =>
+  publications(proxy)
     .map((message) =>
       JSON.stringify(
-        (message.params as { diagnostics: unknown[] }).diagnostics,
+        (
+          message.params as {
+            diagnostics: unknown[];
+          }
+        ).diagnostics,
       ),
     )
     .join("\n");
-}
 
-export function responseFor(
-  proxy: ProxyHandle,
-  id: number,
-): JsonRpcMessage | undefined {
-  return proxy.clientMessages.find((message) => message.id === id);
-}
+export const responseFor = (proxy: ProxyHandle, id: number) =>
+  proxy.clientMessages.find((message) => message.id === id);
 
 export async function boot(servers: unknown[]): Promise<ProxyHandle> {
   const configPath = await writeConfig(servers);

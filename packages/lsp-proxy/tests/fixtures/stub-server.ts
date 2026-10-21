@@ -15,6 +15,7 @@ interface StubDiagnostic {
 interface StubOptions {
   askConfiguration?: boolean;
   completionItems?: unknown[];
+  declareDiagnosticProvider?: boolean;
   diagnostics?: StubDiagnostic[];
   exitMarker?: string;
   exitOnDidOpen?: boolean;
@@ -45,22 +46,24 @@ const send = (id: number | string | null, result: unknown): void => {
   write({ id, jsonrpc: "2.0", result });
 };
 
+const configuredDiagnostics = (): StubDiagnostic[] =>
+  options.diagnostics ?? [{ message: `diag from ${name}` }];
+
+const buildItems = (diagnostics: StubDiagnostic[]): unknown[] =>
+  diagnostics.map((diagnostic, index) => ({
+    message: diagnostic.message,
+    range: {
+      end: { character: 0, line: index },
+      start: { character: 0, line: index },
+    },
+    severity: diagnostic.severity ?? 1,
+  }));
+
 const publish = (uri: string): void => {
-  const diagnostics = options.diagnostics ?? [{ message: `diag from ${name}` }];
   write({
     jsonrpc: "2.0",
     method: "textDocument/publishDiagnostics",
-    params: {
-      diagnostics: diagnostics.map((diagnostic, index) => ({
-        message: diagnostic.message,
-        range: {
-          end: { character: 0, line: index },
-          start: { character: 0, line: index },
-        },
-        severity: diagnostic.severity ?? 1,
-      })),
-      uri,
-    },
+    params: { diagnostics: buildItems(configuredDiagnostics()), uri },
   });
 };
 
@@ -76,14 +79,25 @@ const resolveConfiguration = (message: JsonRpcMessage): void => {
 };
 
 const initialize = (message: JsonRpcMessage): void => {
+  const capabilities: Record<string, unknown> = {
+    completionProvider: true,
+    documentFormattingProvider: true,
+    hoverProvider: true,
+    textDocumentSync: options.sync ?? 2,
+  };
+  if (options.declareDiagnosticProvider === true) {
+    capabilities.diagnosticProvider = {
+      interFileDependencies: false,
+      workspaceDiagnostics: false,
+    };
+  }
+  send(message.id ?? null, { capabilities, serverInfo: { name } });
+};
+
+const answerDiagnosticPull = (message: JsonRpcMessage): void => {
   send(message.id ?? null, {
-    capabilities: {
-      completionProvider: true,
-      documentFormattingProvider: true,
-      hoverProvider: true,
-      textDocumentSync: options.sync ?? 2,
-    },
-    serverInfo: { name },
+    items: buildItems(configuredDiagnostics()),
+    kind: "full",
   });
 };
 
@@ -92,6 +106,9 @@ const openDocument = (message: JsonRpcMessage): void => {
   const { uri } = params.textDocument;
   if (options.exitOnDidOpen === true) {
     process.exit(17);
+  }
+  if (options.declareDiagnosticProvider === true) {
+    return;
   }
   if (options.askConfiguration === true) {
     const id = nextId;
@@ -142,6 +159,10 @@ const decode = createDecoder((message) => {
   }
   if (message.method === "textDocument/hover") {
     hoverDocument(message);
+    return;
+  }
+  if (message.method === "textDocument/diagnostic") {
+    answerDiagnosticPull(message);
     return;
   }
   if (message.method === "textDocument/completion") {

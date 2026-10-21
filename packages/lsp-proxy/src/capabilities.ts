@@ -69,20 +69,6 @@ function mergedProviderValue(
   return undefined;
 }
 
-export function stripPullDiagnostics(clientCapabilities: unknown): unknown {
-  if (!isRecord(clientCapabilities)) {
-    return clientCapabilities;
-  }
-  const clone = structuredClone(clientCapabilities);
-  const { textDocument } = clone;
-  if (isRecord(textDocument)) {
-    clone.textDocument = Object.fromEntries(
-      Object.entries(textDocument).filter(([key]) => key !== "diagnostic"),
-    );
-  }
-  return clone;
-}
-
 export function mergeCapabilities(
   inputs: CapabilitiesInput[],
   priority: string[],

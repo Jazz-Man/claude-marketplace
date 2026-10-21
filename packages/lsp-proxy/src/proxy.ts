@@ -1,6 +1,6 @@
 import process from "node:process";
 
-import { mergeCapabilities, stripPullDiagnostics } from "./capabilities.ts";
+import { mergeCapabilities } from "./capabilities.ts";
 import type { ProxyConfig, ServerConfig } from "./config.ts";
 import { DocumentStore } from "./docstore.ts";
 import type { Downstream } from "./downstream.ts";
@@ -49,6 +49,7 @@ export class LspProxy {
     this.broker = new RequestBroker({
       config,
       log: (line) => this.log(line),
+      notify: (message) => this.write(message),
       replyErrorTo: (id, code, message) => this.replyErrorTo(id, code, message),
       replyTo: (id, result) => this.replyTo(id, result),
       servers: this.servers,
@@ -186,13 +187,9 @@ export class LspProxy {
     ) {
       this.clientParams = params as Record<string, unknown>;
     }
-    const forwarded = {
-      ...this.clientParams,
-      capabilities: stripPullDiagnostics(this.clientParams.capabilities),
-    };
     await Promise.all(
       this.config.servers.map((serverConfig) =>
-        this.serverSide.startServer(serverConfig, forwarded),
+        this.serverSide.startServer(serverConfig, this.clientParams),
       ),
     );
     const merge = mergeCapabilities(
@@ -246,9 +243,13 @@ export class LspProxy {
     if (message.method === "textDocument/didClose") {
       this.docs.close(uri);
     }
-    this.broadcastNotification(
-      message,
-      this.liveRecipients(serversForDocument(this.config, uri)),
+    const recipients = serversForDocument(this.config, uri);
+    const live = this.liveRecipients(recipients);
+    this.broadcastNotification(message, live);
+    this.broker.pullDiagnostics(
+      uri,
+      message.method ?? "",
+      this.serverSide.pullCapable(live),
     );
   }
 

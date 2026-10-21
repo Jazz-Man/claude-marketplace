@@ -1,9 +1,6 @@
 import { describe, expect, it } from "bun:test";
 
-import {
-  mergeCapabilities,
-  stripPullDiagnostics,
-} from "../src/capabilities.ts";
+import { mergeCapabilities } from "../src/capabilities.ts";
 
 const COMPLETION_INPUTS = [
   {
@@ -74,25 +71,6 @@ const OBJECT_THEN_FALSE = [
     server: "biome",
   },
 ];
-
-describe("stripPullDiagnostics", () => {
-  it("removes textDocument.diagnostic without mutating the original", () => {
-    const original = {
-      textDocument: {
-        diagnostic: { dynamicRegistration: false },
-        hover: { dynamicRegistration: true },
-      },
-    };
-    const stripped = stripPullDiagnostics(original) as typeof original;
-    expect(stripped.textDocument.diagnostic).toBeUndefined();
-    expect(stripped.textDocument.hover).toEqual({ dynamicRegistration: true });
-    expect(original.textDocument.diagnostic).toBeDefined();
-  });
-
-  it("tolerates missing textDocument", () => {
-    expect(stripPullDiagnostics({})).toEqual({});
-  });
-});
 
 describe("mergeCapabilities", () => {
   it("ORs provider booleans and forces incremental sync", () => {

@@ -25,6 +25,7 @@ export function toOutcome(
 export interface RequestHost {
   config: ProxyConfig;
   log: (line: string) => void;
+  notify: (message: JsonRpcMessage) => void;
   replyErrorTo: (
     id: number | string | null,
     code: number,
@@ -32,6 +33,17 @@ export interface RequestHost {
   ) => void;
   replyTo: (id: number | string | null, result: unknown) => void;
   servers: Map<string, Downstream>;
+}
+
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return typeof value === "object" && value !== null && !Array.isArray(value);
+}
+
+function itemsOf(result: unknown): unknown[] {
+  if (isRecord(result) && Array.isArray(result.items)) {
+    return result.items;
+  }
+  return [];
 }
 
 export class RequestBroker {
@@ -157,6 +169,18 @@ export class RequestBroker {
       });
   }
 
+  pullDiagnostics(uri: string, method: string, recipients: Downstream[]): void {
+    if (
+      method !== "textDocument/didOpen" &&
+      method !== "textDocument/didChange"
+    ) {
+      return;
+    }
+    for (const downstream of recipients) {
+      this.sendPull(downstream, uri);
+    }
+  }
+
   resolveServerResponse(
     server: string,
     serverId: number,
@@ -174,6 +198,43 @@ export class RequestBroker {
     }
     waiter.resolve(toOutcome(message, server));
     return true;
+  }
+
+  private sendPull(downstream: Downstream, uri: string): void {
+    const serverId = this.mux.assign(
+      0,
+      downstream.name,
+      "textDocument/diagnostic",
+      uri,
+    );
+    const outcome = new Promise<ServerOutcome>((resolve) => {
+      this.waiters.set(`${downstream.name}:${serverId}`, { resolve });
+    });
+    downstream.send({
+      id: serverId,
+      jsonrpc: "2.0",
+      method: "textDocument/diagnostic",
+      params: { textDocument: { uri } },
+    });
+    outcome
+      .then((resolved) => {
+        if (resolved.error !== undefined) {
+          this.host.log(
+            `${downstream.name}: pull diagnostics failed: ${resolved.error.message}`,
+          );
+          return;
+        }
+        this.host.notify({
+          jsonrpc: "2.0",
+          method: "textDocument/publishDiagnostics",
+          params: { diagnostics: itemsOf(resolved.result), uri },
+        });
+      })
+      .catch((reason: unknown) => {
+        this.host.log(
+          `pull diagnostics for ${downstream.name}: ${String(reason)}`,
+        );
+      });
   }
 
   private askOnce(
