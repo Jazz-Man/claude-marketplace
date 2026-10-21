@@ -102,6 +102,10 @@ export class ServerSide {
     });
     this.host.servers.set(name, downstream);
     downstream.start();
+    const childPid = downstream.pid;
+    if (childPid !== undefined) {
+      this.host.log(`spawned ${name} pid=${String(childPid)}`);
+    }
     const { id, reply } = this.registerReply(name, true);
     downstream.send({
       id,

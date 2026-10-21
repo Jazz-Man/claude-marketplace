@@ -25,6 +25,20 @@ function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === "object" && value !== null && !Array.isArray(value);
 }
 
+function reportsIncremental(sync: unknown): boolean {
+  if (sync === 2) {
+    return true;
+  }
+  return isRecord(sync) && sync.change === 2;
+}
+
+function describeSync(sync: unknown): string {
+  if (isRecord(sync)) {
+    return JSON.stringify(sync);
+  }
+  return String(sync);
+}
+
 function mergedProviderValue(
   accepted: CapabilitiesInput[],
   key: string,
@@ -77,13 +91,13 @@ export function mergeCapabilities(
     (left, right) =>
       priority.indexOf(left.server) - priority.indexOf(right.server),
   );
-  const accepted = orderedInputs.filter(
-    (input) => input.capabilities.textDocumentSync === 2,
+  const accepted = orderedInputs.filter((input) =>
+    reportsIncremental(input.capabilities.textDocumentSync),
   );
   const rejected = orderedInputs
-    .filter((input) => input.capabilities.textDocumentSync !== 2)
+    .filter((input) => !reportsIncremental(input.capabilities.textDocumentSync))
     .map((input) => ({
-      reason: `textDocumentSync must be 2 (incremental), got ${String(
+      reason: `textDocumentSync must be 2 (incremental), got ${describeSync(
         input.capabilities.textDocumentSync,
       )}`,
       server: input.server,

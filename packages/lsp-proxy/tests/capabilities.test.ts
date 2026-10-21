@@ -148,3 +148,32 @@ describe("mergeCapabilities", () => {
     });
   });
 });
+
+describe("mergeCapabilities — sync object form (live vtsls finding)", () => {
+  it("accepts the TextDocumentSyncOptions form with change: 2", () => {
+    const merged = mergeCapabilities(
+      [
+        {
+          capabilities: { textDocumentSync: { change: 2, openClose: true } },
+          server: "vtsls",
+        },
+      ],
+      ["vtsls"],
+    );
+    expect(merged.rejected).toEqual([]);
+    expect(merged.merged.textDocumentSync).toBe(2);
+  });
+
+  it("rejects the object form whose change is not 2", () => {
+    const merged = mergeCapabilities(
+      [
+        {
+          capabilities: { textDocumentSync: { change: 1, openClose: true } },
+          server: "legacy",
+        },
+      ],
+      ["legacy"],
+    );
+    expect(merged.rejected[0]?.server).toBe("legacy");
+  });
+});

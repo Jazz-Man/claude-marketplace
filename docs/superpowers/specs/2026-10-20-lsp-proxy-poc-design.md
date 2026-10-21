@@ -45,13 +45,13 @@ targets.
 | D3 | Downstream configuration lives ONLY in `packages/lsp-proxy/lsp-proxy.config.json`. The `.lsp.json` carries no `initializationOptions`/`settings` — per-server options and settings are proxy-config fields. |
 | D4 | Full merge semantics: set-valued results concatenate; hover contents join; single-document results resolve by config priority order (asked sequentially, first non-null wins). |
 | D5 | Architecture: modular merge-proxy, eager spawn of all configured servers at `initialize`, parse-everything (every message is decoded to JSON; no raw byte passthrough paths). |
-| D6 | Downstream servers must support incremental sync (`textDocumentSync: 2`); anything else is rejected at startup with a stderr log. |
+| D6 | Downstream servers must support incremental sync — `textDocumentSync` as the number `2` OR the object form `TextDocumentSyncOptions` with `change: 2` (live vtsls finding, 2026-10-21: vtsls reports the object form). Anything else is rejected at startup with a logged reason. |
 | D7 | The proxy hides the client's `textDocument/diagnostic` capability from downstream servers, forcing the push model (`publishDiagnostics`) which the proxy can forward and merge (technique from techee/lsp-proxy). |
 | D8 | Development is strictly TDD: RED → GREEN → REFACTOR per module; plan tasks carry explicit RED and GREEN steps. |
 | D9 | Binaries are built through a shared private package `packages/bin-builder/` (`@cc-sdd/bin-builder`): `buildBinary({ entrypoints, binName })` owns the compile config once and writes every binary to `~/.local/bin/<binName>`. `packages/cli-hook/build.ts` is refactored to a thin wrapper (behavior unchanged); `packages/lsp-proxy/build.ts` is the same wrapper with `binName: "lsp-proxy"`. The `.lsp.json` invokes the bare binary name. Task 1 of the plan, before any lsp-proxy module. |
 | D10 | Each downstream server carries its own `extensionToLanguage` map in the proxy config (keys drive routing). The plugin `.lsp.json`'s `extensionToLanguage` is a GENERATED artifact — the `sync-extensions` command unions all server maps into it; the file is never hand-maintained. |
 | D11 | Process control uses ONLY Bun's native types and surface (verified in `bun-types@1.4.2/bun.d.ts`): `Bun.spawn` called directly (no injection, no casts — `const` generics infer `Subprocess<"pipe","pipe","inherit">` from the literal options), `onExit` callback as the exit event, `AbortSignal` per server, `pid` read straight off the child. The registry of running downstream servers is the in-memory `Map` of server-name → child (pids ride on the `Subprocess` objects; no pidfiles, no JSON state, no state directory, no `--kill-all`). Session teardown needs none of it: empirically (md-lsp-probe, 2026-10-20, `tmp/md-lsp-probe.log`) Claude Code terminates its LSPs with the protocol `shutdown` request immediately followed by SIGTERM — the proxy's existing handlers (shutdown request, exit notification, stdin EOF, SIGTERM) each cascade to the children from memory. Accepted limitation: a SIGKILLed proxy leaves its children orphaned (no recovery mechanism; out of POC). |
-| D12 | The config path is a REQUIRED `--config <path>` string option parsed via `parseArgs` with a real options spec (`options: { config: { type: "string" } }`) — no default, no positional fallback, no `new URL(import.meta.url)` reference, and the config file is NEVER embedded in the binary. Missing `--config` exits 1 with a clear error. Rationale: Bun's bundler embeds imported/referenced files into compiled executables, and `import.meta.url` resolves against the virtual module graph inside a binary — a baked-in default would freeze the config at build time and force a rebuild on every LSP change. The binary is configuration-agnostic; the `.lsp.json` registration always passes `["--config", "<path>"]`. |
+| D12 | The config path is a `--config <path>` string option with a **default derived from `CLAUDE_PLUGIN_ROOT`** (empirically verified 2026-10-21: Claude Code passes `CLAUDE_PLUGIN_ROOT` — and `CLAUDE_PROJECT_DIR`/`CLAUDE_PLUGIN_DATA` — into LSP process env). No default, no positional fallback, no `new URL(import.meta.url)` reference, and the config file is NEVER embedded in the binary. Missing `--config` AND missing env → exit 1 with a clear error. Relative `--config` values resolve against `CLUDE_PLUGIN_ROOT`. Rationale: Bun's bundler embeds imported/referenced files into compiled executables, and `import.meta.url` resolves against the virtual module graph inside a binary — a baked-in default would freeze the config at build time. The canonical registration: config lives BESIDE the plugin (`plugins/lsp-proxy/lsp-proxy.config.json`), `.lsp.json` passes empty args — zero absolute paths, fully portable. |
 
 ## 4. Architecture
 
@@ -339,9 +339,13 @@ thin CLI:
   the union — same extension → different language is an error.
 - `mergeIntoLspJson(lspJsonText, union)`: parses the plugin `.lsp.json`,
   replaces ONLY the `extensionToLanguage` field of the `lsp-proxy`
-  entry, preserves every other field and entry; output is sorted-keys,
-  2-space-indent JSON with trailing newline, short primitive arrays
-  inlined (biome-clean formatting).
+  entry, preserves every other field and entry; output is standard
+  `JSON.stringify(x, null, 2)` + trailing newline. The generator is
+  formatting-AGNOSTIC: biome (the owner's IDE formatter and the repo
+  battery) is the single formatting authority — no custom serializer,
+  no key sorting, no width logic in the proxy (owner ruling 2026-10-21:
+  the custom stable-stringify printer duplicated knowledge biome
+  already owns — deleted).
 - CLI: argument parsing via `node:util`'s built-in `parseArgs` (no
   dependencies). Defaults — config
   `<package>/lsp-proxy.config.json`, target

@@ -7,48 +7,6 @@ function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === "object" && value !== null && !Array.isArray(value);
 }
 
-function compareCodeUnit(left: string, right: string): number {
-  if (left < right) {
-    return -1;
-  }
-  if (left > right) {
-    return 1;
-  }
-  return 0;
-}
-
-function stableStringify(value: unknown, indent = 0): string {
-  const pad = "  ".repeat(indent);
-  const innerPad = "  ".repeat(indent + 1);
-  if (Array.isArray(value)) {
-    if (value.length === 0) {
-      return "[]";
-    }
-    const allPrimitive = value.every(
-      (item) => typeof item !== "object" || item === null,
-    );
-    if (allPrimitive) {
-      return `[${value.map((item) => JSON.stringify(item)).join(", ")}]`;
-    }
-    const items = value.map(
-      (item) => `${innerPad}${stableStringify(item, indent + 1)}`,
-    );
-    return `[\n${items.join(",\n")}\n${pad}]`;
-  }
-  if (isRecord(value)) {
-    const keys = Object.keys(value).sort(compareCodeUnit);
-    if (keys.length === 0) {
-      return "{}";
-    }
-    const items = keys.map(
-      (key) =>
-        `${innerPad}${JSON.stringify(key)}: ${stableStringify(value[key], indent + 1)}`,
-    );
-    return `{\n${items.join(",\n")}\n${pad}}`;
-  }
-  return JSON.stringify(value);
-}
-
 export function extensionUnion(config: ProxyConfig): Record<string, string> {
   const union: Record<string, string> = {};
   for (const server of config.servers) {
@@ -80,7 +38,7 @@ export function mergeIntoLspJson(
     ...parsed,
     "lsp-proxy": { ...entry, extensionToLanguage: union },
   };
-  return `${stableStringify(updated)}\n`;
+  return `${JSON.stringify(updated, null, 2)}\n`;
 }
 
 const isDirectRun = process.argv[1]?.endsWith("sync-extensions.ts");

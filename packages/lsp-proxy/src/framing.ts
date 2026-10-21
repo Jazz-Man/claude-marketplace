@@ -1,7 +1,10 @@
+import { Buffer } from "node:buffer";
+
 const textEncoder = new TextEncoder();
 const textDecoder = new TextDecoder();
-const HEADER_SEPARATOR = textEncoder.encode("\r\n\r\n");
-const CONTENT_LENGTH_MARKER = textEncoder.encode("Content-Length:");
+const HEADER_SEPARATOR = "\r\n\r\n";
+const CONTENT_LENGTH_MARKER = "Content-Length:";
+const MARKER_BYTES = Buffer.from(CONTENT_LENGTH_MARKER);
 const CONTENT_LENGTH_PATTERN = /Content-Length:\s*(\d+)/i;
 
 export interface JsonRpcError {
@@ -19,43 +22,19 @@ export interface JsonRpcMessage {
   result?: unknown;
 }
 
-function matchesAt(
-  haystack: Uint8Array,
-  needle: Uint8Array,
-  start: number,
-): boolean {
-  for (let offset = 0; offset < needle.byteLength; offset += 1) {
-    if (haystack[start + offset] !== needle[offset]) {
-      return false;
-    }
+const asBuffer = (chunk: Uint8Array): Buffer => {
+  if (Buffer.isBuffer(chunk)) {
+    return chunk;
   }
-  return true;
-}
+  return Buffer.from(chunk.buffer, chunk.byteOffset, chunk.byteLength);
+};
 
-function indexOfSequence(haystack: Uint8Array, needle: Uint8Array): number {
-  const lastStart = haystack.byteLength - needle.byteLength;
-  for (let start = 0; start <= lastStart; start += 1) {
-    if (matchesAt(haystack, needle, start)) {
-      return start;
-    }
-  }
-  return -1;
+function preview(buffer: Buffer): string {
+  return textDecoder.decode(buffer).slice(0, 60);
 }
-
-function isMarkerPrefix(buffer: Uint8Array): boolean {
-  const limit = Math.min(buffer.byteLength, CONTENT_LENGTH_MARKER.byteLength);
-  for (let offset = 0; offset < limit; offset += 1) {
-    if (buffer[offset] !== CONTENT_LENGTH_MARKER[offset]) {
-      return false;
-    }
-  }
-  return true;
-}
-
-const preview = (buffer: Uint8Array) => textDecoder.decode(buffer).slice(0, 60);
 
 function deliverBody(
-  body: Uint8Array,
+  body: Buffer,
   onMessage: (message: JsonRpcMessage) => void,
   report: (reason: string) => void,
 ): void {
@@ -67,31 +46,36 @@ function deliverBody(
   }
 }
 
+function isMarkerPrefix(buffer: Buffer<ArrayBufferLike>): boolean {
+  const limit = Math.min(buffer.byteLength, MARKER_BYTES.byteLength);
+  return buffer.subarray(0, limit).equals(MARKER_BYTES.subarray(0, limit));
+}
+
 function extractFrame(
-  buffer: Uint8Array,
+  buffer: Buffer<ArrayBufferLike>,
   onMessage: (message: JsonRpcMessage) => void,
   report: (reason: string) => void,
-): Uint8Array | null {
-  const headerEnd = indexOfSequence(buffer, HEADER_SEPARATOR);
+): Buffer<ArrayBufferLike> | null {
+  const headerEnd = buffer.indexOf(HEADER_SEPARATOR);
   if (headerEnd === -1) {
     if (buffer.byteLength > 0 && !isMarkerPrefix(buffer)) {
       report(`malformed header: ${preview(buffer)}`);
-      return new Uint8Array(0);
+      return Buffer.alloc(0);
     }
     return null;
   }
-  const headerText = textDecoder.decode(buffer.subarray(0, headerEnd));
+  const headerText = buffer.toString("utf8", 0, headerEnd);
   const match = CONTENT_LENGTH_PATTERN.exec(headerText);
   if (match === null) {
     report(`malformed header: ${headerText.slice(0, 60)}`);
     const tail = buffer.subarray(headerEnd);
-    const marker = indexOfSequence(tail, CONTENT_LENGTH_MARKER);
+    const marker = tail.indexOf(CONTENT_LENGTH_MARKER);
     if (marker === -1) {
-      return new Uint8Array(0);
+      return Buffer.alloc(0);
     }
     return buffer.subarray(headerEnd + marker);
   }
-  const bodyStart = headerEnd + HEADER_SEPARATOR.byteLength;
+  const bodyStart = headerEnd + HEADER_SEPARATOR.length;
   const bodyEnd = bodyStart + Number(match[1]);
   if (buffer.byteLength < bodyEnd) {
     return null;
@@ -101,10 +85,10 @@ function extractFrame(
 }
 
 function extractFrames(
-  buffer: Uint8Array,
+  buffer: Buffer<ArrayBufferLike>,
   onMessage: (message: JsonRpcMessage) => void,
   report: (reason: string) => void,
-): Uint8Array {
+): Buffer<ArrayBufferLike> {
   let rest = buffer;
   for (;;) {
     const stepped = extractFrame(rest, onMessage, report);
@@ -130,16 +114,14 @@ export function createDecoder(
   onMessage: (message: JsonRpcMessage) => void,
   onError?: (reason: string) => void,
 ): (chunk: Uint8Array) => void {
-  let buffer: Uint8Array = new Uint8Array(0);
+  let buffer: Buffer<ArrayBufferLike> = Buffer.alloc(0);
   const report = (reason: string): void => {
     if (onError !== undefined) {
       onError(reason);
     }
   };
   return (chunk: Uint8Array) => {
-    const merged = new Uint8Array(buffer.byteLength + chunk.byteLength);
-    merged.set(buffer);
-    merged.set(chunk, buffer.byteLength);
+    const merged = Buffer.concat([buffer, asBuffer(chunk)]);
     buffer = extractFrames(merged, onMessage, report);
   };
 }

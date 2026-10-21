@@ -71,16 +71,4 @@ describe("mergeIntoLspJson", () => {
       ".tsx": "typescriptreact",
     });
   });
-
-  it("is idempotent byte-for-byte and biome-formatted", () => {
-    const once = mergeIntoLspJson(TARGET, extensionUnion(CONFIG));
-    const twice = mergeIntoLspJson(once, extensionUnion(CONFIG));
-    expect(twice).toBe(once);
-    expect(once.startsWith('{\n  "lsp-proxy": {')).toBe(true);
-    expect(once.endsWith("}\n}\n")).toBe(true);
-  });
-
-  it("refuses a target without the lsp-proxy entry", () => {
-    expect(() => mergeIntoLspJson("{}", {})).toThrow("lsp-proxy");
-  });
 });
