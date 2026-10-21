@@ -51,6 +51,7 @@ targets.
 | D9 | Binaries are built through a shared private package `packages/bin-builder/` (`@cc-sdd/bin-builder`): `buildBinary({ entrypoints, binName })` owns the compile config once and writes every binary to `~/.local/bin/<binName>`. `packages/cli-hook/build.ts` is refactored to a thin wrapper (behavior unchanged); `packages/lsp-proxy/build.ts` is the same wrapper with `binName: "lsp-proxy"`. The `.lsp.json` invokes the bare binary name. Task 1 of the plan, before any lsp-proxy module. |
 | D10 | Each downstream server carries its own `extensionToLanguage` map in the proxy config (keys drive routing). The plugin `.lsp.json`'s `extensionToLanguage` is a GENERATED artifact — the `sync-extensions` command unions all server maps into it; the file is never hand-maintained. |
 | D11 | Process control uses ONLY Bun's native types and surface (verified in `bun-types@1.4.2/bun.d.ts`): `Bun.spawn` called directly (no injection, no casts — `const` generics infer `Subprocess<"pipe","pipe","inherit">` from the literal options), `onExit` callback as the exit event, `AbortSignal` per server, `pid` read straight off the child. The registry of running downstream servers is the in-memory `Map` of server-name → child (pids ride on the `Subprocess` objects; no pidfiles, no JSON state, no state directory, no `--kill-all`). Session teardown needs none of it: empirically (md-lsp-probe, 2026-10-20, `tmp/md-lsp-probe.log`) Claude Code terminates its LSPs with the protocol `shutdown` request immediately followed by SIGTERM — the proxy's existing handlers (shutdown request, exit notification, stdin EOF, SIGTERM) each cascade to the children from memory. Accepted limitation: a SIGKILLed proxy leaves its children orphaned (no recovery mechanism; out of POC). |
+| D12 | The config path is a REQUIRED `--config <path>` string option parsed via `parseArgs` with a real options spec (`options: { config: { type: "string" } }`) — no default, no positional fallback, no `new URL(import.meta.url)` reference, and the config file is NEVER embedded in the binary. Missing `--config` exits 1 with a clear error. Rationale: Bun's bundler embeds imported/referenced files into compiled executables, and `import.meta.url` resolves against the virtual module graph inside a binary — a baked-in default would freeze the config at build time and force a rebuild on every LSP change. The binary is configuration-agnostic; the `.lsp.json` registration always passes `["--config", "<path>"]`. |
 
 ## 4. Architecture
 
@@ -247,8 +248,9 @@ PATH inherited from Claude Code). Validation: `name` non-empty and
 unique; `command` non-empty; `extensionToLanguage` non-empty, keys start
 with `.`, values non-empty; two servers mapping the same extension to
 DIFFERENT languages is a validation error; `args`, `env`,
-`initializationOptions`, `settings` optional. The config path is a CLI
-argument with the package file as default.
+`initializationOptions`, `settings` optional. The config path is a
+REQUIRED `--config <path>` CLI option (D12) — the proxy refuses to start
+without one, and nothing config-shaped is embedded in the binary.
 
 ### 6.4 Binary builder — shared package (D9)
 

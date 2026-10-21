@@ -2051,7 +2051,7 @@ type ProxyHandle = {
 
 async function startProxy(configPath: string): Promise<ProxyHandle> {
   const spawned = Bun.spawn({
-    cmd: ["bun", MAIN, configPath],
+    cmd: ["bun", MAIN, "--config", configPath],
     stderr: "inherit",
     stdin: "pipe",
     stdout: "pipe",
@@ -2184,15 +2184,21 @@ The implementer writes the full scenario set from this skeleton — do not stop 
 
 ```ts
 import process from "node:process";
+import { parseArgs } from "node:util";
 
 import { parseConfig } from "./config.ts";
 import { LspProxy } from "./proxy.ts";
 
-const defaultConfig = new URL("../lsp-proxy.config.json", import.meta.url);
-
-void (async () => {
-  const configArgument = process.argv[2];
-  const configPath = configArgument ?? defaultConfig.pathname;
+(async () => {
+  const { values } = parseArgs({
+    args: process.argv.slice(2),
+    options: { config: { type: "string" } },
+  });
+  const configPath = values.config;
+  if (configPath === undefined) {
+    console.error("lsp-proxy: --config <path> is required");
+    process.exit(1);
+  }
   const raw: unknown = await Bun.file(configPath).json();
   const parsed = parseConfig(raw);
   if (!parsed.ok) {
@@ -2205,7 +2211,7 @@ void (async () => {
     (line) => console.error(`[lsp-proxy] ${line}`),
   );
   process.on("SIGTERM", () => {
-    void proxy.cascadeShutdown("SIGTERM");
+    proxy.cascadeShutdown("SIGTERM");
   });
   await proxy.run();
 })().catch((error: unknown) => {
@@ -2751,7 +2757,7 @@ Expected: `BunBuildSuccess` logged; `~/.local/bin/lsp-proxy` exists.
 Smoke (two-stub config through the real binary — reuses Task 9's fixture via a temp config under `/Users/vasilsokolik/www/cc-sdd/tmp/`):
 
 ```bash
-echo '{"jsonrpc":"2.0","id":1,"method":"initialize","params":{"capabilities":{}}}' | ~/.local/bin/lsp-proxy /Users/vasilsokolik/www/cc-sdd/tmp/lsp-proxy-smoke-config.json
+echo '{"jsonrpc":"2.0","id":1,"method":"initialize","params":{"capabilities":{}}}' | ~/.local/bin/lsp-proxy --config /Users/vasilsokolik/www/cc-sdd/tmp/lsp-proxy-smoke-config.json
 ```
 
 Expected: a framed `initialize` response with `serverInfo.name = "lsp-proxy"` on stdout, exit 0 on stdin close. If running against the real `lsp-proxy.config.json` instead, vtsls startup may take seconds — wait for EOF; prefer the two-stub smoke config for determinism and report which variant ran.
@@ -2942,6 +2948,7 @@ if (isDirectRun) {
   const { positionals } = parseArgs({
     allowPositionals: true,
     args: process.argv.slice(2),
+    options: {},
   });
   const defaultConfig = new URL("../../lsp-proxy.config.json", import.meta.url);
   const defaultTarget = new URL("../../../../plugins/lsp-proxy/.lsp.json", import.meta.url);
@@ -3000,7 +3007,7 @@ Read `plugins/biome-lsp/.claude-plugin/plugin.json` and mirror its shape. Expect
 ```json
 {
   "lsp-proxy": {
-    "args": ["/Users/vasilsokolik/www/cc-sdd/packages/lsp-proxy/lsp-proxy.config.json"],
+    "args": ["--config", "/Users/vasilsokolik/www/cc-sdd/packages/lsp-proxy/lsp-proxy.config.json"],
     "command": "lsp-proxy",
     "extensionToLanguage": {
       ".cjs": "javascript",
