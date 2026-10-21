@@ -1,0 +1,9 @@
+{
+  "author": {
+    "name": "Vasyl Sokolyk"
+  },
+  "description": "One registered LSP for Claude Code that fans out to multiple downstream stdio LSP servers (vtsls + biome by default) and merges their results",
+  "displayName": "lsp-proxy",
+  "name": "lsp-proxy",
+  "version": "0.1.0"
+}

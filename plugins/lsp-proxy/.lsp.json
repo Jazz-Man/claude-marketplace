@@ -1,0 +1,22 @@
+{
+  "lsp-proxy": {
+    "args": [],
+    "command": "lsp-proxy",
+    "env": {
+      "LSP_PROXY_LOG": "1"
+    },
+    "extensionToLanguage": {
+      ".cjs": "javascript",
+      ".css": "css",
+      ".js": "javascript",
+      ".json": "json",
+      ".jsonc": "json",
+      ".jsx": "javascriptreact",
+      ".mjs": "javascript",
+      ".ts": "typescript",
+      ".tsx": "typescriptreact"
+    },
+    "maxRestarts": 3,
+    "transport": "stdio"
+  }
+}

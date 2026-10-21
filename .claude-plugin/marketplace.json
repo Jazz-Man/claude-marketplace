@@ -1,5 +1,5 @@
 {
-  "description": "Local marketplace for the sdd, biome-lsp, and security-guard plugins",
+  "description": "Local marketplace for the sdd, biome-lsp, security-guard, and lsp-proxy plugins",
   "name": "sdd-local",
   "owner": {
     "name": "Vasyl Sokolyk"
@@ -19,6 +19,11 @@
       "description": "Mechanical Bash guard for Claude Code: filesystem safety, dependency immutability, and git read-only, enforced by the claude-code-cli-hook policy binary",
       "name": "security-guard",
       "source": "./plugins/security-guard"
+    },
+    {
+      "description": "One registered LSP for Claude Code that fans out to multiple downstream stdio LSP servers (vtsls + biome by default) and merges their results",
+      "name": "lsp-proxy",
+      "source": "./plugins/lsp-proxy"
     }
   ]
 }
