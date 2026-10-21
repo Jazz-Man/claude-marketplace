@@ -79,7 +79,7 @@
         "noExcessiveLinesPerFile": "error",
         "noMagicNumbers": "off",
         "noProcessEnv": "off",
-        "noTernary": "error",
+        "noTernary": "off",
         "useBlockStatements": "error",
         "useExportsLast": "off",
         "useNamingConvention": "off"
