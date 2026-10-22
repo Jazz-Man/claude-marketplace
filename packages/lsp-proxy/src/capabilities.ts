@@ -1,4 +1,5 @@
 import type { ServerCapabilities } from "./router.ts";
+import { sortByPriority } from "./utils/index.ts";
 
 const PROVIDER_KEYS = [
   "codeActionProvider",
@@ -73,10 +74,7 @@ export function mergeCapabilities(
   inputs: CapabilitiesInput[],
   priority: string[],
 ): CapabilitiesMerge {
-  const orderedInputs = [...inputs].sort(
-    (left, right) =>
-      priority.indexOf(left.server) - priority.indexOf(right.server),
-  );
+  const orderedInputs = sortByPriority(inputs, priority);
   const accepted = orderedInputs.filter((input) =>
     reportsIncremental(input.capabilities.textDocumentSync),
   );

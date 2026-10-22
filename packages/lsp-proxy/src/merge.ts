@@ -1,4 +1,5 @@
 import type { JsonRpcError } from "./framing.ts";
+import { sortByPriority } from "./utils/index.ts";
 
 const ARRAY_MERGE_METHODS = new Set([
   "textDocument/definition",
@@ -34,22 +35,11 @@ function asArray(result: unknown): unknown[] {
   return [result];
 }
 
-function ordered<T extends { server: string }>(
-  outcomes: T[],
-  priority: string[],
-): T[] {
-  return [...outcomes].sort(
-    (left, right) =>
-      (priority.indexOf(left.server) + 1 || priority.length + 1) -
-      (priority.indexOf(right.server) + 1 || priority.length + 1),
-  );
-}
-
 function firstError(
   outcomes: ServerOutcome[],
   priority: string[],
 ): JsonRpcError | undefined {
-  const errored = ordered(
+  const errored = sortByPriority(
     outcomes.filter((outcome) => outcome.error !== undefined),
     priority,
   );
@@ -96,7 +86,7 @@ function markdownContents(outcome: ServerOutcome): unknown {
 }
 
 function mergeHover(outcomes: ServerOutcome[], priority: string[]): unknown {
-  const hovers = ordered(
+  const hovers = sortByPriority(
     outcomes.filter(
       (outcome) => outcome.result !== null && outcome.result !== undefined,
     ),
@@ -117,7 +107,7 @@ function mergeHover(outcomes: ServerOutcome[], priority: string[]): unknown {
 }
 
 function firstNonNull(outcomes: ServerOutcome[], priority: string[]): unknown {
-  for (const outcome of ordered(outcomes, priority)) {
+  for (const outcome of sortByPriority(outcomes, priority)) {
     if (
       outcome.error === undefined &&
       outcome.result !== null &&
@@ -134,7 +124,7 @@ function mergeTaggedArrays(
   priority: string[],
 ): unknown[] {
   const merged: unknown[] = [];
-  for (const outcome of ordered(successes, priority)) {
+  for (const outcome of sortByPriority(successes, priority)) {
     for (const item of asArray(outcome.result)) {
       merged.push(tagCodeAction(item, outcome.server));
     }
@@ -147,7 +137,7 @@ function mergePlainArrays(
   priority: string[],
 ): unknown[] {
   const merged: unknown[] = [];
-  for (const outcome of ordered(successes, priority)) {
+  for (const outcome of sortByPriority(successes, priority)) {
     for (const item of asArray(outcome.result)) {
       merged.push(item);
     }
