@@ -1,4 +1,5 @@
 import type { ProxyConfig } from "./config.ts";
+import { LspErrorCode, TimeoutMs } from "./constants/index.ts";
 import type { Downstream } from "./downstream.ts";
 import type { JsonRpcError, JsonRpcMessage } from "./framing.ts";
 import { isRecord } from "./guards/index.ts";
@@ -121,6 +122,21 @@ export class RequestBroker {
     }
   }
 
+  failAllFor(server: string, reason: string): number {
+    const prefix = `${server}:`;
+    const matching = [...this.waiters.keys()].filter((key) =>
+      key.startsWith(prefix),
+    );
+    for (const key of matching) {
+      this.sweepOne(
+        server,
+        Number(key.slice(prefix.length)),
+        `server ${server} died: ${reason}`,
+      );
+    }
+    return matching.length;
+  }
+
   resolveCodeAction(message: JsonRpcMessage): void {
     const origin = originOfCodeAction(message.params);
     const [fallback] = this.host.servers.keys();
@@ -237,8 +253,7 @@ export class RequestBroker {
     method: string,
     downstream: Downstream,
   ): Promise<ServerOutcome> {
-    const clientId = message.id ?? 0;
-    const serverId = this.mux.assign(clientId, downstream.name, method);
+    const serverId = this.mux.assign(message.id ?? 0, downstream.name, method);
     const outcome = new Promise<ServerOutcome>((resolve) => {
       this.waiters.set(`${downstream.name}:${serverId}`, { resolve });
     });
@@ -248,7 +263,34 @@ export class RequestBroker {
       method,
       params: message.params,
     });
-    return outcome;
+    const timer = setTimeout(() => {
+      this.sweepOne(
+        downstream.name,
+        serverId,
+        `request timeout after ${String(TimeoutMs.request)}ms`,
+      );
+    }, TimeoutMs.request);
+    return outcome.then((resolved) => {
+      clearTimeout(timer);
+      return resolved;
+    });
+  }
+
+  private sweepOne(server: string, serverId: number, message: string): void {
+    const waiterKey = `${server}:${serverId}`;
+    const waiter = this.waiters.get(waiterKey);
+    if (waiter === undefined) {
+      return;
+    }
+    this.waiters.delete(waiterKey);
+    const entry = this.mux.lookup(server, serverId);
+    if (entry !== undefined) {
+      this.mux.release(entry);
+    }
+    waiter.resolve({
+      error: { code: LspErrorCode.InternalError, message },
+      server,
+    });
   }
 
   private replyError(error: JsonRpcError, message: JsonRpcMessage): void {

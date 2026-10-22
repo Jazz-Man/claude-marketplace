@@ -137,6 +137,13 @@ export class ServerSide {
     this.deaths.set(server, deaths);
     this.capabilities.delete(server);
     this.host.dropServer(server);
+    const swept = this.host.broker.failAllFor(
+      server,
+      `exit code ${String(code)}`,
+    );
+    if (swept > 0) {
+      this.host.log(`swept ${String(swept)} pending requests for ${server}`);
+    }
     if (deaths > 1) {
       this.host.log(`server ${server} died (${code}) a second time; giving up`);
       return;
