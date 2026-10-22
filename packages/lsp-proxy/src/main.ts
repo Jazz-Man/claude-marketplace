@@ -3,6 +3,7 @@ import process from "node:process";
 import { parseArgs } from "node:util";
 
 import { parseConfig } from "./config.ts";
+import { VERSION } from "./constants/index.ts";
 import { closeLog, initFileLog, log } from "./logger.ts";
 import { LspProxy } from "./proxy.ts";
 
@@ -62,7 +63,7 @@ const terminate = (proxy: LspProxy): void => {
     closeLog();
     process.exit(1);
   }
-  log(`starting lsp-proxy 0.1.0 config=${configPath}`);
+  log(`starting lsp-proxy ${VERSION} config=${configPath}`);
   for (const server of parsed.config.servers) {
     const args = (server.args ?? []).join(" ");
     log(`server ${server.name}: ${server.command} ${args}`);

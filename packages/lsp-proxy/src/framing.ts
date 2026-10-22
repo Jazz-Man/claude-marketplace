@@ -1,6 +1,6 @@
 import { Buffer } from "node:buffer";
 
-import { isRecord } from "./guards/index.ts";
+import { isRecord, safeJsonParse } from "./guards/index.ts";
 import type { JsonRpcMessage } from "./types/index.ts";
 
 const textEncoder = new TextEncoder();
@@ -29,10 +29,8 @@ function deliverBody(
   report: (reason: string) => void,
 ): void {
   const text = textDecoder.decode(body);
-  let parsed: unknown;
-  try {
-    parsed = JSON.parse(text);
-  } catch {
+  const parsed = safeJsonParse(text);
+  if (parsed === undefined) {
     report(`unparseable body: ${text.slice(0, 60)}`);
     return;
   }

@@ -12,15 +12,25 @@ export interface DownstreamHandlers {
   onMessage: (message: JsonRpcMessage) => void;
 }
 
+export interface DownstreamOptions {
+  log?: (line: string) => void;
+}
+
 export class Downstream {
   readonly name: string;
   private readonly config: ServerConfig;
   private readonly handlers: DownstreamHandlers;
+  private readonly log: (line: string) => void;
   private child: Subprocess<"pipe", "pipe", "inherit"> | undefined;
 
-  constructor(config: ServerConfig, handlers: DownstreamHandlers) {
+  constructor(
+    config: ServerConfig,
+    handlers: DownstreamHandlers,
+    options?: DownstreamOptions,
+  ) {
     this.config = config;
     this.handlers = handlers;
+    this.log = options?.log ?? ((line) => console.error(line));
     this.name = config.name;
   }
 
@@ -42,7 +52,7 @@ export class Downstream {
     });
     this.child = child;
     this.readLoop(child).catch((reason: unknown) => {
-      console.error(`[${this.name}] stream: ${String(reason)}`);
+      this.log(`[${this.name}] stream: ${String(reason)}`);
     });
   }
 
@@ -71,12 +81,10 @@ export class Downstream {
         try {
           this.handlers.onMessage(message);
         } catch (error) {
-          console.error(
-            `[${this.name}] message dispatch error: ${String(error)}`,
-          );
+          this.log(`[${this.name}] message dispatch error: ${String(error)}`);
         }
       },
-      (reason) => console.error(`[${this.name}] stream: ${reason}`),
+      (reason) => this.log(`[${this.name}] stream: ${reason}`),
     );
     for await (const chunk of child.stdout) {
       decode(chunk);

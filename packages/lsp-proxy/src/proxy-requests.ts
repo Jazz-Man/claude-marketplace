@@ -62,21 +62,18 @@ export class RequestBroker {
     method: string,
     recipients: Downstream[],
   ): Promise<void> {
-    const [downstream, ...rest] = recipients;
-    if (downstream === undefined) {
-      this.host.replyTo(message.id ?? null, null);
-      return Promise.resolve();
+    for (const downstream of recipients) {
+      const outcome = await this.askOnce(message, method, downstream);
+      if (
+        outcome.error === undefined &&
+        outcome.result !== null &&
+        outcome.result !== undefined
+      ) {
+        this.host.replyTo(message.id ?? null, outcome.result);
+        return;
+      }
     }
-    const outcome = await this.askOnce(message, method, downstream);
-    if (
-      outcome.error === undefined &&
-      outcome.result !== null &&
-      outcome.result !== undefined
-    ) {
-      this.host.replyTo(message.id ?? null, outcome.result);
-      return Promise.resolve();
-    }
-    return await this.askSequentially(message, method, rest);
+    this.host.replyTo(message.id ?? null, null);
   }
 
   async askAllAndMerge(
@@ -249,7 +246,7 @@ export class RequestBroker {
       });
   }
 
-  private askOnce(
+  private async askOnce(
     message: JsonRpcMessage,
     method: string,
     downstream: Downstream,
@@ -269,10 +266,11 @@ export class RequestBroker {
         `request timeout after ${String(TimeoutMs.request)}ms`,
       );
     }, TimeoutMs.request);
-    return outcome.then((resolved) => {
+    try {
+      return await outcome;
+    } finally {
       clearTimeout(timer);
-      return resolved;
-    });
+    }
   }
 
   private pending(server: string, serverId: number): Promise<ServerOutcome> {

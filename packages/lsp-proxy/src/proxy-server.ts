@@ -15,6 +15,11 @@ const ANSWERED_SERVER_REQUESTS = new Set([
   "window/workDoneProgress/create",
 ]);
 
+interface DeathRecord {
+  count: number;
+  timestamp: number;
+}
+
 export interface ProxyHost {
   broker: RequestBroker;
   clientParams: Record<string, unknown>;
@@ -28,23 +33,23 @@ export interface ProxyHost {
 }
 
 function coerceResponseId(id: number | string | null | undefined): number {
-  if (typeof id === "string") {
-    return Number(id);
-  }
-  return id ?? 0;
+  return typeof id === "string" ? Number(id) : (id ?? 0);
 }
 
 export class ServerSide {
   capabilities = new Map<string, ServerCapabilities>();
+  private static readonly DEATH_RESET_MS = 60_000;
+  private readonly deaths = new Map<string, DeathRecord>();
+  private readonly deathResetMs: number;
   private readonly initializeIds = new Map<string, number>();
   private readonly initializeWaiters = new Map<string, Waiter>();
-  private readonly deaths = new Map<string, number>();
   private readonly host: ProxyHost;
   private nextServerId = 0;
   private readonly rejected = new Set<string>();
 
-  constructor(host: ProxyHost) {
+  constructor(host: ProxyHost, deathResetMs = ServerSide.DEATH_RESET_MS) {
     this.host = host;
+    this.deathResetMs = deathResetMs;
   }
 
   nextId(): number {
@@ -98,16 +103,20 @@ export class ServerSide {
     initParams: Record<string, unknown>,
   ): Promise<void> {
     const { name } = serverConfig;
-    const downstream = new Downstream(serverConfig, {
-      onExit: (exitCode) => {
-        this.handleServerExit(name, exitCode).catch((reason: unknown) => {
-          this.host.log(`exit handler for ${name}: ${String(reason)}`);
-        });
+    const downstream = new Downstream(
+      serverConfig,
+      {
+        onExit: (exitCode) => {
+          this.handleServerExit(name, exitCode).catch((reason: unknown) => {
+            this.host.log(`exit handler for ${name}: ${String(reason)}`);
+          });
+        },
+        onMessage: (message) => {
+          this.onServerMessage(name, message);
+        },
       },
-      onMessage: (message) => {
-        this.onServerMessage(name, message);
-      },
-    });
+      { log: (line) => this.host.log(line) },
+    );
     this.host.servers.set(name, downstream);
     downstream.start();
     const childPid = downstream.pid;
@@ -128,20 +137,13 @@ export class ServerSide {
   }
 
   async handleServerExit(server: string, code: number | null): Promise<void> {
-    if (this.host.isStopped()) {
+    if (this.host.isStopped() || this.rejected.has(server)) {
       return;
     }
-    if (this.rejected.has(server)) {
-      return;
-    }
-    const deaths = (this.deaths.get(server) ?? 0) + 1;
-    this.deaths.set(server, deaths);
+    const deaths = this.recordDeath(server);
     this.capabilities.delete(server);
     this.host.dropServer(server);
-    const swept = this.host.broker.failAllFor(
-      server,
-      `exit code ${String(code)}`,
-    );
+    const swept = this.host.broker.failAllFor(server, `exit code ${code}`);
     if (swept > 0) {
       this.host.log(`swept ${String(swept)} pending requests for ${server}`);
     }
@@ -160,10 +162,17 @@ export class ServerSide {
     this.replayDocuments(serverConfig);
   }
 
-  private registerReply(
-    server: string,
-    storeCapabilities: boolean,
-  ): { id: number; reply: Promise<void> } {
+  private recordDeath(server: string): number {
+    const record = this.deaths.get(server);
+    const count =
+      record !== undefined && Date.now() - record.timestamp <= this.deathResetMs
+        ? record.count + 1
+        : 1;
+    this.deaths.set(server, { count, timestamp: Date.now() });
+    return count;
+  }
+
+  private registerReply(server: string, storeCapabilities: boolean) {
     const id = this.nextId();
     let timer: ReturnType<typeof setTimeout> | undefined;
     const timedOut = new Promise<void>((_, reject) => {

@@ -13,3 +13,5 @@ export const TimeoutMs = {
   initialize: 30_000,
   request: 15_000,
 } as const;
+
+export const VERSION = "0.1.0";

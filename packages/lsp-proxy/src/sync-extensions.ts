@@ -2,7 +2,7 @@ import process from "node:process";
 import { parseArgs } from "node:util";
 
 import { type ProxyConfig, parseConfig } from "./config.ts";
-import { isRecord } from "./guards/index.ts";
+import { isRecord, safeJsonParse } from "./guards/index.ts";
 
 export function extensionUnion(config: ProxyConfig): Record<string, string> {
   const union: Record<string, string> = {};
@@ -26,7 +26,10 @@ export function mergeIntoLspJson(
   text: string,
   union: Record<string, string>,
 ): string {
-  const parsed: unknown = JSON.parse(text);
+  const parsed = safeJsonParse(text);
+  if (parsed === undefined) {
+    throw new Error("target .lsp.json is not valid JSON");
+  }
   if (!(isRecord(parsed) && isRecord(parsed["lsp-proxy"]))) {
     throw new Error("target .lsp.json has no lsp-proxy entry");
   }
