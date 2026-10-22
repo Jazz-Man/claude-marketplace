@@ -62,17 +62,21 @@ export function mergeCapabilities(
   priority: string[],
 ): CapabilitiesMerge {
   const orderedInputs = sortByPriority(inputs, priority);
-  const accepted = orderedInputs.filter((input) =>
-    reportsIncremental(input.capabilities.textDocumentSync),
-  );
-  const rejected = orderedInputs
-    .filter((input) => !reportsIncremental(input.capabilities.textDocumentSync))
-    .map((input) => ({
-      reason: `textDocumentSync must be 2 (incremental), got ${describeSync(
-        input.capabilities.textDocumentSync,
-      )}`,
-      server: input.server,
-    }));
+  const accepted: CapabilitiesInput[] = [];
+  const failed: CapabilitiesInput[] = [];
+  for (const input of orderedInputs) {
+    if (reportsIncremental(input.capabilities.textDocumentSync)) {
+      accepted.push(input);
+    } else {
+      failed.push(input);
+    }
+  }
+  const rejected = failed.map((input) => ({
+    reason: `textDocumentSync must be 2 (incremental), got ${describeSync(
+      input.capabilities.textDocumentSync,
+    )}`,
+    server: input.server,
+  }));
   const merged: ServerCapabilities = { textDocumentSync: 2 };
   for (const key of METHOD_CAPABILITIES) {
     const value = mergedProviderValue(accepted, key);

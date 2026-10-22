@@ -183,6 +183,7 @@ export class LspProxy {
   }
 
   private async handleInitialize(message: JsonRpcMessage): Promise<void> {
+    this.log(`client initialize: ${JSON.stringify(message.params)}`);
     if (isRecord(message.params)) {
       this.clientParams = message.params;
     }
