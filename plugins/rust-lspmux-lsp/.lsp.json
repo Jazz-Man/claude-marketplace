@@ -6,14 +6,6 @@
 		"transport": "stdio",
 		"initializationOptions": {
 			"checkOnSave": true,
-			"highlightRelated": {
-				"branchExitPoints": { "enable": true },
-				"breakPoints": { "enable": true },
-				"closureCaptures": { "enable": true },
-				"exitPoints": { "enable": true },
-				"references": { "enable": true },
-				"yieldPoints": { "enable": true }
-			},
 			"imports": {
 				"granularity": { "enforce": true, "group": "crate" },
 				"group": { "enable": true },
@@ -72,11 +64,6 @@
 			"procMacro": {
 				"enable": true,
 				"processes": 4
-			},
-			"assist": {
-				"emitMustUse": true,
-				"expressionFillDefault": "todo",
-				"preferSelf": true
 			},
 			"cargo": {
 				"autoreload": true,
