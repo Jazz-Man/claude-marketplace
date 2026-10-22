@@ -1,3 +1,4 @@
+import { Buffer } from "node:buffer";
 import { writeFileSync } from "node:fs";
 import process from "node:process";
 
@@ -14,12 +15,14 @@ interface StubDiagnostic {
 
 interface StubOptions {
   askConfiguration?: boolean;
+  badMethodAfterInitialize?: boolean;
   completionItems?: unknown[];
   declareDiagnosticProvider?: boolean;
   diagnostics?: StubDiagnostic[];
   exitMarker?: string;
   exitOnDidOpen?: boolean;
   formatEdits?: unknown[] | null;
+  hangInitialize?: boolean;
   hover?: string;
   sync?: number;
 }
@@ -44,6 +47,13 @@ const write = (message: JsonRpcMessage): void => {
 
 const send = (id: number | string | null, result: unknown): void => {
   write({ id, jsonrpc: "2.0", result });
+};
+
+const badMethodFrame = (): void => {
+  const body = JSON.stringify({ id: null, jsonrpc: "2.0", method: 123 });
+  process.stdout.write(
+    `Content-Length: ${Buffer.byteLength(body)}\r\n\r\n${body}`,
+  );
 };
 
 const configuredDiagnostics = (): StubDiagnostic[] =>
@@ -79,6 +89,9 @@ const resolveConfiguration = (message: JsonRpcMessage): void => {
 };
 
 const initialize = (message: JsonRpcMessage): void => {
+  if (options.hangInitialize === true) {
+    return;
+  }
   const capabilities: Record<string, unknown> = {
     completionProvider: true,
     documentFormattingProvider: true,
@@ -92,6 +105,9 @@ const initialize = (message: JsonRpcMessage): void => {
     };
   }
   send(message.id ?? null, { capabilities, serverInfo: { name } });
+  if (options.badMethodAfterInitialize === true) {
+    badMethodFrame();
+  }
 };
 
 const answerDiagnosticPull = (message: JsonRpcMessage): void => {

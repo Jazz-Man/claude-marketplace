@@ -1,4 +1,5 @@
 import type { ProxyConfig, ServerConfig } from "./config.ts";
+import { TimeoutMs } from "./constants/index.ts";
 import type { DocumentStore } from "./docstore.ts";
 import { Downstream } from "./downstream.ts";
 import type { JsonRpcMessage } from "./framing.ts";
@@ -164,6 +165,20 @@ export class ServerSide {
     storeCapabilities: boolean,
   ): { id: number; reply: Promise<void> } {
     const id = this.nextId();
+    let timer: ReturnType<typeof setTimeout> | undefined;
+    const timedOut = new Promise<void>((_, reject) => {
+      timer = setTimeout(() => {
+        if (this.initializeIds.get(server) === id) {
+          this.initializeWaiters.delete(server);
+          this.initializeIds.delete(server);
+        }
+        reject(
+          new Error(
+            `initialize timeout after ${String(TimeoutMs.initialize)}ms`,
+          ),
+        );
+      }, TimeoutMs.initialize);
+    });
     const reply = new Promise<void>((resolve) => {
       this.initializeWaiters.set(server, {
         resolve: (outcome) => {
@@ -173,12 +188,13 @@ export class ServerSide {
                 .capabilities ?? {};
             this.capabilities.set(server, caps);
           }
+          clearTimeout(timer);
           resolve();
         },
       });
       this.initializeIds.set(server, id);
     });
-    return { id, reply };
+    return { id, reply: Promise.race([reply, timedOut]) };
   }
 
   private replayDocuments(serverConfig: ServerConfig): void {

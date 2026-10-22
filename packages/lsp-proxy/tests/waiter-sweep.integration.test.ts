@@ -12,7 +12,6 @@ it("sweep: pending hover resolves with error when server dies mid-request", asyn
     stub("fragile", { exitOnDidOpen: true }, TS),
     stub("healthy", { hover: "alive" }, TS),
   ]);
-  // Open a document (kills fragile) then immediately hover
   proxy.push({
     jsonrpc: "2.0",
     method: "textDocument/didOpen",
@@ -30,13 +29,9 @@ it("sweep: pending hover resolves with error when server dies mid-request", asyn
     method: "textDocument/hover",
     params: { textDocument: { uri: "file:///proj/s.ts" } },
   });
-  // The fragile server will die; its pending hover must resolve (not hang).
-  // The sweep log on stderr is direct proof the waiter was swept by
-  // failAllFor — a flipped routing-vs-exit race becomes a loud failure.
   const swept = () => SWEEP_LOG.test(proxy.stderr());
   await waitFor(
-    () =>
-      proxy.clientMessages.some((message) => message.id === 2) && swept(),
+    () => proxy.clientMessages.some((message) => message.id === 2) && swept(),
   );
   const response = responseFor(proxy, 2);
   expect(response).toBeDefined();

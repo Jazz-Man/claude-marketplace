@@ -29,18 +29,18 @@ function deliverBody(
   report: (reason: string) => void,
 ): void {
   const text = textDecoder.decode(body);
+  let parsed: unknown;
   try {
-    const parsed: unknown = JSON.parse(text);
-    if (!isRecord(parsed)) {
-      report(`non-object body: ${text.slice(0, 60)}`);
-      return;
-    }
-    // Only "parsed to an object" is validated here; field shapes are the
-    // JSON-RPC wire contract and are never re-checked at runtime.
-    onMessage(parsed as unknown as JsonRpcMessage);
+    parsed = JSON.parse(text);
   } catch {
     report(`unparseable body: ${text.slice(0, 60)}`);
+    return;
   }
+  if (!isRecord(parsed)) {
+    report(`non-object body: ${text.slice(0, 60)}`);
+    return;
+  }
+  onMessage(parsed as unknown as JsonRpcMessage);
 }
 
 function isMarkerPrefix(buffer: Buffer<ArrayBufferLike>): boolean {

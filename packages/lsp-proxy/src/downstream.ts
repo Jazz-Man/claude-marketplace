@@ -67,7 +67,15 @@ export class Downstream {
     child: Subprocess<"pipe", "pipe", "inherit">,
   ): Promise<void> {
     const decode = createDecoder(
-      (message) => this.handlers.onMessage(message),
+      (message) => {
+        try {
+          this.handlers.onMessage(message);
+        } catch (error) {
+          console.error(
+            `[${this.name}] message dispatch error: ${String(error)}`,
+          );
+        }
+      },
       (reason) => console.error(`[${this.name}] stream: ${reason}`),
     );
     for await (const chunk of child.stdout) {

@@ -3,6 +3,7 @@ import process from "node:process";
 import { cancelIdOf, changesOf, textDocumentOf, uriOf } from "./boundary.ts";
 import { mergeCapabilities } from "./capabilities.ts";
 import type { ProxyConfig, ServerConfig } from "./config.ts";
+import { LspErrorCode } from "./constants/index.ts";
 import { DocumentStore } from "./docstore.ts";
 import type { Downstream } from "./downstream.ts";
 import { createDecoder, encodeFrame, type JsonRpcMessage } from "./framing.ts";
@@ -49,14 +50,13 @@ export class LspProxy {
   }
 
   async run(): Promise<void> {
-    const decode = createDecoder(
-      (message) => {
+    const decode = createDecoder((message) => {
+      try {
         this.onClientMessage(message);
-      },
-      (reason) => {
-        this.log(`client stream: ${reason}`);
-      },
-    );
+      } catch (error) {
+        this.log(`client message dispatch error: ${String(error)}`);
+      }
+    }, this.logFailure("client stream"));
     try {
       for await (const chunk of this.io.readChunks()) {
         decode(chunk);
@@ -127,14 +127,16 @@ export class LspProxy {
     }
   }
 
+  private logFailure(prefix: string): (reason: unknown) => void {
+    return (reason: unknown) => this.log(`${prefix}: ${String(reason)}`);
+  }
+
   private onClientMessage(message: JsonRpcMessage): void {
     if (message.method === undefined) {
       return;
     }
     if (message.method === "initialize") {
-      this.handleInitialize(message).catch((reason: unknown) => {
-        this.log(`initialize: ${String(reason)}`);
-      });
+      this.handleInitialize(message).catch(this.logFailure("initialize"));
       return;
     }
     if (message.method === "initialized") {
@@ -142,15 +144,11 @@ export class LspProxy {
       return;
     }
     if (message.method === "shutdown") {
-      this.handleShutdown(message).catch((reason: unknown) => {
-        this.log(`shutdown: ${String(reason)}`);
-      });
+      this.handleShutdown(message).catch(this.logFailure("shutdown"));
       return;
     }
     if (message.method === "exit") {
-      this.cascadeShutdown("exit").catch((reason: unknown) => {
-        this.log(`shutdown cascade: ${String(reason)}`);
-      });
+      this.cascadeShutdown("exit").catch(this.logFailure("shutdown cascade"));
       return;
     }
     if (message.method === "$/cancelRequest") {
@@ -176,11 +174,21 @@ export class LspProxy {
     if (isRecord(message.params)) {
       this.clientParams = message.params;
     }
-    await Promise.all(
-      this.config.servers.map((serverConfig) =>
-        this.serverSide.startServer(serverConfig, this.clientParams),
-      ),
-    );
+    try {
+      await Promise.all(
+        this.config.servers.map((serverConfig) =>
+          this.serverSide.startServer(serverConfig, this.clientParams),
+        ),
+      );
+    } catch (error) {
+      this.log(`initialize failed: ${String(error)}`);
+      this.replyErrorTo(
+        message.id ?? null,
+        LspErrorCode.InternalError,
+        `failed to start servers: ${String(error)}`,
+      );
+      return;
+    }
     const merge = mergeCapabilities(
       [...this.serverSide.capabilities.entries()].map(([server, entry]) => ({
         capabilities: entry,
@@ -224,8 +232,7 @@ export class LspProxy {
     if (message.method === "textDocument/didClose") {
       this.docs.close(uri);
     }
-    const recipients = serversForDocument(this.config, uri);
-    const live = this.liveRecipients(recipients);
+    const live = this.liveRecipients(serversForDocument(this.config, uri));
     this.broadcastNotification(message, live);
     this.broker.pullDiagnostics(
       uri,
@@ -243,10 +250,7 @@ export class LspProxy {
       return;
     }
     const { languageId = "", text = "" } = textDocument;
-    if (typeof languageId !== "string") {
-      return;
-    }
-    if (typeof text !== "string") {
+    if (typeof languageId !== "string" || typeof text !== "string") {
       return;
     }
     this.docs.open(uri, languageId, text);
