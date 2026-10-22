@@ -67,10 +67,7 @@ describe("asRecord", () => {
     expect(asRecord({ key: 1 }, "test")).toEqual({ key: 1 });
   });
 
-  it.each([
-    [null],
-    [42],
-  ])("asRecord(%p) throws ConfigError", (value) => {
+  it.each([[null], [42]])("asRecord(%p) throws ConfigError", (value) => {
     expect(() => asRecord(value, "test context")).toThrow(ConfigError);
     expect(() => asRecord(value, "test context")).toThrow("test context");
   });
@@ -81,10 +78,7 @@ describe("asArray", () => {
     expect(asArray([1, 2], "test")).toEqual([1, 2]);
   });
 
-  it.each([
-    ["string"],
-    [null],
-  ])("asArray(%p) throws ConfigError", (value) => {
+  it.each([["string"], [null]])("asArray(%p) throws ConfigError", (value) => {
     expect(() => asArray(value, "test context")).toThrow(ConfigError);
   });
 });

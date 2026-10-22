@@ -1,5 +1,7 @@
 import { Buffer } from "node:buffer";
 
+import type { JsonRpcMessage } from "./types/index.ts";
+
 const textEncoder = new TextEncoder();
 const textDecoder = new TextDecoder();
 const HEADER_SEPARATOR = "\r\n\r\n";
@@ -7,20 +9,7 @@ const CONTENT_LENGTH_MARKER = "Content-Length:";
 const MARKER_BYTES = Buffer.from(CONTENT_LENGTH_MARKER);
 const CONTENT_LENGTH_PATTERN = /Content-Length:\s*(\d+)/i;
 
-export interface JsonRpcError {
-  code: number;
-  data?: unknown;
-  message: string;
-}
-
-export interface JsonRpcMessage {
-  error?: JsonRpcError;
-  id?: number | string | null;
-  jsonrpc: "2.0";
-  method?: string;
-  params?: unknown;
-  result?: unknown;
-}
+export type { JsonRpcError, JsonRpcMessage } from "./types/index.ts";
 
 const asBuffer = (chunk: Uint8Array): Buffer => {
   if (Buffer.isBuffer(chunk)) {

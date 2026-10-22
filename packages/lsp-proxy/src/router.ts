@@ -1,8 +1,9 @@
 import { parse } from "node:path";
 
 import type { ProxyConfig, ServerConfig } from "./config.ts";
+import type { ServerCapabilities } from "./types/index.ts";
 
-export type ServerCapabilities = Record<string, unknown>;
+export type { ServerCapabilities } from "./types/index.ts";
 
 export const METHOD_CAPABILITY: Record<string, string> = {
   "codeAction/resolve": "codeActionProvider",
