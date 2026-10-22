@@ -2,10 +2,7 @@ import process from "node:process";
 import { parseArgs } from "node:util";
 
 import { type ProxyConfig, parseConfig } from "./config.ts";
-
-function isRecord(value: unknown): value is Record<string, unknown> {
-  return typeof value === "object" && value !== null && !Array.isArray(value);
-}
+import { isRecord } from "./guards/index.ts";
 
 export function extensionUnion(config: ProxyConfig): Record<string, string> {
   const union: Record<string, string> = {};

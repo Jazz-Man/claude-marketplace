@@ -1,3 +1,4 @@
+import { isRecord } from "./guards/index.ts";
 import { METHOD_CAPABILITIES } from "./methods/index.ts";
 import type { ServerCapabilities } from "./router.ts";
 import { sortByPriority } from "./utils/index.ts";
@@ -10,10 +11,6 @@ export interface CapabilitiesInput {
 export interface CapabilitiesMerge {
   merged: ServerCapabilities;
   rejected: { reason: string; server: string }[];
-}
-
-function isRecord(value: unknown): value is Record<string, unknown> {
-  return typeof value === "object" && value !== null && !Array.isArray(value);
 }
 
 function reportsIncremental(sync: unknown): boolean {

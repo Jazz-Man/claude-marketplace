@@ -1,6 +1,7 @@
 import type { ProxyConfig } from "./config.ts";
 import type { Downstream } from "./downstream.ts";
 import type { JsonRpcError, JsonRpcMessage } from "./framing.ts";
+import { isRecord } from "./guards/index.ts";
 import {
   mergeOutcomes,
   originOfCodeAction,
@@ -34,10 +35,6 @@ export interface RequestHost {
   ) => void;
   replyTo: (id: number | string | null, result: unknown) => void;
   servers: Map<string, Downstream>;
-}
-
-function isRecord(value: unknown): value is Record<string, unknown> {
-  return typeof value === "object" && value !== null && !Array.isArray(value);
 }
 
 function itemsOf(result: unknown): unknown[] {

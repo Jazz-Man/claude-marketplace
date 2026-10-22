@@ -1,5 +1,6 @@
 import { Buffer } from "node:buffer";
 
+import { isRecord } from "./guards/index.ts";
 import type { JsonRpcMessage } from "./types/index.ts";
 
 const textEncoder = new TextEncoder();
@@ -29,7 +30,14 @@ function deliverBody(
 ): void {
   const text = textDecoder.decode(body);
   try {
-    onMessage(JSON.parse(text) as JsonRpcMessage);
+    const parsed: unknown = JSON.parse(text);
+    if (!isRecord(parsed)) {
+      report(`non-object body: ${text.slice(0, 60)}`);
+      return;
+    }
+    // Only "parsed to an object" is validated here; field shapes are the
+    // JSON-RPC wire contract and are never re-checked at runtime.
+    onMessage(parsed as unknown as JsonRpcMessage);
   } catch {
     report(`unparseable body: ${text.slice(0, 60)}`);
   }

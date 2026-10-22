@@ -1,10 +1,12 @@
 import process from "node:process";
 
+import { cancelIdOf, changesOf, textDocumentOf, uriOf } from "./boundary.ts";
 import { mergeCapabilities } from "./capabilities.ts";
 import type { ProxyConfig, ServerConfig } from "./config.ts";
 import { DocumentStore } from "./docstore.ts";
 import type { Downstream } from "./downstream.ts";
 import { createDecoder, encodeFrame, type JsonRpcMessage } from "./framing.ts";
+import { isRecord } from "./guards/index.ts";
 import { policyFor } from "./methods/index.ts";
 import { RequestBroker } from "./proxy-requests.ts";
 import { ServerSide } from "./proxy-server.ts";
@@ -151,8 +153,11 @@ export class LspProxy {
       });
       return;
     }
-    if (message.method === "$/cancelRequest" && message.params !== undefined) {
-      this.broker.cancel(message.params as { id: number | string });
+    if (message.method === "$/cancelRequest") {
+      const id = cancelIdOf(message.params);
+      if (id !== undefined) {
+        this.broker.cancel({ id });
+      }
       return;
     }
     if (policyFor(message.method)?.isDocumentNotification === true) {
@@ -168,13 +173,8 @@ export class LspProxy {
   }
 
   private async handleInitialize(message: JsonRpcMessage): Promise<void> {
-    const { params } = message;
-    if (
-      params !== undefined &&
-      typeof params === "object" &&
-      !Array.isArray(params)
-    ) {
-      this.clientParams = params as Record<string, unknown>;
+    if (isRecord(message.params)) {
+      this.clientParams = message.params;
     }
     await Promise.all(
       this.config.servers.map((serverConfig) =>
@@ -213,21 +213,13 @@ export class LspProxy {
   }
 
   private handleDocumentNotification(message: JsonRpcMessage): void {
-    const params = (message.params ?? {}) as {
-      contentChanges?: Array<{ text: string }>;
-      textDocument?: { languageId: string; text: string; uri: string };
-      uri?: string;
-    };
-    const uri = params.textDocument?.uri ?? params.uri ?? "";
-    if (message.method === "textDocument/didOpen" && params.textDocument) {
-      this.docs.open(
-        uri,
-        params.textDocument.languageId,
-        params.textDocument.text,
-      );
+    const { params } = message;
+    const uri = uriOf(params);
+    if (message.method === "textDocument/didOpen") {
+      this.openDocument(uri, params);
     }
     if (message.method === "textDocument/didChange") {
-      this.docs.change(uri, params.contentChanges ?? []);
+      this.docs.change(uri, changesOf(params));
     }
     if (message.method === "textDocument/didClose") {
       this.docs.close(uri);
@@ -240,6 +232,24 @@ export class LspProxy {
       message.method ?? "",
       this.serverSide.pullCapable(live),
     );
+  }
+
+  private openDocument(uri: string, params: unknown): void {
+    if (!isRecord(params)) {
+      return;
+    }
+    const { textDocument } = params;
+    if (!isRecord(textDocument)) {
+      return;
+    }
+    const { languageId = "", text = "" } = textDocument;
+    if (typeof languageId !== "string") {
+      return;
+    }
+    if (typeof text !== "string") {
+      return;
+    }
+    this.docs.open(uri, languageId, text);
   }
 
   private broadcastNotification(
@@ -257,8 +267,7 @@ export class LspProxy {
       return;
     }
     const method = message.method ?? "";
-    const params = (message.params ?? {}) as { textDocument?: { uri: string } };
-    const uri = params.textDocument?.uri ?? "";
+    const { uri } = textDocumentOf(message.params);
     if (method === "codeAction/resolve") {
       this.broker.resolveCodeAction(message);
       return;

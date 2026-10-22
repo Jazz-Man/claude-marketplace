@@ -50,3 +50,11 @@ export function asArray(value: unknown, context: string): unknown[] {
   }
   return value;
 }
+
+export function safeJsonParse<T = unknown>(text: string): T | undefined {
+  try {
+    return JSON.parse(text) as T;
+  } catch {
+    return undefined;
+  }
+}
