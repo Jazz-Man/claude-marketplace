@@ -1,24 +1,115 @@
 {
-  "biome": {
-    "args": ["lsp-proxy"],
-    "command": "biome",
-    "extensionToLanguage": {
-      ".cjs": "javascript",
-      ".css": "css",
-      ".js": "javascript",
-      ".json": "json",
-      ".jsonc": "json",
-      ".jsx": "javascriptreact",
-      ".mjs": "javascript",
-      ".ts": "typescript",
-      ".tsx": "typescriptreact"
-    },
-    "initializationOptions": {},
-    "maxRestarts": 3,
-    "settings": {
-      "goto_definition": true,
-      "require_config_file": true
-    },
-    "transport": "stdio"
-  }
+	"rust": {
+		"command": "/opt/homebrew/bin/lspmux",
+		"args": ["client"],
+		"extensionToLanguage": { ".rs": "rust" },
+		"transport": "stdio",
+		"initializationOptions": {
+			"checkOnSave": true,
+			"highlightRelated": {
+				"branchExitPoints": { "enable": true },
+				"breakPoints": { "enable": true },
+				"closureCaptures": { "enable": true },
+				"exitPoints": { "enable": true },
+				"references": { "enable": true },
+				"yieldPoints": { "enable": true }
+			},
+			"imports": {
+				"granularity": { "enforce": true, "group": "crate" },
+				"group": { "enable": true },
+				"merge": { "glob": true },
+				"prefix": "crate"
+			},
+			"lens": {
+				"enable": true,
+				"implementations": { "enable": true },
+				"location": "above_name",
+				"references": {
+					"adt": { "enable": true },
+					"enumVariant": { "enable": true },
+					"method": { "enable": true },
+					"trait": { "enable": true }
+				},
+				"run": { "enable": true },
+				"updateTest": { "enable": true }
+			},
+			"inlayHints": {
+				"bindingModeHints": { "enable": true },
+				"chainingHints": { "enable": true },
+				"closureCaptureHints": { "enable": true },
+				"genericParameterHints": {
+					"lifetime": { "enable": true },
+					"type": { "enable": true }
+				},
+				"implicitDrops": { "enable": true },
+				"implicitSizedBoundHints": { "enable": true },
+				"parameterHints": {
+					"enable": true,
+					"missingArguments": { "enable": true }
+				},
+				"lifetimeElisionHints": { "useParameterNames": true },
+				"rangeExclusiveHints": { "enable": true }
+			},
+			"hover": {
+				"actions": {
+					"enable": true,
+					"debug": { "enable": true },
+					"gotoTypeDef": { "enable": true },
+					"implementations": { "enable": true },
+					"references": { "enable": true },
+					"run": { "enable": true },
+					"updateTest": { "enable": true }
+				},
+				"documentation": { "enable": true, "keywords": { "enable": true } },
+				"dropGlue": { "enable": true },
+				"links": { "enable": true }
+			},
+			"check": {
+				"command": "clippy",
+				"workspace": true,
+				"extraArgs": ["--keep-going", "--no-deps"]
+			},
+			"procMacro": {
+				"enable": true,
+				"processes": 4
+			},
+			"assist": {
+				"emitMustUse": true,
+				"expressionFillDefault": "todo",
+				"preferSelf": true
+			},
+			"cargo": {
+				"autoreload": true,
+				"buildScripts": { "enable": true },
+				"extraArgs": ["--keep-going"]
+			},
+			"completion": {
+				"addSemicolonToUnit": true,
+				"addColonsToModule": true,
+				"autoAwait": {
+					"enable": true
+				},
+				"autoIter": { "enable": true },
+				"autoimport": { "enable": true },
+				"autoself": { "enable": true },
+				"callable": { "snippets": "fill_arguments" },
+				"fullFunctionSignatures": {
+					"enable": true
+				},
+				"postfix": { "enable": true },
+				"privateEditable": { "enable": true }
+			},
+			"diagnostics": {
+				"enable": true,
+				"experimental": {
+					"enable": true
+				},
+				"styleLints": { "enable": true }
+			},
+			"files": {
+				"watcher": "client"
+			}
+		},
+		"maxRestarts": 3
+	}
 }

@@ -2,8 +2,8 @@
   "author": {
     "name": "Vasyl Sokolyk"
   },
-  "description": "Biome language server for Claude Code: live diagnostics, formatting, and code actions for JS/TS/JSX/TSX/JSON/JSONC/CSS",
-  "displayName": "biome-lsp",
-  "name": "biome-lsp",
+  "description": "Rust LSP via lspmux so Claude Code and Zed share one rust-analyzer instance",
+  "displayName": "rust-lspmux-lsp",
+  "name": "rust-lspmux-lsp",
   "version": "0.1.0"
 }
