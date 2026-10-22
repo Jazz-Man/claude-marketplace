@@ -1,4 +1,4 @@
-export interface PendingEntry {
+interface PendingEntry {
   clientId: number | string;
   method: string;
   server: string;
@@ -6,10 +6,16 @@ export interface PendingEntry {
   uri?: string;
 }
 
+const entryKey = (entry: PendingEntry): string =>
+  `${entry.server}:${entry.serverId}`;
+
 export class RequestMux {
-  private readonly nextId = new Map<string, number>();
+  private readonly byClient = new Map<
+    number | string,
+    Map<string, PendingEntry>
+  >();
   private readonly byServer = new Map<string, Map<number, PendingEntry>>();
-  private readonly byClient = new Map<number | string, Map<string, number>>();
+  private readonly nextId = new Map<string, number>();
 
   assign(
     clientId: number | string,
@@ -27,8 +33,9 @@ export class RequestMux {
       this.byServer.get(server) ?? new Map<number, PendingEntry>();
     serverMap.set(serverId, entry);
     this.byServer.set(server, serverMap);
-    const clientMap = this.byClient.get(clientId) ?? new Map<string, number>();
-    clientMap.set(server, serverId);
+    const clientMap =
+      this.byClient.get(clientId) ?? new Map<string, PendingEntry>();
+    clientMap.set(entryKey(entry), entry);
     this.byClient.set(clientId, clientMap);
     return serverId;
   }
@@ -39,13 +46,16 @@ export class RequestMux {
 
   release(entry: PendingEntry): void {
     this.byServer.get(entry.server)?.delete(entry.serverId);
-    this.byClient.get(entry.clientId)?.delete(entry.server);
+    this.byClient.get(entry.clientId)?.delete(entryKey(entry));
   }
 
   clientPending(
     clientId: number | string,
   ): { server: string; serverId: number }[] {
-    const entries = [...(this.byClient.get(clientId)?.entries() ?? [])];
-    return entries.map(([server, serverId]) => ({ server, serverId }));
+    const entries = [...(this.byClient.get(clientId)?.values() ?? [])];
+    return entries.map((entry) => ({
+      server: entry.server,
+      serverId: entry.serverId,
+    }));
   }
 }

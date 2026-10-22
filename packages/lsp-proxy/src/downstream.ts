@@ -16,7 +16,6 @@ export class Downstream {
   readonly name: string;
   private readonly config: ServerConfig;
   private readonly handlers: DownstreamHandlers;
-  private readonly controller = new AbortController();
   private child: Subprocess<"pipe", "pipe", "inherit"> | undefined;
 
   constructor(config: ServerConfig, handlers: DownstreamHandlers) {
@@ -33,9 +32,10 @@ export class Downstream {
     const child = Bun.spawn({
       cmd: [this.config.command, ...(this.config.args ?? [])],
       env: { ...process.env, ...this.config.env },
-      onExit: (_subprocess, exitCode, signalCode) =>
-        this.handlers.onExit(exitCode, signalCode),
-      signal: this.controller.signal,
+      onExit: (_subprocess, exitCode, signalCode) => {
+        this.child = undefined;
+        this.handlers.onExit(exitCode, signalCode);
+      },
       stderr: "inherit",
       stdin: "pipe",
       stdout: "pipe",
@@ -47,16 +47,16 @@ export class Downstream {
   }
 
   send(message: JsonRpcMessage): void {
-    this.child?.stdin.write(encodeFrame(message));
-    this.child?.stdin.flush();
+    const { child } = this;
+    if (child === undefined || child.exitCode !== null) {
+      return;
+    }
+    child.stdin.write(encodeFrame(message));
+    child.stdin.flush();
   }
 
   kill(signal: number | NodeJS.Signals = "SIGTERM"): void {
     this.child?.kill(signal);
-  }
-
-  abort(): void {
-    this.controller.abort();
   }
 
   exited(): Promise<number> {

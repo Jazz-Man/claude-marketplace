@@ -3,12 +3,12 @@ import { METHOD_CAPABILITIES } from "./methods/index.ts";
 import type { ServerCapabilities } from "./router.ts";
 import { sortByPriority } from "./utils/index.ts";
 
-export interface CapabilitiesInput {
+interface CapabilitiesInput {
   capabilities: ServerCapabilities;
   server: string;
 }
 
-export interface CapabilitiesMerge {
+interface CapabilitiesMerge {
   merged: ServerCapabilities;
   rejected: { reason: string; server: string }[];
 }

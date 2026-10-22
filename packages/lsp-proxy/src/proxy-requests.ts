@@ -1,7 +1,7 @@
 import type { ProxyConfig } from "./config.ts";
 import { LspErrorCode, TimeoutMs } from "./constants/index.ts";
 import type { Downstream } from "./downstream.ts";
-import type { JsonRpcError, JsonRpcMessage } from "./framing.ts";
+import type { JsonRpcMessage } from "./framing.ts";
 import { isRecord } from "./guards/index.ts";
 import {
   mergeOutcomes,
@@ -33,6 +33,7 @@ export interface RequestHost {
     id: number | string | null,
     code: number,
     message: string,
+    data?: unknown,
   ) => void;
   replyTo: (id: number | string | null, result: unknown) => void;
   servers: Map<string, Downstream>;
@@ -45,9 +46,11 @@ function itemsOf(result: unknown): unknown[] {
   return [];
 }
 
+const PSEUDO_CLIENT_ID = -1;
+
 export class RequestBroker {
-  mux = new RequestMux();
-  waiters = new Map<string, Waiter>();
+  private readonly mux = new RequestMux();
+  private readonly waiters = new Map<string, Waiter>();
   private readonly host: RequestHost;
 
   constructor(host: RequestHost) {
@@ -94,6 +97,7 @@ export class RequestBroker {
         message.id ?? null,
         merged.error.code,
         merged.error.message,
+        merged.error.data,
       );
       return;
     }
@@ -140,14 +144,10 @@ export class RequestBroker {
   resolveCodeAction(message: JsonRpcMessage): void {
     const origin = originOfCodeAction(message.params);
     const [fallback] = this.host.servers.keys();
-    let target = fallback;
-    if (origin !== undefined && this.host.servers.has(origin)) {
-      target = origin;
-    }
-    let downstream: Downstream | undefined;
-    if (target !== undefined) {
-      downstream = this.host.servers.get(target);
-    }
+    const target =
+      origin !== undefined && this.host.servers.has(origin) ? origin : fallback;
+    const downstream =
+      target === undefined ? undefined : this.host.servers.get(target);
     if (downstream === undefined) {
       this.host.replyErrorTo(
         message.id ?? null,
@@ -161,9 +161,7 @@ export class RequestBroker {
       downstream.name,
       message.method ?? "",
     );
-    const outcome = new Promise<ServerOutcome>((resolve) => {
-      this.waiters.set(`${downstream.name}:${serverId}`, { resolve });
-    });
+    const outcome = this.pending(downstream.name, serverId);
     downstream.send({
       id: serverId,
       jsonrpc: "2.0",
@@ -173,7 +171,12 @@ export class RequestBroker {
     outcome
       .then((resolved) => {
         if (resolved.error !== undefined) {
-          this.replyError(resolved.error, message);
+          this.host.replyErrorTo(
+            message.id ?? null,
+            resolved.error.code,
+            resolved.error.message,
+            resolved.error.data,
+          );
           return;
         }
         this.host.replyTo(message.id ?? null, resolved.result ?? null);
@@ -213,14 +216,12 @@ export class RequestBroker {
 
   private sendPull(downstream: Downstream, uri: string): void {
     const serverId = this.mux.assign(
-      0,
+      PSEUDO_CLIENT_ID,
       downstream.name,
       "textDocument/diagnostic",
       uri,
     );
-    const outcome = new Promise<ServerOutcome>((resolve) => {
-      this.waiters.set(`${downstream.name}:${serverId}`, { resolve });
-    });
+    const outcome = this.pending(downstream.name, serverId);
     downstream.send({
       id: serverId,
       jsonrpc: "2.0",
@@ -254,9 +255,7 @@ export class RequestBroker {
     downstream: Downstream,
   ): Promise<ServerOutcome> {
     const serverId = this.mux.assign(message.id ?? 0, downstream.name, method);
-    const outcome = new Promise<ServerOutcome>((resolve) => {
-      this.waiters.set(`${downstream.name}:${serverId}`, { resolve });
-    });
+    const outcome = this.pending(downstream.name, serverId);
     downstream.send({
       id: serverId,
       jsonrpc: "2.0",
@@ -276,6 +275,12 @@ export class RequestBroker {
     });
   }
 
+  private pending(server: string, serverId: number): Promise<ServerOutcome> {
+    return new Promise((resolve) => {
+      this.waiters.set(`${server}:${serverId}`, { resolve });
+    });
+  }
+
   private sweepOne(server: string, serverId: number, message: string): void {
     const waiterKey = `${server}:${serverId}`;
     const waiter = this.waiters.get(waiterKey);
@@ -291,9 +296,5 @@ export class RequestBroker {
       error: { code: LspErrorCode.InternalError, message },
       server,
     });
-  }
-
-  private replyError(error: JsonRpcError, message: JsonRpcMessage): void {
-    this.host.replyErrorTo(message.id ?? null, error.code, error.message);
   }
 }

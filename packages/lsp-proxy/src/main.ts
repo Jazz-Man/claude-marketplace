@@ -6,6 +6,18 @@ import { parseConfig } from "./config.ts";
 import { closeLog, initFileLog, log } from "./logger.ts";
 import { LspProxy } from "./proxy.ts";
 
+const finish = (): void => {
+  closeLog();
+  process.exit(0);
+};
+
+const terminate = (proxy: LspProxy): void => {
+  proxy
+    .cascadeShutdown("SIGTERM")
+    .catch(() => undefined)
+    .then(finish);
+};
+
 (async () => {
   const pluginRoot = process.env.CLAUDE_PLUGIN_ROOT;
   let configDefault: string | undefined;
@@ -59,11 +71,13 @@ import { LspProxy } from "./proxy.ts";
     parsed.config,
     { readChunks: () => Bun.stdin.stream(), stdout: Bun.stdout.writer() },
     (line) => log(line),
+    finish,
   );
   process.on("SIGTERM", () => {
-    proxy.cascadeShutdown("SIGTERM");
+    terminate(proxy);
   });
   await proxy.run();
+  finish();
 })().catch((error: unknown) => {
   log(`fatal: ${String(error)}`);
   closeLog();

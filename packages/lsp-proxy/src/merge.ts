@@ -136,7 +136,7 @@ function mergePlainArrays(
   return merged;
 }
 
-export function tagCodeAction(action: unknown, server: string): unknown {
+function tagCodeAction(action: unknown, server: string): unknown {
   if (typeof action !== "object" || action === null) {
     return action;
   }

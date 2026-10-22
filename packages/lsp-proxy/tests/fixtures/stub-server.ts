@@ -24,6 +24,7 @@ interface StubOptions {
   formatEdits?: unknown[] | null;
   hangInitialize?: boolean;
   hover?: string;
+  hoverError?: { code: number; data: unknown; message: string };
   sync?: number;
 }
 
@@ -143,6 +144,14 @@ const openDocument = (message: JsonRpcMessage): void => {
 };
 
 const hoverDocument = (message: JsonRpcMessage): void => {
+  if (options.hoverError !== undefined) {
+    write({
+      error: options.hoverError,
+      id: message.id ?? null,
+      jsonrpc: "2.0",
+    });
+    return;
+  }
   if (options.hover === undefined) {
     send(message.id ?? null, null);
     return;

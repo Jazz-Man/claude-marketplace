@@ -1,12 +1,15 @@
-import process from "node:process";
-
 import { cancelIdOf, changesOf, textDocumentOf, uriOf } from "./boundary.ts";
 import { mergeCapabilities } from "./capabilities.ts";
 import type { ProxyConfig, ServerConfig } from "./config.ts";
 import { LspErrorCode } from "./constants/index.ts";
 import { DocumentStore } from "./docstore.ts";
 import type { Downstream } from "./downstream.ts";
-import { createDecoder, encodeFrame, type JsonRpcMessage } from "./framing.ts";
+import {
+  createDecoder,
+  encodeFrame,
+  type JsonRpcError,
+  type JsonRpcMessage,
+} from "./framing.ts";
 import { isRecord } from "./guards/index.ts";
 import { policyFor } from "./methods/index.ts";
 import { RequestBroker } from "./proxy-requests.ts";
@@ -28,21 +31,29 @@ export class LspProxy {
   clientParams: Record<string, unknown> = {};
   config: ProxyConfig;
   docs = new DocumentStore();
+  private readonly finish: () => void;
   servers = new Map<string, Downstream>();
   private readonly io: ProxyIO;
   log: (line: string) => void;
   private phase: Phase = "starting";
   private readonly serverSide: ServerSide;
 
-  constructor(config: ProxyConfig, io: ProxyIO, log: (line: string) => void) {
+  constructor(
+    config: ProxyConfig,
+    io: ProxyIO,
+    log: (line: string) => void,
+    finish: () => void,
+  ) {
     this.config = config;
     this.io = io;
     this.log = log;
+    this.finish = finish;
     this.broker = new RequestBroker({
       config,
       log: (line) => this.log(line),
       notify: (message) => this.write(message),
-      replyErrorTo: (id, code, message) => this.replyErrorTo(id, code, message),
+      replyErrorTo: (id, code, message, data) =>
+        this.replyErrorTo(id, code, message, data),
       replyTo: (id, result) => this.replyTo(id, result),
       servers: this.servers,
     });
@@ -95,7 +106,6 @@ export class LspProxy {
       }, 2000);
     });
     await Promise.race([allExited, escalation]);
-    process.exit(0);
   }
 
   isStopped(): boolean {
@@ -115,16 +125,16 @@ export class LspProxy {
     id: number | string | null,
     code: number,
     message: string,
+    data?: unknown,
   ): void {
-    this.write({ error: { code, message }, id, jsonrpc: "2.0" });
+    const error: JsonRpcError =
+      data === undefined ? { code, message } : { code, data, message };
+    this.write({ error, id, jsonrpc: "2.0" });
   }
 
   dropServer(server: string): void {
-    const downstream = this.servers.get(server);
-    if (downstream !== undefined) {
-      downstream.kill();
-      this.servers.delete(server);
-    }
+    this.servers.get(server)?.kill();
+    this.servers.delete(server);
   }
 
   private logFailure(prefix: string): (reason: unknown) => void {
@@ -140,7 +150,7 @@ export class LspProxy {
       return;
     }
     if (message.method === "initialized") {
-      this.broadcastNotification(message, [...this.servers.values()]);
+      this.broadcast(message, [...this.servers.values()]);
       return;
     }
     if (message.method === "shutdown") {
@@ -148,7 +158,9 @@ export class LspProxy {
       return;
     }
     if (message.method === "exit") {
-      this.cascadeShutdown("exit").catch(this.logFailure("shutdown cascade"));
+      this.cascadeShutdown("exit")
+        .catch(this.logFailure("shutdown cascade"))
+        .then(this.finish);
       return;
     }
     if (message.method === "$/cancelRequest") {
@@ -210,14 +222,10 @@ export class LspProxy {
   }
 
   private liveRecipients(recipients: ServerConfig[]): Downstream[] {
-    const live: Downstream[] = [];
-    for (const serverConfig of recipients) {
+    return recipients.flatMap((serverConfig) => {
       const downstream = this.servers.get(serverConfig.name);
-      if (downstream !== undefined) {
-        live.push(downstream);
-      }
-    }
-    return live;
+      return downstream === undefined ? [] : [downstream];
+    });
   }
 
   private handleDocumentNotification(message: JsonRpcMessage): void {
@@ -233,7 +241,7 @@ export class LspProxy {
       this.docs.close(uri);
     }
     const live = this.liveRecipients(serversForDocument(this.config, uri));
-    this.broadcastNotification(message, live);
+    this.broadcast(message, live);
     this.broker.pullDiagnostics(
       uri,
       message.method ?? "",
@@ -242,24 +250,17 @@ export class LspProxy {
   }
 
   private openDocument(uri: string, params: unknown): void {
-    if (!isRecord(params)) {
+    if (!(isRecord(params) && isRecord(params.textDocument))) {
       return;
     }
-    const { textDocument } = params;
-    if (!isRecord(textDocument)) {
-      return;
-    }
-    const { languageId = "", text = "" } = textDocument;
+    const { languageId = "", text = "" } = params.textDocument;
     if (typeof languageId !== "string" || typeof text !== "string") {
       return;
     }
     this.docs.open(uri, languageId, text);
   }
 
-  private broadcastNotification(
-    message: JsonRpcMessage,
-    recipients: Downstream[],
-  ): void {
+  private broadcast(message: JsonRpcMessage, recipients: Downstream[]): void {
     for (const downstream of recipients) {
       downstream.send({ ...message, id: undefined });
     }
