@@ -1,6 +1,6 @@
 import { mkdir } from "node:fs/promises";
 import { homedir } from "node:os";
-import { join } from "node:path";
+import { dirname, join } from "node:path";
 import process from "node:process";
 import { format } from "node:util";
 
@@ -24,7 +24,7 @@ export async function initFileLog(): Promise<string | undefined> {
   if (logPath === undefined) {
     return undefined;
   }
-  await mkdir(join(logPath, ".."), { recursive: true });
+  await mkdir(dirname(logPath), { recursive: true });
   logSink = Bun.file(logPath).writer();
   logSink.unref();
   return logPath;

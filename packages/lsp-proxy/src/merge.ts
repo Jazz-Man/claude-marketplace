@@ -45,10 +45,10 @@ function completionOf(result: unknown): {
   if (Array.isArray(result)) {
     return { incomplete: false, items: result };
   }
-  if (isRecord(result) && Array.isArray(result.items)) {
+  if (isRecord(result)) {
     return {
       incomplete: result.isIncomplete === true,
-      items: result.items as unknown[],
+      items: itemsOf(result),
     };
   }
   return { incomplete: false, items: [] };
@@ -76,6 +76,14 @@ function markdownContents(outcome: ServerOutcome): unknown {
   return undefined;
 }
 
+function isMarkdownEntry(entry: unknown): entry is { value: string } {
+  return (
+    isRecord(entry) &&
+    entry.kind === "markdown" &&
+    typeof entry.value === "string"
+  );
+}
+
 function mergeHover(outcomes: ServerOutcome[], priority: string[]): unknown {
   const hovers = sortByPriority(
     outcomes.filter(
@@ -88,10 +96,8 @@ function mergeHover(outcomes: ServerOutcome[], priority: string[]): unknown {
     return null;
   }
   const contents = hovers.map(markdownContents);
-  if (contents.every((entry) => isRecord(entry) && entry.kind === "markdown")) {
-    const value = contents
-      .map((entry) => (entry as { value: string }).value)
-      .join("\n\n");
+  if (contents.every(isMarkdownEntry)) {
+    const value = contents.map((entry) => entry.value).join("\n\n");
     return { contents: { kind: "markdown", value } };
   }
   return first.result;
@@ -137,15 +143,21 @@ function mergePlainArrays(
 }
 
 function tagCodeAction(action: unknown, server: string): unknown {
-  if (typeof action !== "object" || action === null) {
+  if (!isRecord(action)) {
     return action;
   }
-  const record = action as Record<string, unknown>;
   let data: Record<string, unknown> = { [SERVER_TAG]: server };
-  if (isRecord(record.data)) {
-    data = { ...record.data, [SERVER_TAG]: server };
+  if (isRecord(action.data)) {
+    data = { ...action.data, [SERVER_TAG]: server };
   }
-  return { ...record, data };
+  return { ...action, data };
+}
+
+export function itemsOf(result: unknown): unknown[] {
+  if (isRecord(result) && Array.isArray(result.items)) {
+    return result.items;
+  }
+  return [];
 }
 
 export function originOfCodeAction(action: unknown): string | undefined {

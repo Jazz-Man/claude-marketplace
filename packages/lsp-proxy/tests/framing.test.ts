@@ -26,6 +26,17 @@ function collect(): {
   return { errors, messages, push };
 }
 
+function rawFrame(body: string): Uint8Array {
+  const bodyBytes = new TextEncoder().encode(body);
+  const header = new TextEncoder().encode(
+    `Content-Length: ${bodyBytes.byteLength}\r\n\r\n`,
+  );
+  const frame = new Uint8Array(header.byteLength + bodyBytes.byteLength);
+  frame.set(header);
+  frame.set(bodyBytes, header.byteLength);
+  return frame;
+}
+
 describe("encodeFrame + createDecoder", () => {
   it("round-trips a multibyte message", () => {
     const received = collect();
@@ -83,16 +94,6 @@ describe("createDecoder garbage resync", () => {
 
   it("reports a non-object JSON body instead of delivering it", () => {
     const received = collect();
-    const rawFrame = (body: string): Uint8Array => {
-      const bodyBytes = new TextEncoder().encode(body);
-      const header = new TextEncoder().encode(
-        `Content-Length: ${bodyBytes.byteLength}\r\n\r\n`,
-      );
-      const frame = new Uint8Array(header.byteLength + bodyBytes.byteLength);
-      frame.set(header);
-      frame.set(bodyBytes, header.byteLength);
-      return frame;
-    };
     received.push(rawFrame("3"));
     received.push(rawFrame("[1, 2]"));
     received.push(encodeFrame(SAMPLE));
@@ -100,6 +101,18 @@ describe("createDecoder garbage resync", () => {
     expect(received.errors).toEqual([
       "non-object body: 3",
       "non-object body: [1, 2]",
+    ]);
+  });
+
+  it("reports an unparseable JSON body instead of delivering it", () => {
+    const received = collect();
+    received.push(rawFrame('{"broken'));
+    received.push(rawFrame("]not json["));
+    received.push(encodeFrame(SAMPLE));
+    expect(received.messages).toEqual([SAMPLE]);
+    expect(received.errors).toEqual([
+      'unparseable body: {"broken',
+      "unparseable body: ]not json[",
     ]);
   });
 

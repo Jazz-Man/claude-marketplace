@@ -9,6 +9,7 @@ const HEADER_SEPARATOR = "\r\n\r\n";
 const CONTENT_LENGTH_MARKER = "Content-Length:";
 const MARKER_BYTES = Buffer.from(CONTENT_LENGTH_MARKER);
 const CONTENT_LENGTH_PATTERN = /Content-Length:\s*(\d+)/i;
+const PREVIEW_CHARS = 60;
 
 export type { JsonRpcError, JsonRpcMessage } from "./types/index.ts";
 
@@ -20,7 +21,7 @@ const asBuffer = (chunk: Uint8Array): Buffer => {
 };
 
 function preview(buffer: Buffer): string {
-  return textDecoder.decode(buffer).slice(0, 60);
+  return textDecoder.decode(buffer).slice(0, PREVIEW_CHARS);
 }
 
 function deliverBody(
@@ -31,11 +32,11 @@ function deliverBody(
   const text = textDecoder.decode(body);
   const parsed = safeJsonParse(text);
   if (parsed === undefined) {
-    report(`unparseable body: ${text.slice(0, 60)}`);
+    report(`unparseable body: ${text.slice(0, PREVIEW_CHARS)}`);
     return;
   }
   if (!isRecord(parsed)) {
-    report(`non-object body: ${text.slice(0, 60)}`);
+    report(`non-object body: ${text.slice(0, PREVIEW_CHARS)}`);
     return;
   }
   onMessage(parsed as unknown as JsonRpcMessage);
@@ -62,7 +63,7 @@ function extractFrame(
   const headerText = buffer.toString("utf8", 0, headerEnd);
   const match = CONTENT_LENGTH_PATTERN.exec(headerText);
   if (match === null) {
-    report(`malformed header: ${headerText.slice(0, 60)}`);
+    report(`malformed header: ${headerText.slice(0, PREVIEW_CHARS)}`);
     const tail = buffer.subarray(headerEnd);
     const marker = tail.indexOf(CONTENT_LENGTH_MARKER);
     if (marker === -1) {

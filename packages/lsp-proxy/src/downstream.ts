@@ -4,6 +4,8 @@ import type { Subprocess } from "bun";
 import type { ServerConfig } from "./config.ts";
 import { createDecoder, encodeFrame, type JsonRpcMessage } from "./framing.ts";
 
+const EXIT_UNKNOWN = -1;
+
 export interface DownstreamHandlers {
   onExit: (
     exitCode: number | null,
@@ -52,7 +54,7 @@ export class Downstream {
     });
     this.child = child;
     this.readLoop(child).catch((reason: unknown) => {
-      this.log(`[${this.name}] stream: ${String(reason)}`);
+      this.streamError(reason);
     });
   }
 
@@ -70,7 +72,11 @@ export class Downstream {
   }
 
   exited(): Promise<number> {
-    return this.child?.exited ?? Promise.resolve(-1);
+    return this.child?.exited ?? Promise.resolve(EXIT_UNKNOWN);
+  }
+
+  private streamError(reason: unknown): void {
+    this.log(`[${this.name}] stream: ${String(reason)}`);
   }
 
   private async readLoop(
@@ -84,7 +90,7 @@ export class Downstream {
           this.log(`[${this.name}] message dispatch error: ${String(error)}`);
         }
       },
-      (reason) => this.log(`[${this.name}] stream: ${reason}`),
+      (reason) => this.streamError(reason),
     );
     for await (const chunk of child.stdout) {
       decode(chunk);

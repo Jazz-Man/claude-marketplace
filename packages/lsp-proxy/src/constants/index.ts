@@ -11,6 +11,7 @@ export const SyncKind = {
 
 export const TimeoutMs = {
   initialize: 30_000,
+  killEscalation: 2000,
   request: 15_000,
 } as const;
 

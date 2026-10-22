@@ -1,7 +1,7 @@
 import { cancelIdOf, changesOf, textDocumentOf, uriOf } from "./boundary.ts";
 import { mergeCapabilities } from "./capabilities.ts";
 import type { ProxyConfig, ServerConfig } from "./config.ts";
-import { LspErrorCode, VERSION } from "./constants/index.ts";
+import { LspErrorCode, TimeoutMs, VERSION } from "./constants/index.ts";
 import { DocumentStore } from "./docstore.ts";
 import type { Downstream } from "./downstream.ts";
 import {
@@ -103,7 +103,7 @@ export class LspProxy {
           downstream.kill("SIGKILL");
         }
         resolve();
-      }, 2000);
+      }, TimeoutMs.killEscalation);
     });
     await Promise.race([allExited, escalation]);
   }

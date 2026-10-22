@@ -2,8 +2,8 @@ import type { ProxyConfig } from "./config.ts";
 import { LspErrorCode, TimeoutMs } from "./constants/index.ts";
 import type { Downstream } from "./downstream.ts";
 import type { JsonRpcMessage } from "./framing.ts";
-import { isRecord } from "./guards/index.ts";
 import {
+  itemsOf,
   mergeOutcomes,
   originOfCodeAction,
   type ServerOutcome,
@@ -37,13 +37,6 @@ export interface RequestHost {
   ) => void;
   replyTo: (id: number | string | null, result: unknown) => void;
   servers: Map<string, Downstream>;
-}
-
-function itemsOf(result: unknown): unknown[] {
-  if (isRecord(result) && Array.isArray(result.items)) {
-    return result.items;
-  }
-  return [];
 }
 
 const PSEUDO_CLIENT_ID = -1;

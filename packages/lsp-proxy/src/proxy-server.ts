@@ -3,6 +3,7 @@ import { TimeoutMs } from "./constants/index.ts";
 import type { DocumentStore } from "./docstore.ts";
 import { Downstream } from "./downstream.ts";
 import type { JsonRpcMessage } from "./framing.ts";
+import { isRecord } from "./guards/index.ts";
 import {
   type RequestBroker,
   toOutcome,
@@ -32,8 +33,10 @@ export interface ProxyHost {
   write: (message: JsonRpcMessage) => void;
 }
 
-function coerceResponseId(id: number | string | null | undefined): number {
-  return typeof id === "string" ? Number(id) : (id ?? 0);
+function coerceResponseId(
+  id: number | string | null | undefined,
+): number | undefined {
+  return typeof id === "number" ? id : undefined;
 }
 
 export class ServerSide {
@@ -62,20 +65,14 @@ export class ServerSide {
   }
 
   pullCapable(downstreams: Downstream[]): Downstream[] {
-    return downstreams.filter(
-      (downstream) =>
-        this.capabilities.get(downstream.name)?.diagnosticProvider !==
-        undefined,
-    );
-  }
-
-  prepareReply(server: string): { id: number; reply: Promise<void> } {
-    return this.registerReply(server, false);
+    const hasProvider = (downstream: Downstream): boolean =>
+      this.capabilities.get(downstream.name)?.diagnosticProvider !== undefined;
+    return downstreams.filter(hasProvider);
   }
 
   async shutdownServers(): Promise<void> {
     const replies = [...this.host.servers.values()].map(async (downstream) => {
-      const { id, reply } = this.prepareReply(downstream.name);
+      const { id, reply } = this.registerReply(downstream.name, false);
       downstream.send({ id, jsonrpc: "2.0", method: "shutdown" });
       await reply;
     });
@@ -191,10 +188,10 @@ export class ServerSide {
     const reply = new Promise<void>((resolve) => {
       this.initializeWaiters.set(server, {
         resolve: (outcome) => {
-          if (storeCapabilities && outcome.result !== undefined) {
-            const caps =
-              (outcome.result as { capabilities?: ServerCapabilities })
-                .capabilities ?? {};
+          if (storeCapabilities && isRecord(outcome.result)) {
+            const caps = isRecord(outcome.result.capabilities)
+              ? outcome.result.capabilities
+              : {};
             this.capabilities.set(server, caps);
           }
           clearTimeout(timer);
@@ -232,6 +229,9 @@ export class ServerSide {
 
   private handleServerResponse(server: string, message: JsonRpcMessage): void {
     const serverId = coerceResponseId(message.id);
+    if (serverId === undefined) {
+      return;
+    }
     if (this.host.broker.resolveServerResponse(server, serverId, message)) {
       return;
     }
