@@ -33,11 +33,8 @@ export interface ProxyHost {
   write: (message: JsonRpcMessage) => void;
 }
 
-function coerceResponseId(
-  id: number | string | null | undefined,
-): number | undefined {
-  return typeof id === "number" ? id : undefined;
-}
+const coerceResponseId = (id: JsonRpcMessage["id"]): number | undefined =>
+  typeof id === "number" ? id : undefined;
 
 export class ServerSide {
   capabilities = new Map<string, ServerCapabilities>();
@@ -47,7 +44,7 @@ export class ServerSide {
   private readonly initializeIds = new Map<string, number>();
   private readonly initializeWaiters = new Map<string, Waiter>();
   private readonly host: ProxyHost;
-  private nextServerId = 0;
+  private nextServerId = 1_000_000;
   private readonly rejected = new Set<string>();
 
   constructor(host: ProxyHost, deathResetMs = ServerSide.DEATH_RESET_MS) {
@@ -80,15 +77,12 @@ export class ServerSide {
   }
 
   onServerMessage(server: string, message: JsonRpcMessage): void {
-    if (
-      message.method !== undefined &&
-      message.id !== undefined &&
-      message.id !== null
-    ) {
+    const { id, method } = message;
+    if (method !== undefined && id !== undefined && id !== null) {
       this.handleServerRequest(server, message);
       return;
     }
-    if (message.method !== undefined) {
+    if (method !== undefined) {
       this.handleServerNotification(server, message);
       return;
     }
@@ -104,9 +98,11 @@ export class ServerSide {
       serverConfig,
       {
         onExit: (exitCode) => {
-          this.handleServerExit(name, exitCode).catch((reason: unknown) => {
-            this.host.log(`exit handler for ${name}: ${String(reason)}`);
-          });
+          this.handleServerExit(name, exitCode, downstream).catch(
+            (reason: unknown) => {
+              this.host.log(`exit handler for ${name}: ${String(reason)}`);
+            },
+          );
         },
         onMessage: (message) => {
           this.onServerMessage(name, message);
@@ -116,9 +112,8 @@ export class ServerSide {
     );
     this.host.servers.set(name, downstream);
     downstream.start();
-    const childPid = downstream.pid;
-    if (childPid !== undefined) {
-      this.host.log(`spawned ${name} pid=${String(childPid)}`);
+    if (downstream.pid !== undefined) {
+      this.host.log(`spawned ${name} pid=${String(downstream.pid)}`);
     }
     const { id, reply } = this.registerReply(name, true);
     downstream.send({
@@ -133,18 +128,25 @@ export class ServerSide {
     return reply;
   }
 
-  async handleServerExit(server: string, code: number | null): Promise<void> {
+  async handleServerExit(
+    server: string,
+    code: number | null,
+    gen?: Downstream,
+  ): Promise<void> {
     if (this.host.isStopped() || this.rejected.has(server)) {
       return;
     }
-    const deaths = this.recordDeath(server);
+    if (gen !== undefined && this.host.servers.get(server) !== gen) {
+      this.host.log(`stale exit for ${server} (${String(code)}); ignored`);
+      return;
+    }
     this.capabilities.delete(server);
     this.host.dropServer(server);
     const swept = this.host.broker.failAllFor(server, `exit code ${code}`);
     if (swept > 0) {
       this.host.log(`swept ${String(swept)} pending requests for ${server}`);
     }
-    if (deaths > 1) {
+    if (this.recordDeath(server) > 1) {
       this.host.log(`server ${server} died (${code}) a second time; giving up`);
       return;
     }
@@ -211,8 +213,8 @@ export class ServerSide {
           (server) => server.name === serverConfig.name,
         ),
       );
+    const downstream = this.host.servers.get(serverConfig.name);
     for (const entry of relevant) {
-      const downstream = this.host.servers.get(serverConfig.name);
       downstream?.send({
         jsonrpc: "2.0",
         method: "textDocument/didOpen",
@@ -235,13 +237,10 @@ export class ServerSide {
     if (this.host.broker.resolveServerResponse(server, serverId, message)) {
       return;
     }
-    const initializeWaiter = this.initializeWaiters.get(server);
-    if (
-      initializeWaiter !== undefined &&
-      this.initializeIds.get(server) === serverId
-    ) {
+    const waiter = this.initializeWaiters.get(server);
+    if (waiter !== undefined && this.initializeIds.get(server) === serverId) {
       this.initializeWaiters.delete(server);
-      initializeWaiter.resolve(toOutcome(message, server));
+      waiter.resolve(toOutcome(message, server));
     }
   }
 

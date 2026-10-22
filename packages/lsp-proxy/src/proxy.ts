@@ -52,8 +52,7 @@ export class LspProxy {
       config,
       log: (line) => this.log(line),
       notify: (message) => this.write(message),
-      replyErrorTo: (id, code, message, data) =>
-        this.replyErrorTo(id, code, message, data),
+      replyErrorTo: this.replyErrorTo.bind(this),
       replyTo: (id, result) => this.replyTo(id, result),
       servers: this.servers,
     });
@@ -195,6 +194,10 @@ export class LspProxy {
       );
     } catch (error) {
       this.log(`initialize failed: ${String(error)}`);
+      for (const name of this.servers.keys()) {
+        this.serverSide.reject(name);
+        this.dropServer(name);
+      }
       this.replyErrorTo(
         message.id ?? null,
         LspErrorCode.InternalError,
@@ -223,10 +226,7 @@ export class LspProxy {
   }
 
   private liveRecipients(recipients: ServerConfig[]): Downstream[] {
-    return recipients.flatMap((serverConfig) => {
-      const downstream = this.servers.get(serverConfig.name);
-      return downstream === undefined ? [] : [downstream];
-    });
+    return recipients.flatMap(({ name }) => this.servers.get(name) ?? []);
   }
 
   private handleDocumentNotification(message: JsonRpcMessage): void {
@@ -251,14 +251,14 @@ export class LspProxy {
   }
 
   private openDocument(uri: string, params: unknown): void {
-    if (!(isRecord(params) && isRecord(params.textDocument))) {
-      return;
+    const fields = isRecord(params) ? params.textDocument : undefined;
+    if (isRecord(fields)) {
+      const { languageId = "", text = "" } = fields;
+      if (typeof languageId !== "string" || typeof text !== "string") {
+        return;
+      }
+      this.docs.open(uri, languageId, text);
     }
-    const { languageId = "", text = "" } = params.textDocument;
-    if (typeof languageId !== "string" || typeof text !== "string") {
-      return;
-    }
-    this.docs.open(uri, languageId, text);
   }
 
   private broadcast(message: JsonRpcMessage, recipients: Downstream[]): void {
