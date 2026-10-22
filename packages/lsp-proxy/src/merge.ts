@@ -1,12 +1,6 @@
 import type { JsonRpcError } from "./framing.ts";
+import { policyFor } from "./methods/index.ts";
 import { sortByPriority } from "./utils/index.ts";
-
-const ARRAY_MERGE_METHODS = new Set([
-  "textDocument/definition",
-  "textDocument/references",
-  "textDocument/documentSymbol",
-  "textDocument/codeAction",
-]);
 
 const SERVER_TAG = "__lspProxyServer";
 
@@ -183,17 +177,17 @@ export function mergeOutcomes(
     }
     return { error };
   }
-  if (method === "textDocument/completion") {
-    return { result: mergeCompletion(outcomes) };
+  switch (policyFor(method)?.merge) {
+    case "completion":
+      return { result: mergeCompletion(outcomes) };
+    case "hover":
+      return { result: mergeHover(outcomes, priority) };
+    case "array":
+      if (method === "textDocument/codeAction") {
+        return { result: mergeTaggedArrays(successes, priority) };
+      }
+      return { result: mergePlainArrays(successes, priority) };
+    default:
+      return { result: firstNonNull(outcomes, priority) };
   }
-  if (method === "textDocument/hover") {
-    return { result: mergeHover(outcomes, priority) };
-  }
-  if (method === "textDocument/codeAction") {
-    return { result: mergeTaggedArrays(successes, priority) };
-  }
-  if (ARRAY_MERGE_METHODS.has(method)) {
-    return { result: mergePlainArrays(successes, priority) };
-  }
-  return { result: firstNonNull(outcomes, priority) };
 }

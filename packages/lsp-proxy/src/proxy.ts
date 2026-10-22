@@ -5,21 +5,10 @@ import type { ProxyConfig, ServerConfig } from "./config.ts";
 import { DocumentStore } from "./docstore.ts";
 import type { Downstream } from "./downstream.ts";
 import { createDecoder, encodeFrame, type JsonRpcMessage } from "./framing.ts";
+import { policyFor } from "./methods/index.ts";
 import { RequestBroker } from "./proxy-requests.ts";
 import { ServerSide } from "./proxy-server.ts";
 import { serversForDocument, serversForRequest } from "./router.ts";
-
-const SINGLE_RESULT_METHODS = new Set([
-  "textDocument/formatting",
-  "textDocument/rangeFormatting",
-]);
-
-const DOC_NOTIFICATION_METHODS = new Set([
-  "textDocument/didOpen",
-  "textDocument/didChange",
-  "textDocument/didClose",
-  "textDocument/didSave",
-]);
 
 export interface ProxyIO {
   readChunks: () => AsyncIterable<Uint8Array>;
@@ -166,7 +155,7 @@ export class LspProxy {
       this.broker.cancel(message.params as { id: number | string });
       return;
     }
-    if (DOC_NOTIFICATION_METHODS.has(message.method)) {
+    if (policyFor(message.method)?.isDocumentNotification === true) {
       this.handleDocumentNotification(message);
       return;
     }
@@ -281,7 +270,7 @@ export class LspProxy {
       this.replyTo(message.id ?? null, null);
       return;
     }
-    if (SINGLE_RESULT_METHODS.has(method)) {
+    if (policyFor(method)?.isSingleResult === true) {
       await this.broker.askSequentially(message, method, recipients);
       return;
     }

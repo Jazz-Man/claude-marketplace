@@ -1,21 +1,10 @@
 import { parse } from "node:path";
 
 import type { ProxyConfig, ServerConfig } from "./config.ts";
+import { policyFor } from "./methods/index.ts";
 import type { ServerCapabilities } from "./types/index.ts";
 
 export type { ServerCapabilities } from "./types/index.ts";
-
-export const METHOD_CAPABILITY: Record<string, string> = {
-  "codeAction/resolve": "codeActionProvider",
-  "textDocument/codeAction": "codeActionProvider",
-  "textDocument/completion": "completionProvider",
-  "textDocument/definition": "definitionProvider",
-  "textDocument/documentSymbol": "documentSymbolProvider",
-  "textDocument/formatting": "documentFormattingProvider",
-  "textDocument/hover": "hoverProvider",
-  "textDocument/rangeFormatting": "documentRangeFormattingProvider",
-  "textDocument/references": "referencesProvider",
-};
 
 export function extensionOf(uri: string): string | undefined {
   try {
@@ -53,8 +42,8 @@ export function serversForRequest(
   method: string,
 ): ServerConfig[] {
   const owners = serversForDocument(config, uri);
-  const capability = METHOD_CAPABILITY[method];
-  if (capability === undefined) {
+  const capability = policyFor(method)?.capability;
+  if (capability === undefined || capability === "") {
     return owners;
   }
   return owners.filter((server) => {

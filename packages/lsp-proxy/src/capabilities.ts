@@ -1,16 +1,6 @@
+import { METHOD_CAPABILITIES } from "./methods/index.ts";
 import type { ServerCapabilities } from "./router.ts";
 import { sortByPriority } from "./utils/index.ts";
-
-const PROVIDER_KEYS = [
-  "codeActionProvider",
-  "completionProvider",
-  "definitionProvider",
-  "documentFormattingProvider",
-  "documentRangeFormattingProvider",
-  "documentSymbolProvider",
-  "hoverProvider",
-  "referencesProvider",
-];
 
 export interface CapabilitiesInput {
   capabilities: ServerCapabilities;
@@ -87,7 +77,7 @@ export function mergeCapabilities(
       server: input.server,
     }));
   const merged: ServerCapabilities = { textDocumentSync: 2 };
-  for (const key of PROVIDER_KEYS) {
+  for (const key of METHOD_CAPABILITIES) {
     const value = mergedProviderValue(accepted, key);
     if (value !== undefined) {
       merged[key] = value;

@@ -6,6 +6,7 @@ import {
   originOfCodeAction,
   type ServerOutcome,
 } from "./merge.ts";
+import { policyFor } from "./methods/index.ts";
 import { RequestMux } from "./mux.ts";
 
 export interface Waiter {
@@ -170,10 +171,7 @@ export class RequestBroker {
   }
 
   pullDiagnostics(uri: string, method: string, recipients: Downstream[]): void {
-    if (
-      method !== "textDocument/didOpen" &&
-      method !== "textDocument/didChange"
-    ) {
+    if (policyFor(method)?.triggersPull !== true) {
       return;
     }
     for (const downstream of recipients) {
