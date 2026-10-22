@@ -21,6 +21,7 @@
 - Biome is currently DISABLED in the live plugin — run `rtk proxy biome check packages/lsp-proxy --write` manually after every batch of edits.
 - All existing tests MUST stay green — this is a refactoring, not a rewrite. External behavior unchanged.
 - Shell commands use literal absolute paths (filesystem PreToolUse guard).
+- Parametrized tests: use `it.each` with `[input, expected]` pairs wherever a test exercises the same function with multiple inputs (the canonical Bun pattern per node_modules/bun-types/docs/test/writing-tests.mdx §Parametrized Tests). Each row carries the input AND the expected result as parameters, with `%p` format specifiers in the title. Non-parametrized tests (single scenario, complex setup, error-path assertions) stay as regular `it()`.
 
 ## Review Focus
 
