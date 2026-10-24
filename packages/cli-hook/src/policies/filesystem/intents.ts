@@ -1,6 +1,7 @@
 import { parseEnv } from "node:util";
 
 import * as ast from "../../core/ast.ts";
+import { SHARED_WRAPPERS } from "../../core/wrappers.ts";
 
 function isAssignment(token: string): boolean {
   return Object.keys(parseEnv(token)).length > 0;
@@ -61,7 +62,6 @@ const NETWORK_TOOLS = new Set([
   "openssl",
 ]);
 
-const WRAPPERS = new Set(["env", "nice", "nohup", "timeout", "xargs"]);
 
 const isScanNoise = (token: string) =>
   token.startsWith("-") || isAssignment(token);
@@ -164,7 +164,7 @@ export function intentOf(name: string, args: string[]): Unwrapped {
     network = base;
   }
   const sudo = name === "sudo";
-  if (!WRAPPERS.has(name) && name !== "sudo") {
+  if (!SHARED_WRAPPERS.has(name) && name !== "sudo") {
     return {
       intent: adjustForFlags(base, intent, args),
       network,

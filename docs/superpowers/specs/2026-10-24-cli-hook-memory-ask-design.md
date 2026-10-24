@@ -112,9 +112,12 @@ unwrapping propagates it; inline scripts carrying sudo are denied outright by
 the no-inline-scripts policy). Design review found two defects around it:
 
 - the two `WRAPPERS` constants have drifted: `intents.ts` lacks `time` and
-  `parallel`, so `time sudo <cmd>` and `parallel sudo <cmd>` never raise the
-  sudo flag and slip past the ban. The sets SHALL be unified into one shared
-  source consumed by both modules.
+  `parallel`. (Design-stage correction, verified empirically during Task 4:
+  `time` is stripped as a prefix by the AST parser, so `time sudo <cmd>`
+  already denies via the stripped `sudo` unit; the actual bypass was
+  `parallel sudo <cmd>` only. The shared set still lands as specified —
+  `time`/`sudo` entries are uniformity, `parallel` is the fix.) The sets
+  SHALL be unified into one shared source consumed by both modules.
 - the sudo ban has zero test pins. Tests SHALL pin `sudo rm x`, `xargs sudo
   rm x`, `time sudo rm x`, and `parallel sudo rm x` to `deny` with the sudo
   reason.

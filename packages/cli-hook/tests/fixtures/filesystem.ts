@@ -174,6 +174,11 @@ export const DENY: string[] = [
   // unit names pass the same fail-closed gates as path candidates
   "$EVIL/tool args",
   "~root/evil.sh args",
+  // sudo ban — directly and behind wrappers (time/parallel were a bypass)
+  "sudo rm -rf /tmp/x",
+  "xargs sudo rm x",
+  "time sudo rm x",
+  "parallel sudo rm x",
 ];
 
 // Home-whole reads ask: the only ask rows

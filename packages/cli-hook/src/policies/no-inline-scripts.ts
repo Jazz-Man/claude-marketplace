@@ -3,6 +3,7 @@ import { parseEnv } from "node:util";
 import * as ast from "../core/ast.ts";
 import { deny } from "../core/decision.ts";
 import type { Policy } from "../core/policy.ts";
+import { SHARED_WRAPPERS } from "../core/wrappers.ts";
 
 const INTERPRETERS: Record<
   string,
@@ -73,17 +74,7 @@ const SHORT_FLAG_CLUSTER = /^-[A-Za-z]+$/u;
 
 const EVAL_SUBCOMMANDS = new Set(["deno"]);
 
-const WRAPPERS = new Set([
-  "env",
-  "find",
-  "nice",
-  "nohup",
-  "parallel",
-  "sudo",
-  "time",
-  "timeout",
-  "xargs",
-]);
+const WRAPPERS = new Set([...SHARED_WRAPPERS, "find"]);
 
 function isInlineArg(lname: string, arg: string): boolean {
   const table = INTERPRETERS[lname];

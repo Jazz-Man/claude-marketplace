@@ -6,6 +6,7 @@ import {
   askReason,
   injectionReason,
   memoryReason,
+  SUDO_REASON,
 } from "../src/policies/filesystem/reasons.ts";
 import { ALLOW, ASK, DENY } from "./fixtures/filesystem.ts";
 import { MEMORY_ALLOW, MEMORY_ASK } from "./fixtures/memory.ts";
@@ -162,5 +163,14 @@ describe("filesystem policy (mutator flags)", () => {
         policyCheck(filesystemPolicy, "find /workspace -name x -delete"),
       ),
     ).toBe("deny");
+  });
+
+  it("the sudo deny fires behind time and parallel, with the sudo reason", () => {
+    expect(reasonOf(policyCheck(filesystemPolicy, "time sudo rm x"))).toBe(
+      SUDO_REASON,
+    );
+    expect(reasonOf(policyCheck(filesystemPolicy, "parallel sudo rm x"))).toBe(
+      SUDO_REASON,
+    );
   });
 });
