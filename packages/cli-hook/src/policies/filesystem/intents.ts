@@ -62,7 +62,6 @@ const NETWORK_TOOLS = new Set([
   "openssl",
 ]);
 
-
 const isScanNoise = (token: string) =>
   token.startsWith("-") || isAssignment(token);
 
