@@ -104,6 +104,12 @@ function scopedDecision(input: CandidateInput, abs: string): PolicyCheckResult {
   if (!inAllowedZone(abs, context)) {
     return deny(boundaryReason(arg, abs));
   }
+  if (intent !== "read") {
+    const memory = memoryTargetOf(abs);
+    if (memory !== null) {
+      return ask(memoryReason(arg, memory !== "other"));
+    }
+  }
   if (intent === "read" && abs === HOME) {
     return ask(askReason("reading the home directory as a whole", arg));
   }
