@@ -3,6 +3,7 @@ import { describe, expect, it } from "bun:test";
 import {
   createDecoder,
   encodeFrame,
+  HEADER_SEPARATOR,
   type JsonRpcMessage,
 } from "../src/framing.ts";
 
@@ -29,7 +30,7 @@ function collect(): {
 function rawFrame(body: string): Uint8Array {
   const bodyBytes = new TextEncoder().encode(body);
   const header = new TextEncoder().encode(
-    `Content-Length: ${bodyBytes.byteLength}\r\n\r\n`,
+    `Content-Length: ${bodyBytes.byteLength}${HEADER_SEPARATOR}`,
   );
   const frame = new Uint8Array(header.byteLength + bodyBytes.byteLength);
   frame.set(header);
@@ -85,7 +86,9 @@ describe("encodeFrame + createDecoder", () => {
 describe("createDecoder garbage resync", () => {
   it("resyncs after garbage that precedes a valid frame", () => {
     const received = collect();
-    const garbage = new TextEncoder().encode("not-a-header\r\njunk\r\n\r\n");
+    const garbage = new TextEncoder().encode(
+      `not-a-header\r\njunk${HEADER_SEPARATOR}`,
+    );
     received.push(garbage);
     received.push(encodeFrame(SAMPLE));
     expect(received.messages).toEqual([SAMPLE]);
@@ -118,7 +121,9 @@ describe("createDecoder garbage resync", () => {
 
   it("resyncs past a malformed Content-Length value without hanging", () => {
     const received = collect();
-    const garbage = new TextEncoder().encode("Content-Length: abc\r\n\r\n");
+    const garbage = new TextEncoder().encode(
+      `Content-Length: abc${HEADER_SEPARATOR}`,
+    );
     received.push(garbage);
     received.push(encodeFrame(SAMPLE));
     expect(received.messages).toEqual([SAMPLE]);

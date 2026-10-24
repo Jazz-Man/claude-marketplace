@@ -5,7 +5,9 @@ import type { JsonRpcMessage } from "./types/index.ts";
 
 const textEncoder = new TextEncoder();
 const textDecoder = new TextDecoder();
-const HEADER_SEPARATOR = "\r\n\r\n";
+
+export const HEADER_SEPARATOR = "\r\n\r\n";
+
 const CONTENT_LENGTH_MARKER = "Content-Length:";
 const MARKER_BYTES = Buffer.from(CONTENT_LENGTH_MARKER);
 const CONTENT_LENGTH_PATTERN = /Content-Length:\s*(?<length>\d+)/iu;
@@ -98,7 +100,7 @@ function extractFrames(
 export function encodeFrame(message: JsonRpcMessage): Uint8Array {
   const body = textEncoder.encode(JSON.stringify(message));
   const header = textEncoder.encode(
-    `Content-Length: ${body.byteLength}\r\n\r\n`,
+    `Content-Length: ${body.byteLength}${HEADER_SEPARATOR}`,
   );
   const frame = new Uint8Array(header.byteLength + body.byteLength);
   frame.set(header);

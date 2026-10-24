@@ -5,6 +5,7 @@ import process from "node:process";
 import {
   createDecoder,
   encodeFrame,
+  HEADER_SEPARATOR,
   type JsonRpcMessage,
 } from "../../src/framing.ts";
 
@@ -53,7 +54,7 @@ const send = (id: number | string | null, result: unknown): void => {
 const badMethodFrame = (): void => {
   const body = JSON.stringify({ id: null, jsonrpc: "2.0", method: 123 });
   process.stdout.write(
-    `Content-Length: ${Buffer.byteLength(body)}\r\n\r\n${body}`,
+    `Content-Length: ${Buffer.byteLength(body)}${HEADER_SEPARATOR}${body}`,
   );
 };
 

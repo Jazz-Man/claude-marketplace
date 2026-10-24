@@ -3,7 +3,7 @@ import { existsSync, mkdtempSync, readFileSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import process from "node:process";
-
+import { HEADER_SEPARATOR } from "../src/framing.ts";
 import {
   boot,
   cleanupTempConfigs,
@@ -44,7 +44,7 @@ describe("client session", () => {
     ]);
     const proxy = startProxy(configPath);
     proxy.pushRaw(
-      new TextEncoder().encode("garbage without any header\r\n\r\n"),
+      new TextEncoder().encode(`garbage without any header${HEADER_SEPARATOR}`),
     );
     await initializeSession(proxy);
     const response = responseFor(proxy, 1);
