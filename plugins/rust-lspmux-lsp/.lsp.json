@@ -1,102 +1,102 @@
 {
-	"rust": {
-		"command": "/opt/homebrew/bin/lspmux",
-		"args": ["client"],
-		"extensionToLanguage": { ".rs": "rust" },
-		"transport": "stdio",
-		"initializationOptions": {
-			"checkOnSave": true,
-			"imports": {
-				"granularity": { "enforce": true, "group": "crate" },
-				"group": { "enable": true },
-				"merge": { "glob": true },
-				"prefix": "crate"
-			},
-			"lens": {
-				"enable": true,
-				"implementations": { "enable": true },
-				"location": "above_name",
-				"references": {
-					"adt": { "enable": true },
-					"enumVariant": { "enable": true },
-					"method": { "enable": true },
-					"trait": { "enable": true }
-				},
-				"run": { "enable": true },
-				"updateTest": { "enable": true }
-			},
-			"inlayHints": {
-				"bindingModeHints": { "enable": true },
-				"chainingHints": { "enable": true },
-				"closureCaptureHints": { "enable": true },
-				"genericParameterHints": {
-					"lifetime": { "enable": true },
-					"type": { "enable": true }
-				},
-				"implicitDrops": { "enable": true },
-				"implicitSizedBoundHints": { "enable": true },
-				"parameterHints": {
-					"enable": true,
-					"missingArguments": { "enable": true }
-				},
-				"lifetimeElisionHints": { "useParameterNames": true },
-				"rangeExclusiveHints": { "enable": true }
-			},
-			"hover": {
-				"actions": {
-					"enable": true,
-					"debug": { "enable": true },
-					"gotoTypeDef": { "enable": true },
-					"implementations": { "enable": true },
-					"references": { "enable": true },
-					"run": { "enable": true },
-					"updateTest": { "enable": true }
-				},
-				"documentation": { "enable": true, "keywords": { "enable": true } },
-				"dropGlue": { "enable": true },
-				"links": { "enable": true }
-			},
-			"check": {
-				"command": "clippy",
-				"workspace": true,
-				"extraArgs": ["--keep-going", "--no-deps"]
-			},
-			"procMacro": {
-				"enable": true,
-				"processes": 4
-			},
-			"cargo": {
-				"autoreload": true,
-				"buildScripts": { "enable": true },
-				"extraArgs": ["--keep-going"]
-			},
-			"completion": {
-				"addSemicolonToUnit": true,
-				"addColonsToModule": true,
-				"autoAwait": {
-					"enable": true
-				},
-				"autoIter": { "enable": true },
-				"autoimport": { "enable": true },
-				"autoself": { "enable": true },
-				"callable": { "snippets": "fill_arguments" },
-				"fullFunctionSignatures": {
-					"enable": true
-				},
-				"postfix": { "enable": true },
-				"privateEditable": { "enable": true }
-			},
-			"diagnostics": {
-				"enable": true,
-				"experimental": {
-					"enable": true
-				},
-				"styleLints": { "enable": true }
-			},
-			"files": {
-				"watcher": "client"
-			}
-		},
-		"maxRestarts": 3
-	}
+  "rust": {
+    "args": ["client"],
+    "command": "/opt/homebrew/bin/lspmux",
+    "extensionToLanguage": { ".rs": "rust" },
+    "initializationOptions": {
+      "cargo": {
+        "autoreload": true,
+        "buildScripts": { "enable": true },
+        "extraArgs": ["--keep-going"]
+      },
+      "check": {
+        "command": "clippy",
+        "extraArgs": ["--keep-going", "--no-deps"],
+        "workspace": true
+      },
+      "checkOnSave": true,
+      "completion": {
+        "addColonsToModule": true,
+        "addSemicolonToUnit": true,
+        "autoAwait": {
+          "enable": true
+        },
+        "autoIter": { "enable": true },
+        "autoimport": { "enable": true },
+        "autoself": { "enable": true },
+        "callable": { "snippets": "fill_arguments" },
+        "fullFunctionSignatures": {
+          "enable": true
+        },
+        "postfix": { "enable": true },
+        "privateEditable": { "enable": true }
+      },
+      "diagnostics": {
+        "enable": true,
+        "experimental": {
+          "enable": true
+        },
+        "styleLints": { "enable": true }
+      },
+      "files": {
+        "watcher": "client"
+      },
+      "hover": {
+        "actions": {
+          "debug": { "enable": true },
+          "enable": true,
+          "gotoTypeDef": { "enable": true },
+          "implementations": { "enable": true },
+          "references": { "enable": true },
+          "run": { "enable": true },
+          "updateTest": { "enable": true }
+        },
+        "documentation": { "enable": true, "keywords": { "enable": true } },
+        "dropGlue": { "enable": true },
+        "links": { "enable": true }
+      },
+      "imports": {
+        "granularity": { "enforce": true, "group": "crate" },
+        "group": { "enable": true },
+        "merge": { "glob": true },
+        "prefix": "crate"
+      },
+      "inlayHints": {
+        "bindingModeHints": { "enable": true },
+        "chainingHints": { "enable": true },
+        "closureCaptureHints": { "enable": true },
+        "genericParameterHints": {
+          "lifetime": { "enable": true },
+          "type": { "enable": true }
+        },
+        "implicitDrops": { "enable": true },
+        "implicitSizedBoundHints": { "enable": true },
+        "lifetimeElisionHints": { "useParameterNames": true },
+        "parameterHints": {
+          "enable": true,
+          "missingArguments": { "enable": true }
+        },
+        "rangeExclusiveHints": { "enable": true }
+      },
+      "lens": {
+        "enable": true,
+        "implementations": { "enable": true },
+        "location": "above_name",
+        "references": {
+          "adt": { "enable": true },
+          "enumVariant": { "enable": true },
+          "method": { "enable": true },
+          "trait": { "enable": true }
+        },
+        "run": { "enable": true },
+        "updateTest": { "enable": true }
+      },
+      "procMacro": {
+        "enable": true,
+        "processes": 4
+      }
+    },
+    "maxRestarts": 3,
+    "transport": "stdio"
+  }
 }
