@@ -88,7 +88,8 @@
         "noCommentText": "error",
         "noConsole": "off",
         "noTemplateCurlyInString": "off",
-        "noUnnecessaryConditions": "error"
+        "noUnnecessaryConditions": "error",
+        "useExpect": "error"
       }
     }
   },
