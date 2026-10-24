@@ -19,13 +19,13 @@ afterEach(cleanupTempConfigs);
 
 const TS = { ".ts": "typescript" };
 
-const SPAWNED_LINE = /spawned (\S+) pid=(\d+)/gu;
+const SPAWNED_LINE = /spawned (?<name>\S+) pid=(?<pid>\d+)/gu;
 
 const spawnedPids = (stderr: string, name: string): number[] => {
   const pids: number[] = [];
   for (const match of stderr.matchAll(SPAWNED_LINE)) {
-    if (match[1] === name) {
-      pids.push(Number(match[2]));
+    if (match.groups?.name === name) {
+      pids.push(Number(match.groups?.pid));
     }
   }
   return pids;

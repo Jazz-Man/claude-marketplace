@@ -1,3 +1,13 @@
+function compareUtf16(a: string, b: string): number {
+  if (a < b) {
+    return -1;
+  }
+  if (a > b) {
+    return 1;
+  }
+  return 0;
+}
+
 const NOTIFICATION_POLICY: MethodPolicy = {
   capability: "",
   isDocumentNotification: false,
@@ -95,7 +105,7 @@ export const METHOD_CAPABILITIES = [
       .map((policy) => policy.capability)
       .filter((capability) => capability !== ""),
   ),
-].toSorted();
+].toSorted(compareUtf16);
 
 export const METHOD_NAMES = Object.keys(METHODS);
 

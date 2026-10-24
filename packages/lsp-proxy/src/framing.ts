@@ -8,7 +8,7 @@ const textDecoder = new TextDecoder();
 const HEADER_SEPARATOR = "\r\n\r\n";
 const CONTENT_LENGTH_MARKER = "Content-Length:";
 const MARKER_BYTES = Buffer.from(CONTENT_LENGTH_MARKER);
-const CONTENT_LENGTH_PATTERN = /Content-Length:\s*(\d+)/iu;
+const CONTENT_LENGTH_PATTERN = /Content-Length:\s*(?<length>\d+)/iu;
 const PREVIEW_CHARS = 60;
 
 export type { JsonRpcError, JsonRpcMessage } from "./types/index.ts";
@@ -72,7 +72,7 @@ function extractFrame(
     return buffer.subarray(headerEnd + marker);
   }
   const bodyStart = headerEnd + HEADER_SEPARATOR.length;
-  const bodyEnd = bodyStart + Number(match[1]);
+  const bodyEnd = bodyStart + Number(match.groups?.length);
   if (buffer.byteLength < bodyEnd) {
     return null;
   }

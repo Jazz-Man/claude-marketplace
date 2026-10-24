@@ -26,6 +26,7 @@ describe("architecture", () => {
     });
     spawned.stdin.end();
     await waitFor(() => spawned.exitCode === 0, 5000);
+    expect(spawned.exitCode).toBe(0);
   }, 10_000);
 
   it("forwards hover error data from the server to the client", async () => {

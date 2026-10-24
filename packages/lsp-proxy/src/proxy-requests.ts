@@ -55,7 +55,12 @@ export class RequestBroker {
     method: string,
     recipients: Downstream[],
   ): Promise<void> {
-    for (const downstream of recipients) {
+    const askNext = async (index: number): Promise<void> => {
+      const downstream = recipients[index];
+      if (downstream === undefined) {
+        this.host.replyTo(message.id ?? null, null);
+        return;
+      }
       const outcome = await this.askOnce(message, method, downstream);
       if (
         outcome.error === undefined &&
@@ -65,8 +70,9 @@ export class RequestBroker {
         this.host.replyTo(message.id ?? null, outcome.result);
         return;
       }
-    }
-    this.host.replyTo(message.id ?? null, null);
+      await askNext(index + 1);
+    };
+    await askNext(0);
   }
 
   async askAllAndMerge(

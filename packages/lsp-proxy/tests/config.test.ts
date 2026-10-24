@@ -17,10 +17,11 @@ describe("parseConfig acceptance", () => {
       ],
     });
     expect(parsed.ok).toBe(true);
-    if (parsed.ok) {
-      expect(parsed.config.servers[0]?.name).toBe("vtsls");
-      expect(parsed.config.servers[0]?.args).toEqual(["--stdio"]);
+    if (!parsed.ok) {
+      return;
     }
+    expect(parsed.config.servers[0]?.name).toBe("vtsls");
+    expect(parsed.config.servers[0]?.args).toEqual(["--stdio"]);
   });
 
   it("allows the same extension mapped to the same language twice", () => {
@@ -62,12 +63,14 @@ describe("parseConfig violations", () => {
       ],
     });
     expect(parsed.ok).toBe(false);
-    if (!parsed.ok) {
-      expect(parsed.errors.join("\n")).toContain("command");
-      expect(parsed.errors.join("\n")).toContain("servers[0].name");
-      expect(parsed.errors.join("\n")).toContain("duplicate");
-      expect(parsed.errors.join("\n")).toContain("must start with '.'");
+    if (parsed.ok) {
+      return;
     }
+    const errors = parsed.errors.join("\n");
+    expect(errors).toContain("command");
+    expect(errors).toContain("servers[0].name");
+    expect(errors).toContain("duplicate");
+    expect(errors).toContain("must start with '.'");
   });
 
   it("rejects an extension mapped to two different languages across servers", () => {
@@ -86,11 +89,14 @@ describe("parseConfig violations", () => {
       ],
     });
     expect(parsed.ok).toBe(false);
-    if (!parsed.ok) {
-      expect(parsed.errors.join("\n")).toContain(".ts");
-      expect(parsed.errors.join("\n")).toContain("typescript");
-      expect(parsed.errors.join("\n")).toContain("javascript");
+    if (parsed.ok) {
+      return;
     }
+    const errors = parsed.errors.join("\n");
+
+    expect(errors).toContain(".ts");
+    expect(errors).toContain("typescript");
+    expect(errors).toContain("javascript");
   });
 
   it("rejects empty language values", () => {
@@ -100,8 +106,10 @@ describe("parseConfig violations", () => {
       ],
     });
     expect(parsed.ok).toBe(false);
-    if (!parsed.ok) {
-      expect(parsed.errors.join("\n")).toContain("language");
+    if (parsed.ok) {
+      return;
     }
+    const errors = parsed.errors.join("\n");
+    expect(errors).toContain("language");
   });
 });

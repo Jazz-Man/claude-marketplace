@@ -26,6 +26,12 @@ export interface ProxyIO {
 
 type Phase = "starting" | "ready" | "shutDown" | "stopped";
 
+function broadcast(message: JsonRpcMessage, recipients: Downstream[]): void {
+  for (const downstream of recipients) {
+    downstream.send({ ...message, id: undefined });
+  }
+}
+
 export class LspProxy {
   broker: RequestBroker;
   clientParams: Record<string, unknown> = {};
@@ -149,7 +155,7 @@ export class LspProxy {
       return;
     }
     if (message.method === "initialized") {
-      this.broadcast(message, [...this.servers.values()]);
+      broadcast(message, [...this.servers.values()]);
       return;
     }
     if (message.method === "shutdown") {
@@ -242,7 +248,7 @@ export class LspProxy {
       this.docs.close(uri);
     }
     const live = this.liveRecipients(serversForDocument(this.config, uri));
-    this.broadcast(message, live);
+    broadcast(message, live);
     this.broker.pullDiagnostics(
       uri,
       message.method ?? "",
@@ -258,12 +264,6 @@ export class LspProxy {
         return;
       }
       this.docs.open(uri, languageId, text);
-    }
-  }
-
-  private broadcast(message: JsonRpcMessage, recipients: Downstream[]): void {
-    for (const downstream of recipients) {
-      downstream.send({ ...message, id: undefined });
     }
   }
 
