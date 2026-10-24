@@ -9,10 +9,12 @@ import type {
 } from "../../core/policy.ts";
 import { injectionHit } from "./guards.ts";
 import * as intents from "./intents.ts";
+import { memoryTargetOf } from "./memory.ts";
 import {
   askReason,
   boundaryReason,
   injectionReason,
+  memoryReason,
   networkReason,
   pathRuleReason,
   SUDO_REASON,
@@ -207,6 +209,10 @@ export function checkFilePath(
   const abs = expandToken(filePath, context);
   if (abs === null) {
     return null;
+  }
+  const memory = memoryTargetOf(abs);
+  if (memory !== null && intent === "write") {
+    return ask(memoryReason(filePath, memory !== "other"));
   }
   const tier = tiers.tierOf(abs);
   if (tier === null || (WRITE_ONLY_TIERS.has(tier) && intent === "read")) {

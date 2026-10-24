@@ -1,11 +1,11 @@
 ---
 # cc-sdd-76g3
 title: 'cli-hook: ask-on-write for project memory'
-status: todo
+status: in-progress
 type: feature
 priority: normal
 created_at: 2026-10-24T17:33:26Z
-updated_at: 2026-10-24T17:52:10Z
+updated_at: 2026-10-24T19:39:39Z
 ---
 
 Every write/delete into ~/.claude/projects/*/memory/ returns permissionDecision ask (not deny) from both routes of the claude-code-cli-hook binary: file tools (checkFilePath) and Bash (scopedDecision). Reads stay free. Spec: docs/superpowers/specs/2026-10-24-cli-hook-memory-ask-design.md. No wiring changes; TDD; four gates + binary rebuild.
@@ -19,3 +19,7 @@ Every write/delete into ~/.claude/projects/*/memory/ returns permissionDecision 
 2026-10-24 owner question on other channels: Bash covered via args+redirects; three intents.ts gaps closed in spec (find -delete -> delete; sed/perl -i -> write; null-intent memory args -> ask). MCP tools documented residual, follow-up if a concrete writer appears.
 
 2026-10-24 owner sudo check: ban implemented; found WRAPPERS drift (intents.ts missing time/parallel -> time sudo / parallel sudo bypass) + zero sudo test pins. Spec: R9 unify WRAPPERS + 4 sudo deny pins.
+
+## Parking lot
+
+- T1 minor (report accuracy + coverage): task-1-report claims projects-root/memoryx null pins in memory-filetools.test.ts but the file pins only transcripts + memory-backup; semantics verified by reviewer scratch matrix, no permanent pin. Option: add two rows (Write to ~/.claude/projects and ~/.claude/projects/-p/memoryx/f.md expect null) in a later batch.

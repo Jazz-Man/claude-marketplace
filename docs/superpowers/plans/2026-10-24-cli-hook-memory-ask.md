@@ -18,7 +18,7 @@
 - No dependency changes; no edits outside `packages/cli-hook` (the plugin `hooks.json` is untouched).
 - Agents never touch git: after each task the implementer stops, the OWNER reviews and commits.
 - Gates after every task (cwd repo root): `bun test packages/cli-hook`, `rtk proxy biome check packages/cli-hook --write` then a clean re-run, `bun check --strict`.
-- Biome caps: 300 lines/file, 50 lines/function — none of the touched files approaches them.
+- Biome caps: 300 lines/file, 50 lines/function — `run-hook.test.ts` (269 lines) breaches the file cap with new blocks: new describes go to module-named sibling test files, never appended there (Task 1 ruling).
 
 ## Review Focus
 
@@ -38,7 +38,7 @@ Input classes the spec implies but no single task owns end-to-end; each is pinne
 - Create: `packages/cli-hook/src/policies/filesystem/memory.ts`
 - Modify: `packages/cli-hook/src/policies/filesystem/reasons.ts` (add `memoryReason`)
 - Modify: `packages/cli-hook/src/policies/filesystem/policy.ts` (`checkFilePath`)
-- Test: `packages/cli-hook/tests/run-hook.test.ts` (new describe)
+- Test: `packages/cli-hook/tests/memory-filetools.test.ts` (new file — amended during Task 1: the originally pinned `run-hook.test.ts` sits at 269 lines and the mandated block would breach the 300-line biome cap; the describe moved verbatim to a module-named sibling)
 
 **Interfaces:**
 - Consumes: `HOME` from `./resolve.ts`; `ask` from `../../core/decision.ts`; `filePayload` from `tests/helpers/utils.ts`.

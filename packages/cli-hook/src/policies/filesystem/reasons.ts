@@ -29,6 +29,12 @@ export const TIER_REASONS: Record<Tier, (token: string) => string> = {
 export const askReason = (verb: string, token: string) =>
   `Filesystem policy: confirm with the user before ${verb} ("${token}"). This call needs explicit user approval.`;
 
+export function memoryReason(token: string, plain: boolean): string {
+  return plain
+    ? `Filesystem policy: "${token}" modifies project memory — confirmation required.`
+    : `Filesystem policy: "${token}" modifies project memory (non-.md file — memory accepts .md only) — confirmation required.`;
+}
+
 export const pathRuleReason = (bin: string) =>
   `Filesystem policy: running binaries by absolute path ("${bin}") is blocked — commands are on PATH by name.`;
 
