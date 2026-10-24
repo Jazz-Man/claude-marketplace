@@ -265,22 +265,22 @@ if (intent !== "read") {
 - Consumes: `INTENTS` table, `intentOf(name, args)` signature (unchanged externally).
 - Produces: flag-adjusted intents — `find`+`-delete` → `delete`; `sed`/`perl` short-flag cluster containing `i` → `write`; `sed`/`perl` otherwise → `read`.
 
-- [ ] **Step 1: Append failing fixture rows:**
+- [ ] **Step 1: Extend the fixture arrays** — add the rows directly into the `MEMORY_ASK` / `MEMORY_ALLOW` literals in `tests/fixtures/memory.ts` (one literal per line, same grouping style; the tables stay declarative — no imperative appends):
+
+`MEMORY_ASK` gains:
 
 ```ts
-MEMORY_ASK.push(
   "sed -i 's/a/b/' ~/.claude/projects/-p/memory/f.md",
   "perl -pi -e 's/a/b/' ~/.claude/projects/-p/memory/f.md",
   "find ~/.claude/projects/-p/memory -name '*.md' -delete",
-);
-
-MEMORY_ALLOW.push(
-  "sed 's/a/b/' ~/.claude/projects/-p/memory/f.md",
-  "find ~/.claude/projects/-p/memory -name '*.md'",
-);
 ```
 
-(append inside the arrays, keeping one literal-per-line style; `bun test` picks them up through the same `it.each`).
+`MEMORY_ALLOW` gains:
+
+```ts
+  "sed 's/a/b/' ~/.claude/projects/-p/memory/f.md",
+  "find ~/.claude/projects/-p/memory -name '*.md'",
+```
 
 - [ ] **Step 2: Run RED** — the three ASK rows fail (sed/perl null-intent → they only ask via R7's null rule… note: after Task 2, `sed -i` WITHOUT the flag rule already asks because null intent asks — so the RED here is subtle: write the three rows, observe `sed -i` passes already via R7, `find -delete` fails (find is known read), `perl -pi` passes via null. To make the refinement observable, also pin the NON-memory side effect in `run-hook.test.ts`: `decisionOf(runHook(bashPayload("sed -i 's/a/b/' ~/www/repo/f.ts")))` stays null, and add a direct unit in `filesystem.test.ts` asserting `find ... -delete` OUTSIDE memory on a non-zone path denies via delete-intent zone breach: `decisionOf(policyCheck(filesystemPolicy, "find /workspace -name x -delete"))` → `"deny"`. That row is the true RED for the flag rule.)
 
