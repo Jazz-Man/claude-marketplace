@@ -146,3 +146,21 @@ describe("filesystem policy (project memory)", () => {
     ).toBe("deny");
   });
 });
+
+describe("filesystem policy (mutator flags)", () => {
+  it("sed -i outside memory stays free inside the zone", () => {
+    expect(
+      decisionOf(
+        policyCheck(filesystemPolicy, "sed -i 's/a/b/' ~/www/repo/f.ts"),
+      ),
+    ).toBeNull();
+  });
+
+  it("find -delete outside the zone denies", () => {
+    expect(
+      decisionOf(
+        policyCheck(filesystemPolicy, "find /workspace -name x -delete"),
+      ),
+    ).toBe("deny");
+  });
+});

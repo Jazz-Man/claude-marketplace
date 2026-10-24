@@ -14,6 +14,9 @@ export const MEMORY_ASK: string[] = [
   "touch ~/.claude/projects/-p/memory/n.md",
   "mkdir -p ~/.claude/projects/-p/memory/sub",
   "unknowntool ~/.claude/projects/-p/memory/f.md",
+  "sed -i 's/a/b/' ~/.claude/projects/-p/memory/f.md",
+  "perl -pi -e 's/a/b/' ~/.claude/projects/-p/memory/f.md",
+  "find ~/.claude/projects/-p/memory -name '*.md' -delete",
 ];
 
 export const MEMORY_ALLOW: string[] = [
@@ -22,4 +25,6 @@ export const MEMORY_ALLOW: string[] = [
   "ls ~/.claude/projects/-p/memory",
   "cat ~/.claude/projects/-p/transcripts/t.jsonl",
   "tee ~/www/repo/build/x",
+  "sed 's/a/b/' ~/.claude/projects/-p/memory/f.md",
+  "find ~/.claude/projects/-p/memory -name '*.md'",
 ];

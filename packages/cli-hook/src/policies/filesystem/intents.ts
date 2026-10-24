@@ -27,10 +27,12 @@ const INTENTS: Record<string, Intent> = {
   mkdir: "write",
   more: "read",
   mv: "write",
+  perl: "read",
   rg: "read",
   rm: "delete",
   rmdir: "delete",
   rsync: "write",
+  sed: "read",
   shasum: "read",
   shred: "delete",
   stat: "read",
@@ -102,10 +104,11 @@ function unwrapScan(
     if (token !== "sudo" && !isScanNoise(token)) {
       const resolved = resolveToken(token, network);
       if (resolved.intent !== null) {
+        const rest = args.slice(index + 1);
         return {
-          intent: resolved.intent,
+          intent: adjustForFlags(ast.baseName(token), resolved.intent, rest),
           network: resolved.network,
-          rest: args.slice(index + 1),
+          rest,
           sudo,
         };
       }
@@ -134,6 +137,25 @@ type RedirectTargetsType = Array<{
   token: string;
 }>;
 
+const IN_PLACE_CLUSTER = /^-[A-Za-z]*i[A-Za-z]*$/u;
+
+function adjustForFlags(
+  base: string,
+  intent: Intent | null,
+  args: readonly string[],
+): Intent | null {
+  if (base === "find" && args.includes("-delete")) {
+    return "delete";
+  }
+  if (
+    (base === "sed" || base === "perl") &&
+    args.some((arg) => IN_PLACE_CLUSTER.test(arg))
+  ) {
+    return "write";
+  }
+  return intent;
+}
+
 export function intentOf(name: string, args: string[]): Unwrapped {
   const base = ast.baseName(name);
   const intent: Intent | null = INTENTS[base] ?? null;
@@ -144,7 +166,7 @@ export function intentOf(name: string, args: string[]): Unwrapped {
   const sudo = name === "sudo";
   if (!WRAPPERS.has(name) && name !== "sudo") {
     return {
-      intent,
+      intent: adjustForFlags(base, intent, args),
       network,
       rest: args,
       sudo,
