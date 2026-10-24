@@ -8,7 +8,7 @@ const textDecoder = new TextDecoder();
 const HEADER_SEPARATOR = "\r\n\r\n";
 const CONTENT_LENGTH_MARKER = "Content-Length:";
 const MARKER_BYTES = Buffer.from(CONTENT_LENGTH_MARKER);
-const CONTENT_LENGTH_PATTERN = /Content-Length:\s*(\d+)/i;
+const CONTENT_LENGTH_PATTERN = /Content-Length:\s*(\d+)/iu;
 const PREVIEW_CHARS = 60;
 
 export type { JsonRpcError, JsonRpcMessage } from "./types/index.ts";

@@ -19,7 +19,7 @@ afterEach(cleanupTempConfigs);
 
 const TS = { ".ts": "typescript" };
 
-const SPAWNED_LINE = /spawned (\S+) pid=(\d+)/g;
+const SPAWNED_LINE = /spawned (\S+) pid=(\d+)/gu;
 
 const spawnedPids = (stderr: string, name: string): number[] => {
   const pids: number[] = [];

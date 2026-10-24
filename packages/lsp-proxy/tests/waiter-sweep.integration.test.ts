@@ -3,7 +3,7 @@ import { expect, it } from "bun:test";
 import { boot, responseFor, stub } from "./helpers/proxy-harness.ts";
 import { waitFor } from "./helpers/wait.ts";
 
-const SWEEP_LOG = /swept [12] pending requests for fragile/;
+const SWEEP_LOG = /swept [12] pending requests for fragile/u;
 
 const TS = { ".ts": "typescript" };
 
