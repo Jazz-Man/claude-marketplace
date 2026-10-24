@@ -66,6 +66,7 @@
         "useSingleJsDocAsterisk": "error"
       },
       "performance": {
+        "noAwaitInLoops": "error",
         "noBarrelFile": "error",
         "noNamespaceImport": "off",
         "noReExportAll": "error",
@@ -82,6 +83,7 @@
         "noTernary": "off",
         "useBlockStatements": "error",
         "useExportsLast": "off",
+        "useNamedCaptureGroup": "error",
         "useNamingConvention": "off"
       },
       "suspicious": {
