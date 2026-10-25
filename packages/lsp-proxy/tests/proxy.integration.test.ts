@@ -239,18 +239,17 @@ describe("supervision", () => {
     await proxy.stop();
   });
 
-  it("D6: rejects a non-incremental server and keeps the healthy one working", async () => {
+  it("D6: boots a full-sync server beside an incremental one", async () => {
     const proxy = await boot([
       stub("legacy", { sync: 1 }, TS),
       stub("good", {}, TS),
     ]);
-    expect(proxy.stderr()).toContain("rejecting server legacy");
+    expect(proxy.stderr()).not.toContain("rejecting server legacy");
     openDocument(proxy, "file:///proj/sample.ts", "typescript");
-    await waitFor(() => publications(proxy).length > 0);
-    expect(publications(proxy).length).toBe(1);
+    await waitFor(() => publications(proxy).length >= 2);
     const texts = diagnosticTexts(proxy);
     expect(texts).toContain("diag from good");
-    expect(texts).not.toContain("diag from legacy");
+    expect(texts).toContain("diag from legacy");
     await proxy.stop();
   });
 });

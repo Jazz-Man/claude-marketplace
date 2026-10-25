@@ -13,11 +13,12 @@ interface CapabilitiesMerge {
   rejected: { reason: string; server: string }[];
 }
 
-function reportsIncremental(sync: unknown): boolean {
-  if (sync === 2) {
-    return true;
-  }
-  return isRecord(sync) && sync.change === 2;
+function hasSupportedSync(sync: unknown): boolean {
+  return (
+    sync === 1 ||
+    sync === 2 ||
+    (isRecord(sync) && (sync.change === 1 || sync.change === 2))
+  );
 }
 
 function describeSync(sync: unknown): string {
@@ -65,14 +66,14 @@ export function mergeCapabilities(
   const accepted: CapabilitiesInput[] = [];
   const failed: CapabilitiesInput[] = [];
   for (const input of orderedInputs) {
-    if (reportsIncremental(input.capabilities.textDocumentSync)) {
+    if (hasSupportedSync(input.capabilities.textDocumentSync)) {
       accepted.push(input);
     } else {
       failed.push(input);
     }
   }
   const rejected = failed.map((input) => ({
-    reason: `textDocumentSync must be 2 (incremental), got ${describeSync(
+    reason: `textDocumentSync must be 1 (full) or 2 (incremental), got ${describeSync(
       input.capabilities.textDocumentSync,
     )}`,
     server: input.server,

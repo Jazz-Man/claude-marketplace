@@ -15,6 +15,7 @@ import { policyFor } from "./methods/index.ts";
 import { RequestBroker } from "./proxy-requests.ts";
 import { ServerSide } from "./proxy-server.ts";
 import { serversForDocument, serversForRequest } from "./router.ts";
+import { broadcast, broadcastDocument } from "./sync-adapt.ts";
 
 export interface ProxyIO {
   readChunks: () => AsyncIterable<Uint8Array>;
@@ -25,12 +26,6 @@ export interface ProxyIO {
 }
 
 type Phase = "starting" | "ready" | "shutDown" | "stopped";
-
-function broadcast(message: JsonRpcMessage, recipients: Downstream[]): void {
-  for (const downstream of recipients) {
-    downstream.send({ ...message, id: undefined });
-  }
-}
 
 export class LspProxy {
   broker: RequestBroker;
@@ -248,7 +243,7 @@ export class LspProxy {
       this.docs.close(uri);
     }
     const live = this.liveRecipients(serversForDocument(this.config, uri));
-    broadcast(message, live);
+    broadcastDocument(message, live, this.serverSide.capabilities, this.docs);
     this.broker.pullDiagnostics(
       uri,
       message.method ?? "",

@@ -20,6 +20,7 @@ interface StubOptions {
   completionItems?: unknown[];
   declareDiagnosticProvider?: boolean;
   diagnostics?: StubDiagnostic[];
+  echoDocuments?: boolean;
   exitMarker?: string;
   exitOnDidOpen?: boolean;
   formatEdits?: unknown[] | null;
@@ -79,6 +80,26 @@ const publish = (uri: string): void => {
   });
 };
 
+const echoDocument = (message: JsonRpcMessage): void => {
+  const params = message.params as { textDocument: { uri: string } };
+  write({
+    jsonrpc: "2.0",
+    method: "textDocument/publishDiagnostics",
+    params: {
+      diagnostics: [
+        {
+          message: JSON.stringify({
+            method: message.method,
+            name,
+            params: message.params,
+          }),
+        },
+      ],
+      uri: params.textDocument.uri,
+    },
+  });
+};
+
 let nextId = 1;
 let pendingConfigId: number | undefined;
 let pendingConfigUri = "";
@@ -122,6 +143,10 @@ const answerDiagnosticPull = (message: JsonRpcMessage): void => {
 const openDocument = (message: JsonRpcMessage): void => {
   const params = message.params as { textDocument: { uri: string } };
   const { uri } = params.textDocument;
+  if (options.echoDocuments === true) {
+    echoDocument(message);
+    return;
+  }
   if (options.exitOnDidOpen === true) {
     process.exit(17);
   }
@@ -142,6 +167,12 @@ const openDocument = (message: JsonRpcMessage): void => {
     return;
   }
   publish(uri);
+};
+
+const changeDocument = (message: JsonRpcMessage): void => {
+  if (options.echoDocuments === true) {
+    echoDocument(message);
+  }
 };
 
 const hoverDocument = (message: JsonRpcMessage): void => {
@@ -181,6 +212,10 @@ const decode = createDecoder((message) => {
   }
   if (message.method === "textDocument/didOpen") {
     openDocument(message);
+    return;
+  }
+  if (message.method === "textDocument/didChange") {
+    changeDocument(message);
     return;
   }
   if (message.method === "textDocument/hover") {

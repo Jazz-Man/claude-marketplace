@@ -83,7 +83,7 @@ describe("mergeCapabilities", () => {
     expect(merged.rejected).toEqual([]);
   });
 
-  it("rejects a full-sync server and keeps the rest (D6)", () => {
+  it("accepts full-sync and incremental servers together (D6)", () => {
     const merged = mergeCapabilities(
       [
         { capabilities: { textDocumentSync: 2 }, server: "vtsls" },
@@ -91,12 +91,7 @@ describe("mergeCapabilities", () => {
       ],
       ["vtsls", "biome"],
     );
-    expect(merged.rejected).toEqual([
-      {
-        reason: "textDocumentSync must be 2 (incremental), got 1",
-        server: "biome",
-      },
-    ]);
+    expect(merged.rejected).toEqual([]);
     expect(merged.merged.textDocumentSync).toBe(2);
   });
 
@@ -142,7 +137,7 @@ describe("mergeCapabilities — sync object form (live vtsls finding)", () => {
     expect(merged.merged.textDocumentSync).toBe(2);
   });
 
-  it("rejects the object form whose change is not 2", () => {
+  it("accepts the object form whose change is 1", () => {
     const merged = mergeCapabilities(
       [
         {
@@ -152,6 +147,50 @@ describe("mergeCapabilities — sync object form (live vtsls finding)", () => {
       ],
       ["legacy"],
     );
-    expect(merged.rejected[0]?.server).toBe("legacy");
+    expect(merged.rejected).toEqual([]);
+    expect(merged.merged.textDocumentSync).toBe(2);
+  });
+});
+
+describe("mergeCapabilities — unsupported sync kinds", () => {
+  it("rejects an object sync whose change is outside 1 and 2", () => {
+    const merged = mergeCapabilities(
+      [{ capabilities: { textDocumentSync: { change: 3 } }, server: "odd" }],
+      ["odd"],
+    );
+    expect(merged.rejected).toEqual([
+      {
+        reason:
+          'textDocumentSync must be 1 (full) or 2 (incremental), got {"change":3}',
+        server: "odd",
+      },
+    ]);
+  });
+
+  it("rejects a numeric sync outside 1 and 2", () => {
+    const merged = mergeCapabilities(
+      [{ capabilities: { textDocumentSync: 0 }, server: "odd" }],
+      ["odd"],
+    );
+    expect(merged.rejected).toEqual([
+      {
+        reason: "textDocumentSync must be 1 (full) or 2 (incremental), got 0",
+        server: "odd",
+      },
+    ]);
+  });
+
+  it("rejects absent sync", () => {
+    const merged = mergeCapabilities(
+      [{ capabilities: {}, server: "odd" }],
+      ["odd"],
+    );
+    expect(merged.rejected).toEqual([
+      {
+        reason:
+          "textDocumentSync must be 1 (full) or 2 (incremental), got undefined",
+        server: "odd",
+      },
+    ]);
   });
 });
