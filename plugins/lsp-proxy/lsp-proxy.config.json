@@ -16,8 +16,13 @@
       "settings": {}
     },
     {
-      "args": ["lsp-proxy"],
-      "command": "biome",
+      "args": [
+        "client",
+        "--server-path",
+        "/opt/homebrew/bin/biome",
+        "lsp-proxy"
+      ],
+      "command": "lspmux",
       "extensionToLanguage": {
         ".cjs": "javascript",
         ".css": "css",
