@@ -1,0 +1,33 @@
+{
+  "followSymlinks": true,
+  "format": ["typescript", "tsx", "javascript", "jsx"],
+  "ignore": ["**/node_modules/**", "**/dist/**"],
+  "ignoreCase": true,
+  "ignoreIdentifiers": true,
+  "ignoreLiterals": true,
+  "lsp": {
+    "allFiles": false,
+    "ast": { "enabled": true, "similarity": 0.8 },
+    "clones": { "enabled": true, "warningTokens": 100 },
+    "complexity": { "enabled": false, "functionLimit": 15 },
+    "deadCode": { "enabled": true },
+    "semantic": { "enabled": true }
+  },
+  "minLines": 5,
+  "minTokens": 50,
+  "mode": "strict",
+  "noTips": true,
+  "semantic": {
+    "enabled": true,
+    "model": "bge-m3",
+    "provider": "http",
+    "sameThreshold": 0.6375,
+    "scope": "all",
+    "threshold": 0.4125,
+    "url": "http://localhost:11434/v1"
+  },
+  "similarity": 0.8,
+  "skipIsolated": [
+    ["packages/lsp-proxy", "packages/cli-hook", "packages/bin-builder"]
+  ]
+}
