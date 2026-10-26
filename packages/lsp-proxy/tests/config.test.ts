@@ -1,17 +1,16 @@
 import { describe, expect, it } from "bun:test";
 
 import { parseConfig } from "../src/config.ts";
+import { serverEntry, serverPair, violationText } from "./helpers/config.ts";
 
 describe("parseConfig acceptance", () => {
   it("accepts a minimal valid config and keeps optional fields", () => {
     const parsed = parseConfig({
       servers: [
         {
+          ...serverEntry("vtsls", "vtsls", { ".ts": "typescript" }),
           args: ["--stdio"],
-          command: "vtsls",
-          extensionToLanguage: { ".ts": "typescript" },
           initializationOptions: { a: 1 },
-          name: "vtsls",
           settings: { b: 2 },
         },
       ],
@@ -25,21 +24,7 @@ describe("parseConfig acceptance", () => {
   });
 
   it("allows the same extension mapped to the same language twice", () => {
-    const parsed = parseConfig({
-      servers: [
-        {
-          command: "a",
-          extensionToLanguage: { ".ts": "typescript" },
-          name: "a",
-        },
-        {
-          command: "b",
-          extensionToLanguage: { ".ts": "typescript" },
-          name: "b",
-        },
-      ],
-    });
-    expect(parsed.ok).toBe(true);
+    expect(parseConfig(serverPair("typescript", "typescript")).ok).toBe(true);
   });
 });
 
@@ -50,66 +35,39 @@ describe("parseConfig violations", () => {
     expect(parseConfig(null).ok).toBe(false);
   });
 
-  it("collects every violation instead of stopping at the first", () => {
-    const parsed = parseConfig({
-      servers: [
-        { command: "", extensionToLanguage: {}, name: "" },
-        {
-          command: "x",
-          extensionToLanguage: { ".ts": "typescript" },
-          name: "a",
-        },
-        { command: "y", extensionToLanguage: { ts: "typescript" }, name: "a" },
+  it.each([
+    {
+      config: {
+        servers: [
+          serverEntry("", "", {}),
+          serverEntry("a", "x", { ".ts": "typescript" }),
+          serverEntry("a", "y", { ts: "typescript" }),
+        ],
+      },
+      expected: [
+        "command",
+        "servers[0].name",
+        "duplicate",
+        "must start with '.'",
       ],
-    });
+      name: "collects every violation instead of stopping at the first",
+    },
+    {
+      config: serverPair("typescript", "javascript"),
+      expected: [".ts", "typescript", "javascript"],
+      name: "rejects an extension mapped to two different languages across servers",
+    },
+    {
+      config: { servers: [serverEntry("a", "a", { ".ts": "" })] },
+      expected: ["language"],
+      name: "rejects empty language values",
+    },
+  ])("$name", ({ config, expected }) => {
+    const parsed = parseConfig(config);
     expect(parsed.ok).toBe(false);
-    if (parsed.ok) {
-      return;
+    const errors = violationText(parsed);
+    for (const fragment of expected) {
+      expect(errors.includes(fragment)).toBe(true);
     }
-    const errors = parsed.errors.join("\n");
-    expect(errors).toContain("command");
-    expect(errors).toContain("servers[0].name");
-    expect(errors).toContain("duplicate");
-    expect(errors).toContain("must start with '.'");
-  });
-
-  it("rejects an extension mapped to two different languages across servers", () => {
-    const parsed = parseConfig({
-      servers: [
-        {
-          command: "a",
-          extensionToLanguage: { ".ts": "typescript" },
-          name: "a",
-        },
-        {
-          command: "b",
-          extensionToLanguage: { ".ts": "javascript" },
-          name: "b",
-        },
-      ],
-    });
-    expect(parsed.ok).toBe(false);
-    if (parsed.ok) {
-      return;
-    }
-    const errors = parsed.errors.join("\n");
-
-    expect(errors).toContain(".ts");
-    expect(errors).toContain("typescript");
-    expect(errors).toContain("javascript");
-  });
-
-  it("rejects empty language values", () => {
-    const parsed = parseConfig({
-      servers: [
-        { command: "a", extensionToLanguage: { ".ts": "" }, name: "a" },
-      ],
-    });
-    expect(parsed.ok).toBe(false);
-    if (parsed.ok) {
-      return;
-    }
-    const errors = parsed.errors.join("\n");
-    expect(errors).toContain("language");
   });
 });

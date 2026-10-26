@@ -1,136 +1,14 @@
-import {
-  asRecord,
-  ConfigError,
-  isNonEmptyString,
-  isRecord,
-  isStringArray,
-  isStringRecord,
-} from "../guards/index.ts";
-
-export function pushConfigError(error: unknown, errors: string[]): void {
-  if (error instanceof ConfigError) {
-    errors.push(error.message);
-    return;
-  }
-  throw error;
-}
-
-function recordViolation(validate: () => unknown, errors: string[]): void {
-  try {
-    validate();
-  } catch (error) {
-    pushConfigError(error, errors);
-  }
-}
+import type { ConfigError } from "../guards/index.ts";
+import { collectServerFields, collectServerMessages } from "./validate.ts";
 
 export class ServerConfig {
-  private static validateNonEmpty(
-    field: string,
-    raw: unknown,
-    context: string,
-  ): string {
-    if (!isNonEmptyString(raw)) {
-      throw new ConfigError(`${context}.${field}`, "a non-empty string", raw);
-    }
-    return raw;
-  }
-
-  private static validateExtensionMap(
-    raw: unknown,
-    context: string,
-  ): Record<string, string> {
-    if (!isRecord(raw) || Object.keys(raw).length === 0) {
-      throw new ConfigError(
-        `${context}.extensionToLanguage`,
-        "a non-empty object",
-        raw,
-      );
-    }
-    const result: Record<string, string> = {};
-    for (const [extension, language] of Object.entries(raw)) {
-      if (!extension.startsWith(".")) {
-        throw new ConfigError(
-          `${context}.extensionToLanguage key "${extension}"`,
-          "a key that must start with '.'",
-          extension,
-        );
-      }
-      if (!isNonEmptyString(language)) {
-        throw new ConfigError(
-          `${context}.extensionToLanguage key "${extension}"`,
-          "a non-empty language value",
-          language,
-        );
-      }
-      result[extension] = language;
-    }
-    return result;
-  }
-
-  private static validateArgs(
-    raw: unknown,
-    context: string,
-  ): string[] | undefined {
-    if (raw === undefined) {
-      return undefined;
-    }
-    if (!isStringArray(raw)) {
-      throw new ConfigError(`${context}.args`, "a string array", raw);
-    }
-    return raw;
-  }
-
-  private static validateEnv(
-    raw: unknown,
-    context: string,
-  ): Record<string, string> | undefined {
-    if (raw === undefined) {
-      return undefined;
-    }
-    if (!isStringRecord(raw)) {
-      throw new ConfigError(`${context}.env`, "a string record", raw);
-    }
-    return raw;
-  }
-
   static collectViolations(
     raw: unknown,
     context: string,
     errors: string[],
   ): ServerConfig | undefined {
-    let record: Record<string, unknown>;
-    try {
-      record = asRecord(raw, context);
-    } catch (error) {
-      pushConfigError(error, errors);
-      return undefined;
-    }
-    const violationsBefore = errors.length;
-    recordViolation(
-      () => ServerConfig.validateNonEmpty("name", record.name, context),
-      errors,
-    );
-    recordViolation(
-      () => ServerConfig.validateNonEmpty("command", record.command, context),
-      errors,
-    );
-    recordViolation(
-      () =>
-        ServerConfig.validateExtensionMap(record.extensionToLanguage, context),
-      errors,
-    );
-    recordViolation(
-      () => ServerConfig.validateArgs(record.args, context),
-      errors,
-    );
-    recordViolation(
-      () => ServerConfig.validateEnv(record.env, context),
-      errors,
-    );
-    if (errors.length > violationsBefore) {
-      return undefined;
-    }
-    return new ServerConfig(raw, context);
+    const fields = collectServerMessages(raw, context, errors);
+    return fields === undefined ? undefined : new ServerConfig(raw, context);
   }
 
   private readonly _name: string;
@@ -142,21 +20,18 @@ export class ServerConfig {
   private readonly _settings: unknown;
 
   constructor(raw: unknown, context: string) {
-    const record = asRecord(raw, context);
-    this._name = ServerConfig.validateNonEmpty("name", record.name, context);
-    this._command = ServerConfig.validateNonEmpty(
-      "command",
-      record.command,
-      context,
-    );
-    this._extensionToLanguage = ServerConfig.validateExtensionMap(
-      record.extensionToLanguage,
-      context,
-    );
-    this._args = ServerConfig.validateArgs(record.args, context);
-    this._env = ServerConfig.validateEnv(record.env, context);
-    this._initializationOptions = record.initializationOptions;
-    this._settings = record.settings;
+    const collected: ConfigError[] = [];
+    const fields = collectServerFields(raw, context, collected);
+    if (fields === undefined) {
+      throw collected[0];
+    }
+    this._name = fields.name;
+    this._command = fields.command;
+    this._extensionToLanguage = fields.extensionToLanguage;
+    this._args = fields.args;
+    this._env = fields.env;
+    this._initializationOptions = fields.initializationOptions;
+    this._settings = fields.settings;
   }
 
   get name(): string {

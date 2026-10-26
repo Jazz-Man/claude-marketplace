@@ -2,6 +2,7 @@ import { describe, expect, it } from "bun:test";
 
 import type { ProxyConfig } from "../src/config.ts";
 import { extensionUnion, mergeIntoLspJson } from "../src/sync-extensions.ts";
+import { serverPair } from "./helpers/config.ts";
 
 const CONFIG: ProxyConfig = {
   servers: [
@@ -38,21 +39,9 @@ describe("extensionUnion", () => {
   });
 
   it("throws on a conflicting language for the same extension", () => {
-    const conflicting: ProxyConfig = {
-      servers: [
-        {
-          command: "a",
-          extensionToLanguage: { ".ts": "typescript" },
-          name: "a",
-        },
-        {
-          command: "b",
-          extensionToLanguage: { ".ts": "javascript" },
-          name: "b",
-        },
-      ],
-    };
-    expect(() => extensionUnion(conflicting)).toThrow(".ts");
+    expect(() =>
+      extensionUnion(serverPair("typescript", "javascript")),
+    ).toThrow(".ts");
   });
 });
 

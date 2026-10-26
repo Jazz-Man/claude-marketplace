@@ -2,6 +2,7 @@ import { describe, expect, it } from "bun:test";
 
 import { ProxyConfig } from "../src/config/ProxyConfig.ts";
 import { ConfigError } from "../src/guards/index.ts";
+import { serverEntry, serverPair } from "./helpers/config.ts";
 
 describe("ServerConfig validation", () => {
   it("constructs from valid raw JSON", () => {
@@ -22,41 +23,18 @@ describe("ServerConfig validation", () => {
   it("rejects empty name", () => {
     expect(
       () =>
-        new ProxyConfig({
-          servers: [
-            { command: "cmd", extensionToLanguage: { ".ts": "ts" }, name: "" },
-          ],
-        }),
+        new ProxyConfig({ servers: [serverEntry("", "cmd", { ".ts": "ts" })] }),
     ).toThrow(ConfigError);
   });
 
   it("rejects args with non-string elements", () => {
-    expect(
-      () =>
-        new ProxyConfig({
-          servers: [
-            {
-              args: [1, 2],
-              command: "cmd",
-              extensionToLanguage: { ".ts": "ts" },
-              name: "test",
-            },
-          ],
-        }),
-    ).toThrow(ConfigError);
-    expect(
-      () =>
-        new ProxyConfig({
-          servers: [
-            {
-              args: [1, 2],
-              command: "cmd",
-              extensionToLanguage: { ".ts": "ts" },
-              name: "test",
-            },
-          ],
-        }),
-    ).toThrow("args");
+    const raw = {
+      servers: [
+        { ...serverEntry("test", "cmd", { ".ts": "ts" }), args: [1, 2] },
+      ],
+    };
+    expect(() => new ProxyConfig(raw)).toThrow(ConfigError);
+    expect(() => new ProxyConfig(raw)).toThrow("args");
   });
 });
 
@@ -67,10 +45,8 @@ describe("ServerConfig optional-fields validation", () => {
         new ProxyConfig({
           servers: [
             {
-              command: "cmd",
+              ...serverEntry("test", "cmd", { ".ts": "ts" }),
               env: { key: 42 },
-              extensionToLanguage: { ".ts": "ts" },
-              name: "test",
             },
           ],
         }),
@@ -81,13 +57,7 @@ describe("ServerConfig optional-fields validation", () => {
     expect(
       () =>
         new ProxyConfig({
-          servers: [
-            {
-              command: "cmd",
-              extensionToLanguage: { ts: "typescript" },
-              name: "test",
-            },
-          ],
+          servers: [serverEntry("test", "cmd", { ts: "typescript" })],
         }),
     ).toThrow("must start with '.'");
   });
@@ -99,8 +69,8 @@ describe("ProxyConfig validation", () => {
       () =>
         new ProxyConfig({
           servers: [
-            { command: "a", extensionToLanguage: { ".ts": "ts" }, name: "dup" },
-            { command: "b", extensionToLanguage: { ".ts": "ts" }, name: "dup" },
+            serverEntry("dup", "a", { ".ts": "ts" }),
+            serverEntry("dup", "b", { ".ts": "ts" }),
           ],
         }),
     ).toThrow("duplicate");
@@ -108,40 +78,14 @@ describe("ProxyConfig validation", () => {
 
   it("rejects extension mapped to conflicting languages", () => {
     expect(
-      () =>
-        new ProxyConfig({
-          servers: [
-            {
-              command: "a",
-              extensionToLanguage: { ".ts": "typescript" },
-              name: "a",
-            },
-            {
-              command: "b",
-              extensionToLanguage: { ".ts": "javascript" },
-              name: "b",
-            },
-          ],
-        }),
+      () => new ProxyConfig(serverPair("typescript", "javascript")),
     ).toThrow("conflict");
   });
 
   it("allows same extension mapped to same language", () => {
-    const config = new ProxyConfig({
-      servers: [
-        {
-          command: "a",
-          extensionToLanguage: { ".ts": "typescript" },
-          name: "a",
-        },
-        {
-          command: "b",
-          extensionToLanguage: { ".ts": "typescript" },
-          name: "b",
-        },
-      ],
-    });
-    expect(config.servers).toHaveLength(2);
+    expect(
+      new ProxyConfig(serverPair("typescript", "typescript")).servers,
+    ).toHaveLength(2);
   });
 
   it("rejects non-object server entry", () => {

@@ -1,11 +1,6 @@
-import {
-  asArray,
-  asRecord,
-  ConfigError,
-  isNonEmptyString,
-  isRecord,
-} from "../guards/index.ts";
-import { pushConfigError, ServerConfig } from "./ServerConfig.ts";
+import { ConfigError, isNonEmptyString, isRecord } from "../guards/index.ts";
+import { ServerConfig } from "./ServerConfig.ts";
+import { arrayField, collectServerFields, recordField } from "./validate.ts";
 
 function emptyServersError(rawServers: unknown[]): ConfigError | undefined {
   if (rawServers.length > 0) {
@@ -57,91 +52,72 @@ function extensionConflictError(
   return undefined;
 }
 
-function rootRecord(
+function rawServerList(
   raw: unknown,
-  errors: string[],
-): Record<string, unknown> | undefined {
-  try {
-    return asRecord(raw, "config root");
-  } catch (error) {
-    pushConfigError(error, errors);
+  errors: ConfigError[],
+): unknown[] | undefined {
+  const record = recordField(raw, "config root", errors);
+  if (record === undefined) {
     return undefined;
   }
-}
-
-function rootServers(
-  record: Record<string, unknown>,
-  errors: string[],
-): unknown[] | undefined {
-  let rawServers: unknown[];
-  try {
-    rawServers = asArray(record.servers, "config root.servers");
-  } catch (error) {
-    pushConfigError(error, errors);
+  const rawServers = arrayField(record.servers, "config root.servers", errors);
+  if (rawServers === undefined) {
     return undefined;
   }
   const empty = emptyServersError(rawServers);
   if (empty !== undefined) {
-    errors.push(empty.message);
+    errors.push(empty);
     return undefined;
   }
   return rawServers;
+}
+
+function collectServers(
+  raw: unknown,
+  errors: ConfigError[],
+): ServerConfig[] | undefined {
+  const rawServers = rawServerList(raw, errors);
+  if (rawServers === undefined) {
+    return undefined;
+  }
+  const duplicate = duplicateNameError(rawServers);
+  if (duplicate !== undefined) {
+    errors.push(duplicate);
+  }
+  const servers: ServerConfig[] = [];
+  for (const [index, entry] of rawServers.entries()) {
+    const fields = collectServerFields(entry, `servers[${index}]`, errors);
+    if (fields !== undefined) {
+      servers.push(new ServerConfig(entry, `servers[${index}]`));
+    }
+  }
+  const conflict = extensionConflictError(servers);
+  if (conflict !== undefined) {
+    errors.push(conflict);
+  }
+  if (errors.length > 0) {
+    return undefined;
+  }
+  return servers;
 }
 
 export class ProxyConfig {
   readonly servers: ServerConfig[];
 
   constructor(raw: unknown) {
-    const record = asRecord(raw, "config root");
-    const rawServers = asArray(record.servers, "config root.servers");
-    const empty = emptyServersError(rawServers);
-    if (empty !== undefined) {
-      throw empty;
+    const collected: ConfigError[] = [];
+    const servers = collectServers(raw, collected);
+    if (servers === undefined) {
+      throw collected[0];
     }
-    const duplicate = duplicateNameError(rawServers);
-    if (duplicate !== undefined) {
-      throw duplicate;
-    }
-    this.servers = rawServers.map(
-      (entry, index) => new ServerConfig(entry, `servers[${index}]`),
-    );
-    const conflict = extensionConflictError(this.servers);
-    if (conflict !== undefined) {
-      throw conflict;
-    }
+    this.servers = servers;
   }
 
   static parse(raw: unknown): { config?: ProxyConfig; errors: string[] } {
-    const errors: string[] = [];
-    const record = rootRecord(raw, errors);
-    if (record === undefined) {
-      return { errors };
-    }
-    const rawServers = rootServers(record, errors);
-    if (rawServers === undefined) {
-      return { errors };
-    }
-    const duplicate = duplicateNameError(rawServers);
-    if (duplicate !== undefined) {
-      errors.push(duplicate.message);
-    }
-    const servers: ServerConfig[] = [];
-    for (const [index, entry] of rawServers.entries()) {
-      const server = ServerConfig.collectViolations(
-        entry,
-        `servers[${index}]`,
-        errors,
-      );
-      if (server !== undefined) {
-        servers.push(server);
-      }
-    }
-    const conflict = extensionConflictError(servers);
-    if (conflict !== undefined) {
-      errors.push(conflict.message);
-    }
-    if (errors.length > 0) {
-      return { errors };
+    const collected: ConfigError[] = [];
+    const servers = collectServers(raw, collected);
+    if (servers === undefined) {
+      return { errors: collected.map((error) => error.message) };
     }
     return { config: new ProxyConfig(raw), errors: [] };
   }
