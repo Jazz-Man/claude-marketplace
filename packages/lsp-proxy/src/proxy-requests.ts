@@ -4,6 +4,7 @@ import type { Downstream } from "./downstream.ts";
 import type { JsonRpcMessage } from "./framing.ts";
 import {
   itemsOf,
+  type MergeOutcome,
   mergeOutcomes,
   originOfCodeAction,
   type ServerOutcome,
@@ -88,16 +89,7 @@ export class RequestBroker {
       outcomes,
       this.host.config.servers.map((server) => server.name),
     );
-    if (merged.error !== undefined) {
-      this.host.replyErrorTo(
-        message.id ?? null,
-        merged.error.code,
-        merged.error.message,
-        merged.error.data,
-      );
-      return;
-    }
-    this.host.replyTo(message.id ?? null, merged.result ?? null);
+    this.replyOutcome(message, merged);
   }
 
   cancel(params: { id: number | string }): void {
@@ -166,16 +158,7 @@ export class RequestBroker {
     });
     outcome
       .then((resolved) => {
-        if (resolved.error !== undefined) {
-          this.host.replyErrorTo(
-            message.id ?? null,
-            resolved.error.code,
-            resolved.error.message,
-            resolved.error.data,
-          );
-          return;
-        }
-        this.host.replyTo(message.id ?? null, resolved.result ?? null);
+        this.replyOutcome(message, resolved);
       })
       .catch((reason: unknown) => {
         this.host.log(`codeAction/resolve: ${String(reason)}`);
@@ -293,5 +276,18 @@ export class RequestBroker {
       error: { code: LspErrorCode.InternalError, message },
       server,
     });
+  }
+
+  private replyOutcome(message: JsonRpcMessage, outcome: MergeOutcome): void {
+    if (outcome.error !== undefined) {
+      this.host.replyErrorTo(
+        message.id ?? null,
+        outcome.error.code,
+        outcome.error.message,
+        outcome.error.data,
+      );
+      return;
+    }
+    this.host.replyTo(message.id ?? null, outcome.result ?? null);
   }
 }

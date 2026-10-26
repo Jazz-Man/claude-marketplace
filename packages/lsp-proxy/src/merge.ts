@@ -116,27 +116,15 @@ function firstNonNull(outcomes: ServerOutcome[], priority: string[]): unknown {
   return null;
 }
 
-function mergeTaggedArrays(
+function mergeArrays(
   successes: ServerOutcome[],
   priority: string[],
+  tag?: (item: unknown, server: string) => unknown,
 ): unknown[] {
   const merged: unknown[] = [];
   for (const outcome of sortByPriority(successes, priority)) {
     for (const item of asArray(outcome.result)) {
-      merged.push(tagCodeAction(item, outcome.server));
-    }
-  }
-  return merged;
-}
-
-function mergePlainArrays(
-  successes: ServerOutcome[],
-  priority: string[],
-): unknown[] {
-  const merged: unknown[] = [];
-  for (const outcome of sortByPriority(successes, priority)) {
-    for (const item of asArray(outcome.result)) {
-      merged.push(item);
+      merged.push(tag === undefined ? item : tag(item, outcome.server));
     }
   }
   return merged;
@@ -193,9 +181,9 @@ export function mergeOutcomes(
       return { result: mergeHover(outcomes, priority) };
     case "array":
       if (method === "textDocument/codeAction") {
-        return { result: mergeTaggedArrays(successes, priority) };
+        return { result: mergeArrays(successes, priority, tagCodeAction) };
       }
-      return { result: mergePlainArrays(successes, priority) };
+      return { result: mergeArrays(successes, priority) };
     default:
       return { result: firstNonNull(outcomes, priority) };
   }

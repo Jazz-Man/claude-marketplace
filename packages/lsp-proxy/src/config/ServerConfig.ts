@@ -24,16 +24,13 @@ function recordViolation(validate: () => unknown, errors: string[]): void {
 }
 
 export class ServerConfig {
-  private static validateName(raw: unknown, context: string): string {
+  private static validateNonEmpty(
+    field: string,
+    raw: unknown,
+    context: string,
+  ): string {
     if (!isNonEmptyString(raw)) {
-      throw new ConfigError(`${context}.name`, "a non-empty string", raw);
-    }
-    return raw;
-  }
-
-  private static validateCommand(raw: unknown, context: string): string {
-    if (!isNonEmptyString(raw)) {
-      throw new ConfigError(`${context}.command`, "a non-empty string", raw);
+      throw new ConfigError(`${context}.${field}`, "a non-empty string", raw);
     }
     return raw;
   }
@@ -110,11 +107,11 @@ export class ServerConfig {
     }
     const violationsBefore = errors.length;
     recordViolation(
-      () => ServerConfig.validateName(record.name, context),
+      () => ServerConfig.validateNonEmpty("name", record.name, context),
       errors,
     );
     recordViolation(
-      () => ServerConfig.validateCommand(record.command, context),
+      () => ServerConfig.validateNonEmpty("command", record.command, context),
       errors,
     );
     recordViolation(
@@ -146,8 +143,12 @@ export class ServerConfig {
 
   constructor(raw: unknown, context: string) {
     const record = asRecord(raw, context);
-    this._name = ServerConfig.validateName(record.name, context);
-    this._command = ServerConfig.validateCommand(record.command, context);
+    this._name = ServerConfig.validateNonEmpty("name", record.name, context);
+    this._command = ServerConfig.validateNonEmpty(
+      "command",
+      record.command,
+      context,
+    );
     this._extensionToLanguage = ServerConfig.validateExtensionMap(
       record.extensionToLanguage,
       context,
