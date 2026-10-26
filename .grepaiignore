@@ -1,0 +1,3 @@
+!node_modules/bun-types/
+node_modules/bun-types/vendor/
+!node_modules/unbash/dist/
