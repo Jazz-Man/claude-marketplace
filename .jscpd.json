@@ -1,7 +1,7 @@
 {
   "followSymlinks": true,
   "format": ["typescript", "tsx", "javascript", "jsx"],
-  "ignore": ["**/node_modules/**", "**/dist/**"],
+  "ignore": ["**/node_modules/**", "**/dist/**", "**/tests/fixtures/**"],
   "ignoreCase": true,
   "ignoreIdentifiers": true,
   "ignoreLiterals": true,
