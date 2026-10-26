@@ -1,3 +1,5 @@
+import { expect, it } from "bun:test";
+
 import { parseCommand } from "../../src/core/ast.ts";
 import type { Policy, PolicyCheckResult } from "../../src/core/policy.ts";
 
@@ -39,4 +41,18 @@ export function reasonOf(result: PolicyCheckResult): string | undefined {
     return out.permissionDecisionReason;
   }
   return undefined;
+}
+
+export function policyTableTests(
+  policy: Policy,
+  tables: { allow: string[]; deny: string[] },
+  reason: string,
+): void {
+  const check = (command: string) => policyCheck(policy, command);
+  it.each(tables.deny)("denies %s", (command) => {
+    expect(reasonOf(check(command))).toBe(reason);
+  });
+  it.each(tables.allow)("allows %s", (command) => {
+    expect(check(command)).toBeNull();
+  });
 }

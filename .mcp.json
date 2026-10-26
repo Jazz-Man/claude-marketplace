@@ -3,6 +3,10 @@
     "grepai-api": {
       "args": ["mcp-serve"],
       "command": "grepai"
+    },
+    "jscpd-mcp": {
+      "args": ["--mcp"],
+      "command": "jscpd"
     }
   }
 }

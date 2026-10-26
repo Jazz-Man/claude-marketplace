@@ -1,15 +1,9 @@
 import { describe, expect, it } from "bun:test";
 
 import { toHookInput } from "../src/core/payload.ts";
+import { bashPayload } from "./helpers/utils.ts";
 
-const PAYLOAD = {
-  cwd: "/proj",
-  hook_event_name: "PreToolUse",
-  tool_input: {
-    command: "git push",
-  },
-  tool_name: "Bash",
-};
+const PAYLOAD = bashPayload("git push");
 
 describe("toHookInput", () => {
   it("narrows a Bash PreToolUse payload", () => {

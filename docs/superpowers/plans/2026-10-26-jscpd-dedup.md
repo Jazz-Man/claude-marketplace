@@ -51,17 +51,18 @@ Gates: assertion strength preserved (lint-batch review standard — no expect lo
 
 ## Standing constraints (every task)
 
-- Subagents only (owner directive): implementer sonnet, reviewer opus, tool-probe first, one retry; if roulette turns systematic again, STOP and surface to the owner — do not silently fall back in-session (deviation from earlier protocol per owner's explicit subagent requirement).
+- Subagents only (owner directive): implementer sonnet, reviewer opus.
 - Owner commits at every stop point; agents git-read-only.
 - TDD where behavior could shift; refactors are behavior-identical with existing tests green. Zero new comments. Biome preset "all", caps 300/50. No dependency changes. KISS: locals before helpers, helpers before modules, third-instance rule.
 
 ## Verification
 
-1. `jscpd . --reporters ai` → 0 clones outside documented ignores (loop until true).
+1. Duplication loop via **jscpd-mcp** (owner directive 2026-10-26, replaces all CLI runs): `check_current_directory` after every change batch — 0 clones outside documented ignores; `get_file_clones(path)` targets each refactor; `get_statistics` for the by-kind record.
 2. `bun test` (repo root) green; `rtk proxy biome check` clean; `bun check --strict` clean.
 3. `bun run build-bin` in packages/lsp-proxy and packages/cli-hook (whenever src touched).
 4. Live LSP smoke: open the previously-flagged files — jscpd diagnostics stream empty on them.
 5. Triage doc: every one of the 159 pairs has a row; every ignore entry has a reason.
+6. Exploration/navigation briefs use **grepai-api** (`grepai_search` NL queries, refs tracing) for locating code by intent — complements LSP symbol navigation.
 
 ## Post-approval admin
 

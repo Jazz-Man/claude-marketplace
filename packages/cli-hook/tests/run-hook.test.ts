@@ -46,20 +46,23 @@ function isolateProjectDir() {
   });
 }
 
+function decisionOfBash(command: string) {
+  return decisionOf(runHook(bashPayload(command)));
+}
+
 describe("runHook (unit)", () => {
   it("denies git writes through the router", () => {
-    const decision = decisionOf(runHook(bashPayload("git push")));
-    expect(decision).toBe("deny");
+    expect(decisionOfBash("git push")).toBe("deny");
   });
 
   it("returns the FIRST policy's reason on dual violations", () => {
-    const result = runHook(bashPayload("npm install /etc/passwd"));
-    expect(reasonOf(result)).toContain("Dependency install/update blocked");
+    expect(reasonOf(runHook(bashPayload("npm install /etc/passwd")))).toContain(
+      "Dependency install/update blocked",
+    );
   });
 
   it("denies filesystem escapes", () => {
-    const decision = decisionOf(runHook(bashPayload("cat /etc/passwd")));
-    expect(decision).toBe("deny");
+    expect(decisionOfBash("cat /etc/passwd")).toBe("deny");
   });
 });
 
@@ -101,13 +104,11 @@ describe("runHook (unit — fail-open)", () => {
 
 describe("router v2", () => {
   it("filesystem ask propagates through the router", () => {
-    const decision = decisionOf(runHook(bashPayload("ls ~")));
-    expect(decision).toBe("ask");
+    expect(decisionOfBash("ls ~")).toBe("ask");
   });
 
   it("absolute-policy deny wins over a filesystem ask on the same command", () => {
-    const decision = decisionOf(runHook(bashPayload("npm install /tmp/x")));
-    expect(decision).toBe("deny");
+    expect(decisionOfBash("npm install /tmp/x")).toBe("deny");
   });
 
   it("no-inline fires before the filesystem injection guard on bash -c /dev/tcp", () => {
@@ -146,50 +147,40 @@ describe("projectRoot resolution (CLAUDE_PROJECT_DIR unset)", () => {
 describe("projectRoot resolution (CLAUDE_PROJECT_DIR zone)", () => {
   isolateProjectDir();
 
-  it("projectRoot carves an allowed zone outside $HOME", () => {
-    process.env.CLAUDE_PROJECT_DIR = "/workspace/repo";
-    expect(
-      runHook({
-        cwd: "/workspace/repo",
-        hook_event_name: "PreToolUse",
-        tool_input: {
-          command: "tee /workspace/repo/x y",
-        },
-        tool_name: "Bash",
-      }),
-    ).toBeNull();
-  });
-
-  it("CLAUDE_PROJECT_DIR feeds projectRoot, not the cwd fallback", () => {
-    process.env.CLAUDE_PROJECT_DIR = "/zone-a";
-    expect(
-      runHook({
-        cwd: "/zone-b",
-        hook_event_name: "PreToolUse",
-        tool_input: {
-          command: "tee /zone-a/out",
-        },
-        tool_name: "Bash",
-      }),
-    ).toBeNull();
+  it.each([
+    [
+      "projectRoot carves an allowed zone outside $HOME",
+      "/workspace/repo",
+      "/workspace/repo",
+      "tee /workspace/repo/x y",
+    ],
+    [
+      "CLAUDE_PROJECT_DIR feeds projectRoot, not the cwd fallback",
+      "/zone-a",
+      "/zone-b",
+      "tee /zone-a/out",
+    ],
+  ])("%s", (_, projectDir, cwd, command) => {
+    process.env.CLAUDE_PROJECT_DIR = projectDir;
+    expect(runHook({ ...bashPayload(command), cwd })).toBeNull();
   });
 });
 
 describe("tool channel", () => {
-  it("Read of a system file denies", () => {
-    const decision = decisionOf(runHook(filePayload("Read", "/etc/passwd")));
-    expect(decision).toBe("deny");
-  });
-
-  it("Edit of home shell rc denies (personal config write)", () => {
-    const decision = decisionOf(runHook(filePayload("Edit", "~/.zshrc")));
-    expect(decision).toBe("deny");
-  });
-
-  it("Read of .git/hooks denies (any reference)", () => {
-    const decision = decisionOf(
-      runHook(filePayload("Read", "/proj/.git/hooks/pre-commit")),
-    );
+  it.each([
+    ["Read of a system file denies", "Read", "/etc/passwd"],
+    [
+      "Edit of home shell rc denies (personal config write)",
+      "Edit",
+      "~/.zshrc",
+    ],
+    [
+      "Read of .git/hooks denies (any reference)",
+      "Read",
+      "/proj/.git/hooks/pre-commit",
+    ],
+  ])("%s", (_, tool_name, filePath) => {
+    const decision = decisionOf(runHook(filePayload(tool_name, filePath)));
     expect(decision).toBe("deny");
   });
 });
@@ -231,10 +222,16 @@ describe("tool channel (allows and fail-open)", () => {
 });
 
 describe("runHook (e2e via spawned main.ts)", () => {
-  it("emits nothing and exits 0 for an allowed command", async () => {
-    const { code, stdout } = await spawnHook(
+  it.each([
+    [
+      "emits nothing and exits 0 for an allowed command",
       JSON.stringify(bashPayload("ls -la")),
-    );
+    ],
+    ["emits nothing for invalid JSON", "{not json"],
+    ["emits nothing and exits 0 for empty stdin", ""],
+    ["emits nothing and exits 0 for valid-JSON non-object input", "42"],
+  ])("%s", async (_, raw) => {
+    const { code, stdout } = await spawnHook(raw);
     expect(code).toBe(0);
     expect(stdout).toBe("");
   });
@@ -247,23 +244,5 @@ describe("runHook (e2e via spawned main.ts)", () => {
     const output = hookDecision(stdout);
     expect(output?.permissionDecision).toBe("deny");
     expect(output?.permissionDecisionReason).toContain("read-only policy");
-  });
-
-  it("emits nothing for invalid JSON", async () => {
-    const { code, stdout } = await spawnHook("{not json");
-    expect(code).toBe(0);
-    expect(stdout).toBe("");
-  });
-
-  it("emits nothing and exits 0 for empty stdin", async () => {
-    const { code, stdout } = await spawnHook("");
-    expect(code).toBe(0);
-    expect(stdout).toBe("");
-  });
-
-  it("emits nothing and exits 0 for valid-JSON non-object input", async () => {
-    const { code, stdout } = await spawnHook("42");
-    expect(code).toBe(0);
-    expect(stdout).toBe("");
   });
 });
