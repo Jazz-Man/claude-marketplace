@@ -5,12 +5,14 @@ import { join } from "node:path";
 import process from "node:process";
 import { HEADER_SEPARATOR } from "../src/framing.ts";
 import {
+  awaitDiagnostics,
   boot,
   cleanupTempConfigs,
   diagnosticTexts,
   initializeSession,
   openDocument,
   publications,
+  request,
   responseFor,
   startProxy,
   stub,
@@ -57,11 +59,11 @@ describe("client session", () => {
 
   it("shutdown: replies null to shutdown and exits 0 on the exit notification", async () => {
     const proxy = await boot([stub("alpha", {}, TS), stub("beta", {}, TS)]);
-    proxy.push({ id: 2, jsonrpc: "2.0", method: "shutdown" });
-    await waitFor(() =>
-      proxy.clientMessages.some((message) => message.id === 2),
-    );
-    const response = responseFor(proxy, 2);
+    const response = await request(proxy, {
+      id: 2,
+      jsonrpc: "2.0",
+      method: "shutdown",
+    });
     expect(response?.result).toBeNull();
     proxy.push({ jsonrpc: "2.0", method: "exit" });
     await waitFor(() => proxy.exitCode() === 0);
@@ -73,8 +75,7 @@ describe("document fan-out", () => {
   it("fan-out: delivers diagnostics from both stubs for a .ts document", async () => {
     const proxy = await boot([stub("alpha", {}, TS), stub("beta", {}, TS)]);
     openDocument(proxy, "file:///proj/sample.ts", "typescript");
-    await waitFor(() => publications(proxy).length >= 2);
-    const texts = diagnosticTexts(proxy);
+    const texts = await awaitDiagnostics(proxy, 2);
     expect(texts).toContain("diag from alpha");
     expect(texts).toContain("diag from beta");
     await proxy.stop();
@@ -86,7 +87,7 @@ describe("document fan-out", () => {
       stub("beta", {}, { ".json": "json" }),
     ]);
     openDocument(proxy, "file:///proj/sample.json", "json");
-    await waitFor(() => publications(proxy).length > 0);
+    await awaitDiagnostics(proxy, 1);
     expect(publications(proxy).length).toBe(1);
     const texts = diagnosticTexts(proxy);
     expect(texts).toContain("diag from beta");
@@ -101,16 +102,12 @@ describe("merged requests", () => {
       stub("alpha", { hover: "stuff" }, TS),
       stub("beta", { hover: "stuff" }, TS),
     ]);
-    proxy.push({
+    const response = await request(proxy, {
       id: 2,
       jsonrpc: "2.0",
       method: "textDocument/hover",
       params: { textDocument: { uri: "file:///proj/sample.ts" } },
     });
-    await waitFor(() =>
-      proxy.clientMessages.some((message) => message.id === 2),
-    );
-    const response = responseFor(proxy, 2);
     expect(response?.result).toEqual({
       contents: { kind: "markdown", value: "alpha: stuff\n\nbeta: stuff" },
     });
@@ -126,16 +123,12 @@ describe("merged requests", () => {
       ),
       stub("beta", { completionItems: [{ label: "b1" }] }, TS),
     ]);
-    proxy.push({
+    const response = await request(proxy, {
       id: 2,
       jsonrpc: "2.0",
       method: "textDocument/completion",
       params: { textDocument: { uri: "file:///proj/sample.ts" } },
     });
-    await waitFor(() =>
-      proxy.clientMessages.some((message) => message.id === 2),
-    );
-    const response = responseFor(proxy, 2);
     expect(response?.result).toEqual({
       isIncomplete: false,
       items: [{ label: "a1" }, { label: "a2" }, { label: "b1" }],
@@ -159,7 +152,7 @@ describe("sequential requests", () => {
       stub("p1", { formatEdits: null }, TS),
       stub("p2", { formatEdits: edits }, TS),
     ]);
-    proxy.push({
+    const response = await request(proxy, {
       id: 2,
       jsonrpc: "2.0",
       method: "textDocument/formatting",
@@ -168,10 +161,6 @@ describe("sequential requests", () => {
         textDocument: { uri: "file:///proj/sample.ts" },
       },
     });
-    await waitFor(() =>
-      proxy.clientMessages.some((message) => message.id === 2),
-    );
-    const response = responseFor(proxy, 2);
     expect(response?.result).toEqual(edits);
     await proxy.stop();
   });
@@ -198,16 +187,14 @@ describe("cancellation", () => {
     await waitFor(() =>
       proxy.clientMessages.some((message) => message.id === 2),
     );
-    proxy.push({
-      id: 3,
-      jsonrpc: "2.0",
-      method: "textDocument/hover",
-      params: hoverParams,
-    });
-    await waitFor(() =>
-      proxy.clientMessages.some((message) => message.id === 3),
-    );
-    const result = responseFor(proxy, 3)?.result;
+    const result = (
+      await request(proxy, {
+        id: 3,
+        jsonrpc: "2.0",
+        method: "textDocument/hover",
+        params: hoverParams,
+      })
+    )?.result;
     if (result === undefined) {
       throw new Error("no reply for the post-cancel hover");
     }
@@ -230,7 +217,7 @@ describe("supervision", () => {
     // log proves respawn + replay both happened.
     await waitFor(() => proxy.stderr().includes("a second time; giving up"));
     openDocument(proxy, "file:///proj/other.ts", "typescript");
-    await waitFor(() => publications(proxy).length >= 2);
+    await awaitDiagnostics(proxy, 2);
     expect(publications(proxy).length).toBe(2);
     const texts = diagnosticTexts(proxy);
     expect(texts).toContain("diag from beta");
@@ -246,8 +233,7 @@ describe("supervision", () => {
     ]);
     expect(proxy.stderr()).not.toContain("rejecting server legacy");
     openDocument(proxy, "file:///proj/sample.ts", "typescript");
-    await waitFor(() => publications(proxy).length >= 2);
-    const texts = diagnosticTexts(proxy);
+    const texts = await awaitDiagnostics(proxy, 2);
     expect(texts).toContain("diag from good");
     expect(texts).toContain("diag from legacy");
     await proxy.stop();
@@ -263,7 +249,7 @@ describe("configuration", () => {
       },
     ]);
     openDocument(proxy, "file:///proj/sample.ts", "typescript");
-    await waitFor(() => publications(proxy).length > 0);
+    await awaitDiagnostics(proxy, 1);
     const forwarded = proxy.clientMessages.some(
       (message) => message.method === "workspace/configuration",
     );

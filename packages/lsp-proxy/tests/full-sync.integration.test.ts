@@ -59,7 +59,21 @@ describe("full-sync adaptation", () => {
     await proxy.stop();
   });
 
-  it("didChange: full-sync stub gets the applied full text", async () => {
+  it.each([
+    [
+      "didChange: full-sync stub gets the applied full text",
+      "full1",
+      {
+        contentChanges: [{ text: "const y = 42;\n" }],
+        textDocument: { uri: "file:///proj/sample.ts", version: 3 },
+      },
+    ],
+    [
+      "didChange: incremental stub gets the client delta verbatim",
+      "delta",
+      CHANGE_PARAMS,
+    ],
+  ])("%s", async (_title, name, expected) => {
     const proxy = await bootEchoPair();
     openDocument(proxy, "file:///proj/sample.ts", "typescript");
     await waitFor(() => echoes(proxy).length >= 2);
@@ -74,29 +88,7 @@ describe("full-sync adaptation", () => {
         .slice(2)
         .map((echo) => [echo.name, echo]),
     );
-    expect(byName.get("full1")?.params).toEqual({
-      contentChanges: [{ text: "const y = 42;\n" }],
-      textDocument: { uri: "file:///proj/sample.ts", version: 3 },
-    });
-    await proxy.stop();
-  });
-
-  it("didChange: incremental stub gets the client delta verbatim", async () => {
-    const proxy = await bootEchoPair();
-    openDocument(proxy, "file:///proj/sample.ts", "typescript");
-    await waitFor(() => echoes(proxy).length >= 2);
-    proxy.push({
-      jsonrpc: "2.0",
-      method: "textDocument/didChange",
-      params: CHANGE_PARAMS,
-    });
-    await waitFor(() => echoes(proxy).length >= 4);
-    const byName = new Map(
-      echoes(proxy)
-        .slice(2)
-        .map((echo) => [echo.name, echo]),
-    );
-    expect(byName.get("delta")?.params).toEqual(CHANGE_PARAMS);
+    expect(byName.get(name)?.params).toEqual(expected);
     await proxy.stop();
   });
 });

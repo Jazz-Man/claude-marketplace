@@ -4,7 +4,7 @@ import { join } from "node:path";
 import {
   boot,
   cleanupTempConfigs,
-  responseFor,
+  request,
   stub,
   writeConfig,
 } from "./helpers/proxy-harness.ts";
@@ -37,16 +37,12 @@ describe("architecture", () => {
         TS,
       ),
     ]);
-    proxy.push({
+    const response = await request(proxy, {
       id: 2,
       jsonrpc: "2.0",
       method: "textDocument/hover",
       params: { textDocument: { uri: "file:///proj/e.ts" } },
     });
-    await waitFor(() =>
-      proxy.clientMessages.some((message) => message.id === 2),
-    );
-    const response = responseFor(proxy, 2);
     expect(response?.error?.code).toBe(-32_603);
     expect(response?.error?.message).toBe("boom");
     expect(response?.error?.data).toEqual({ hint: "x" });

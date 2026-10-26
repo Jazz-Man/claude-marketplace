@@ -142,8 +142,29 @@ export const diagnosticTexts = (proxy: ProxyHandle) =>
     )
     .join("\n");
 
+export async function awaitDiagnostics(
+  proxy: ProxyHandle,
+  count: number,
+): Promise<string> {
+  await waitFor(() => publications(proxy).length >= count);
+  return diagnosticTexts(proxy);
+}
+
 export const responseFor = (proxy: ProxyHandle, id: number) =>
   proxy.clientMessages.find((message) => message.id === id);
+
+export async function request(
+  proxy: ProxyHandle,
+  message: JsonRpcMessage & { id: number },
+  timeoutMs?: number,
+): Promise<JsonRpcMessage | undefined> {
+  proxy.push(message);
+  await waitFor(
+    () => proxy.clientMessages.some((candidate) => candidate.id === message.id),
+    timeoutMs,
+  );
+  return responseFor(proxy, message.id);
+}
 
 export async function boot(servers: unknown[]): Promise<ProxyHandle> {
   const configPath = await writeConfig(servers);

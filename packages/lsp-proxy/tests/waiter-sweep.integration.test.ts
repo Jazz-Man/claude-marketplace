@@ -1,6 +1,11 @@
 import { expect, it } from "bun:test";
 
-import { boot, responseFor, stub } from "./helpers/proxy-harness.ts";
+import {
+  boot,
+  openDocument,
+  responseFor,
+  stub,
+} from "./helpers/proxy-harness.ts";
 import { waitFor } from "./helpers/wait.ts";
 
 const SWEEP_LOG = /swept [12] pending requests for fragile/u;
@@ -12,17 +17,7 @@ it("sweep: pending hover resolves with error when server dies mid-request", asyn
     stub("fragile", { exitOnDidOpen: true }, TS),
     stub("healthy", { hover: "alive" }, TS),
   ]);
-  proxy.push({
-    jsonrpc: "2.0",
-    method: "textDocument/didOpen",
-    params: {
-      textDocument: {
-        languageId: "typescript",
-        text: "const x = 1;\n",
-        uri: "file:///proj/s.ts",
-      },
-    },
-  });
+  openDocument(proxy, "file:///proj/s.ts", "typescript");
   proxy.push({
     id: 2,
     jsonrpc: "2.0",
