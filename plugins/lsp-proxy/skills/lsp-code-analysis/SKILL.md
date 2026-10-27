@@ -1,11 +1,15 @@
 ---
 name: lsp-code-analysis
-description: Use LSP tools for code analysis — symbol lookup, reference finding, type info, navigation. Prefer LSP over grep/Read for semantic code understanding. Available in all contexts (main session + subagents). Use whenever analyzing, navigating, refactoring, or reviewing source code — any question about where a symbol is defined, who calls it, what implements an interface, or what type something is — and before falling back to grep/Read on any code question.
+description: Use LSP tools for code analysis — symbol lookup, reference finding, type info, navigation — preferring LSP over grep/Read for semantic code understanding. Use whenever analyzing, navigating, refactoring, or reviewing source code: where a symbol is defined, go to definition, find all usages or references, who calls a function, where a type or an import comes from, what implements an interface, or what type something is — and before falling back to grep/Read on any code question. Works in the main session and in subagents alike.
 ---
 
 # LSP-first Code Analysis
 
 LSP (Language Server Protocol) provides **semantic** code intelligence — types, definitions, references, implementations — that text-based tools (grep, Read) cannot match. Prefer LSP for any task involving code structure, symbols, or type relationships.
+
+## Getting the LSP tool
+
+The LSP tool may be deferred — absent from the tool list until loaded. Load it with ONE ToolSearch call in the exact-name form: query `select:LSP`. Keyword or regex guesses (`definition`, `references`, `language server`) do not match it and waste calls; `select:` resolves by name directly. If other basic tools (Read, Grep, Glob) are deferred too, load them in the same call — `select:LSP,Read,Grep,Glob` — names that do not exist are simply not matched.
 
 ## Why LSP over grep/Read
 
@@ -15,6 +19,15 @@ LSP (Language Server Protocol) provides **semantic** code intelligence — types
 | Resolves type aliases, conditional types, inferred types | Cannot infer types from text |
 | Understands scope (local vs exported, shadowed variables) | No scope awareness |
 | Returns precise file:line:char locations | Returns approximate matches |
+
+## Locate before reading
+
+Do not open a file just to find something in it — a whole-file Read of a large file costs tokens for lines the task never needs. Map first, read bounded ranges second:
+
+- `documentSymbol` gives the file's structure and the exact line of every symbol.
+- For names that are not symbols (import specifiers, string literals), a Grep scoped to that one file returns the line cheaply.
+- When a piece of code genuinely must be read, read exactly that range (Read accepts `offset`/`limit`), not the whole file.
+- Skip existence pre-checks (`ls`/`find` before acting on a path): point the LSP operation or Read at the path directly — a wrong path fails with an informative error from the tool itself, one signal instead of two calls.
 
 ## Retry Rules (server startup + indexing)
 
@@ -44,17 +57,22 @@ Max 3 retries. If still empty after 3 retries, the file may have an **indexing q
 
 - **`workspaceSymbol`** — works across the whole project; most resilient to indexing state.
 - **`documentSymbol`** — works on most files; reliable for listing symbols.
-- **`findReferences`** — preferred over `incomingCalls` for finding callers (more reliable in complex code).
+- **`findReferences`** — preferred over `incomingCalls` for finding callers (more reliable in complex code). Its result is semantic: string literals, comments, and same-named functions never appear, so once the returned references are classified (calls + declaration + imports), the answer is complete — do not re-sweep the repo with grep to double-check a non-empty classified result. Grep is the fallback when LSP returns empty, not a second opinion.
 
 ### Less reliable operations (server-dependent)
 
 - **`incomingCalls`/`outgoingCalls`** — may fail inside IIFE-wrapped, bundled, or very large files. Use `findReferences` as a workaround.
 - **`goToDefinition`** — may return "No definition found" when a binding is overwritten (e.g., `x` is a param, then `x = {}` reassigns it).
 - **`goToImplementation`** — requires interfaces/classes with type definitions; won't work on untyped/dynamic code.
+- **Dynamic dispatch and string-named callbacks** — LSP is structurally blind to calls made through a string: PHP hooks/actions (`add_action('my_func')`), `call_user_func('name')`, dynamically built method names. When the callee is a string, `findReferences` cannot see the call site; grep for the string is the correct tool for these cases, not a workaround.
 
-### External packages (node_modules)
+### External packages (dependencies)
 
-Workspace symbol indexing typically excludes dependencies: a `workspaceSymbol` query for a symbol that lives in an imported package returns empty even though the symbol exists — an empty result for a known-existing symbol often means "it lives in a dependency", not "it doesn't exist". For symbols imported from a package, run `goToDefinition` ON the import specifier — it resolves into the package's source or `.d.ts`; from there `hover`/`findReferences` work as usual.
+Workspace symbol indexing typically excludes dependency code: a `workspaceSymbol` query for a symbol that lives in an installed dependency returns empty even though the symbol exists — an empty result for a known-existing symbol often means "it lives in a dependency", not "it doesn't exist". The dependency folder differs by ecosystem — JS/TS: `node_modules`, PHP: `vendor/`, Rust: the cargo registry cache, Python: `site-packages` — but the mechanism is the same everywhere: run `goToDefinition` ON the import/use site; it resolves into the dependency's source (or its declaration files, e.g. `.d.ts` for TypeScript), and from there `hover`/`findReferences` work as usual. How far the jump resolves depends on the language server having the dependency's sources available.
+
+### Aliased and re-exported symbols
+
+Hover output beginning with `(alias)` — e.g. `(alias) interface JsonRpcMessage` — marks a symbol imported or re-exported from another module. Never describe it as declared in the current file: run `goToDefinition` on it and report the file it resolves to.
 
 ## Coordinate System
 
