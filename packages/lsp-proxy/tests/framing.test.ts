@@ -3,6 +3,7 @@ import { describe, expect, it } from "bun:test";
 import {
   createDecoder,
   encodeFrame,
+  encodeRawFrame,
   HEADER_SEPARATOR,
   type JsonRpcMessage,
 } from "../src/framing.ts";
@@ -28,14 +29,7 @@ function collect(): {
 }
 
 function rawFrame(body: string): Uint8Array {
-  const bodyBytes = new TextEncoder().encode(body);
-  const header = new TextEncoder().encode(
-    `Content-Length: ${bodyBytes.byteLength}${HEADER_SEPARATOR}`,
-  );
-  const frame = new Uint8Array(header.byteLength + bodyBytes.byteLength);
-  frame.set(header);
-  frame.set(bodyBytes, header.byteLength);
-  return frame;
+  return encodeRawFrame(new TextEncoder().encode(body));
 }
 
 describe("encodeFrame + createDecoder", () => {

@@ -97,8 +97,7 @@ function extractFrames(
   }
 }
 
-export function encodeFrame(message: JsonRpcMessage): Uint8Array {
-  const body = textEncoder.encode(JSON.stringify(message));
+export function encodeRawFrame(body: Uint8Array): Uint8Array {
   const header = textEncoder.encode(
     `Content-Length: ${body.byteLength}${HEADER_SEPARATOR}`,
   );
@@ -106,6 +105,10 @@ export function encodeFrame(message: JsonRpcMessage): Uint8Array {
   frame.set(header);
   frame.set(body, header.byteLength);
   return frame;
+}
+
+export function encodeFrame(message: JsonRpcMessage): Uint8Array {
+  return encodeRawFrame(textEncoder.encode(JSON.stringify(message)));
 }
 
 export function createDecoder(

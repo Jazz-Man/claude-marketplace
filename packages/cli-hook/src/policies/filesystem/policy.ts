@@ -1,7 +1,7 @@
 import { isAbsolute } from "node:path";
 
 import type { CommandUnit } from "../../core/ast.ts";
-import { ask, deny } from "../../core/decision.ts";
+import { ask, deny, permissionOf } from "../../core/decision.ts";
 import type {
   Policy,
   PolicyCheckResult,
@@ -159,11 +159,7 @@ function argDecision(
 function severityUnion(hits: PolicyCheckResult[]): PolicyCheckResult {
   let askHit: PolicyCheckResult = null;
   for (const hit of hits) {
-    const out = hit?.hookSpecificOutput;
-    if (
-      out?.hookEventName === "PreToolUse" &&
-      out.permissionDecision === "deny"
-    ) {
+    if (permissionOf(hit) === "deny") {
       return hit;
     }
     askHit ??= hit;

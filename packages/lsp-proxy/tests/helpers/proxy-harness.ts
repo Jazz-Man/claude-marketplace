@@ -3,7 +3,7 @@ import { join } from "node:path";
 import process from "node:process";
 
 import type { JsonRpcMessage } from "../../src/framing.ts";
-import { createDecoder, encodeFrame } from "../../src/framing.ts";
+import { decodeChunks, encodeFrame } from "../../src/framing.ts";
 import { waitFor } from "./wait.ts";
 
 const TESTS_DIR = join(import.meta.dir, "..");
@@ -39,24 +39,21 @@ export function startProxy(configPath: string): ProxyHandle {
     stdout: "pipe",
   });
   const clientMessages: JsonRpcMessage[] = [];
-  const decode = createDecoder((message) => {
-    clientMessages.push(message);
-  });
-  const drain = async (
-    stream: ReadableStream<Uint8Array>,
-    onChunk: (chunk: Uint8Array) => void,
-  ): Promise<void> => {
-    for await (const chunk of stream) {
-      onChunk(chunk);
+  decodeChunks(
+    spawned.stdout,
+    (message) => {
+      clientMessages.push(message);
+    },
+    () => undefined,
+    () => undefined,
+  ).catch(() => undefined);
+  let stderrText = "";
+  const drainStderr = async (): Promise<void> => {
+    for await (const chunk of spawned.stderr) {
+      stderrText += new TextDecoder().decode(chunk);
     }
   };
-  drain(spawned.stdout, (chunk) => {
-    decode(chunk);
-  }).catch(() => undefined);
-  let stderrText = "";
-  drain(spawned.stderr, (chunk) => {
-    stderrText += new TextDecoder().decode(chunk);
-  }).catch(() => undefined);
+  drainStderr().catch(() => undefined);
   const push = (message: JsonRpcMessage): void => {
     spawned.stdin.write(encodeFrame(message));
     spawned.stdin.flush();

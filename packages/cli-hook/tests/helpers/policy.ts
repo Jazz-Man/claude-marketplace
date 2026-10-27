@@ -1,6 +1,7 @@
 import { expect, it } from "bun:test";
 
 import { parseCommand } from "../../src/core/ast.ts";
+import { permissionOf } from "../../src/core/decision.ts";
 import type { Policy, PolicyCheckResult } from "../../src/core/policy.ts";
 
 export function policyCheck(
@@ -24,15 +25,7 @@ export function policyCheck(
 }
 
 export function decisionOf(result: PolicyCheckResult): "deny" | "ask" | null {
-  const out = result?.hookSpecificOutput;
-  if (out?.hookEventName !== "PreToolUse") {
-    return null;
-  }
-  const decision = out.permissionDecision;
-  if (decision === "deny" || decision === "ask") {
-    return decision;
-  }
-  return null;
+  return permissionOf(result);
 }
 
 export function reasonOf(result: PolicyCheckResult): string | undefined {

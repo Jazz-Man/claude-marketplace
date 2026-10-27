@@ -1,33 +1,21 @@
 import { afterEach, beforeEach, describe, expect, it } from "bun:test";
 import process from "node:process";
 
+import { permissionOf } from "../src/core/decision.ts";
 import { runHook } from "../src/run-hook.ts";
 import { decisionOf, reasonOf } from "./helpers/policy.ts";
 import { bashPayload, filePayload, spawnHook } from "./helpers/utils.ts";
 
-function isRecord(value: unknown): value is Record<string, unknown> {
-  return typeof value === "object" && value !== null;
-}
-
 function hookDecision(raw: string) {
   const parsed: unknown = JSON.parse(raw);
-  if (!isRecord(parsed)) {
-    return null;
-  }
-  const { hookSpecificOutput } = parsed;
-  if (!isRecord(hookSpecificOutput)) {
-    return null;
-  }
-  const { permissionDecision, permissionDecisionReason } = hookSpecificOutput;
-  if (
-    typeof permissionDecision !== "string" ||
-    typeof permissionDecisionReason !== "string"
-  ) {
+  const result = parsed as ReturnType<typeof runHook>;
+  const permission = permissionOf(result);
+  if (permission === null) {
     return null;
   }
   return {
-    permissionDecision,
-    permissionDecisionReason,
+    permissionDecision: permission,
+    permissionDecisionReason: reasonOf(result) ?? "",
   };
 }
 
