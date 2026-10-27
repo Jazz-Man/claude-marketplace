@@ -8,6 +8,12 @@ import {
   isStringRecord,
 } from "../guards/index.ts";
 
+export interface ExtensionConflict {
+  extension: string;
+  language: string;
+  previous: string;
+}
+
 export interface ServerFields {
   args: string[] | undefined;
   command: string;
@@ -38,6 +44,16 @@ function parseWith<T>(
     pushConfigError(error, errors);
     return undefined;
   }
+}
+
+export function withMessages<T>(
+  run: (errors: ConfigError[]) => T | undefined,
+  messages: string[],
+): T | undefined {
+  const collected: ConfigError[] = [];
+  const value = run(collected);
+  messages.push(...collected.map((error) => error.message));
+  return value;
 }
 
 export function recordField(
@@ -143,6 +159,24 @@ function envField(
   return undefined;
 }
 
+export function conflictingExtension(
+  servers: { extensionToLanguage: Record<string, string> }[],
+): ExtensionConflict | undefined {
+  const seen = new Map<string, string>();
+  for (const server of servers) {
+    for (const [extension, language] of Object.entries(
+      server.extensionToLanguage,
+    )) {
+      const previous = seen.get(extension);
+      if (previous !== undefined && previous !== language) {
+        return { extension, language, previous };
+      }
+      seen.set(extension, language);
+    }
+  }
+  return undefined;
+}
+
 export function collectServerFields(
   raw: unknown,
   context: string,
@@ -181,8 +215,8 @@ export function collectServerMessages(
   context: string,
   errors: string[],
 ): ServerFields | undefined {
-  const collected: ConfigError[] = [];
-  const fields = collectServerFields(raw, context, collected);
-  errors.push(...collected.map((error) => error.message));
-  return fields;
+  return withMessages(
+    (collected) => collectServerFields(raw, context, collected),
+    errors,
+  );
 }

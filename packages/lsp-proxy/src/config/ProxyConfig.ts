@@ -1,6 +1,12 @@
 import { ConfigError, isNonEmptyString, isRecord } from "../guards/index.ts";
 import { ServerConfig } from "./ServerConfig.ts";
-import { arrayField, collectServerFields, recordField } from "./validate.ts";
+import {
+  arrayField,
+  collectServerFields,
+  conflictingExtension,
+  recordField,
+  withMessages,
+} from "./validate.ts";
 
 function emptyServersError(rawServers: unknown[]): ConfigError | undefined {
   if (rawServers.length > 0) {
@@ -33,23 +39,15 @@ function duplicateNameError(rawServers: unknown[]): ConfigError | undefined {
 function extensionConflictError(
   servers: ServerConfig[],
 ): ConfigError | undefined {
-  const seen = new Map<string, string>();
-  for (const server of servers) {
-    for (const [extension, language] of Object.entries(
-      server.extensionToLanguage,
-    )) {
-      const previous = seen.get(extension);
-      if (previous !== undefined && previous !== language) {
-        return new ConfigError(
-          `extension ${extension}`,
-          `a single language across servers (conflict: "${previous}" and "${language}")`,
-          language,
-        );
-      }
-      seen.set(extension, language);
-    }
+  const conflict = conflictingExtension(servers);
+  if (conflict === undefined) {
+    return undefined;
   }
-  return undefined;
+  return new ConfigError(
+    `extension ${conflict.extension}`,
+    `a single language across servers (conflict: "${conflict.previous}" and "${conflict.language}")`,
+    conflict.language,
+  );
 }
 
 function rawServerList(
@@ -114,10 +112,13 @@ export class ProxyConfig {
   }
 
   static parse(raw: unknown): { config?: ProxyConfig; errors: string[] } {
-    const collected: ConfigError[] = [];
-    const servers = collectServers(raw, collected);
+    const errors: string[] = [];
+    const servers = withMessages(
+      (collected) => collectServers(raw, collected),
+      errors,
+    );
     if (servers === undefined) {
-      return { errors: collected.map((error) => error.message) };
+      return { errors };
     }
     return { config: new ProxyConfig(raw), errors: [] };
   }

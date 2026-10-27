@@ -1,23 +1,19 @@
 import process from "node:process";
 import { parseArgs } from "node:util";
-
+import { conflictingExtension } from "./config/validate.ts";
 import { type ProxyConfig, parseConfig } from "./config.ts";
 import { isRecord, safeJsonParse } from "./guards/index.ts";
 
 export function extensionUnion(config: ProxyConfig): Record<string, string> {
+  const conflict = conflictingExtension(config.servers);
+  if (conflict !== undefined) {
+    throw new Error(
+      `extension ${conflict.extension} maps to both "${conflict.previous}" and "${conflict.language}"`,
+    );
+  }
   const union: Record<string, string> = {};
   for (const server of config.servers) {
-    for (const [extension, language] of Object.entries(
-      server.extensionToLanguage,
-    )) {
-      const previous = union[extension];
-      if (previous !== undefined && previous !== language) {
-        throw new Error(
-          `extension ${extension} maps to both "${previous}" and "${language}"`,
-        );
-      }
-      union[extension] = language;
-    }
+    Object.assign(union, server.extensionToLanguage);
   }
   return union;
 }
