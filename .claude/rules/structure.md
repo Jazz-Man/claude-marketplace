@@ -1,6 +1,6 @@
 # Structure — where things live and what may touch what
 
-The canonical directory tree is `CLAUDE.md` §Layout — maintained there, not restated here. This rule adds what a tree cannot say: ownership and dependency direction.
+There is no canonical directory tree pinned in `CLAUDE.md` — the tree changes faster than any copy of it, so the filesystem is the truth. This rule carries what a tree cannot say: ownership and dependency direction.
 
 ## Two worlds: this repo vs the target project
 
