@@ -1,11 +1,17 @@
-import { cancelIdOf, changesOf, textDocumentOf, uriOf } from "./boundary.ts";
+import {
+  cancelIdOf,
+  changesOf,
+  openOf,
+  textDocumentOf,
+  uriOf,
+} from "./boundary.ts";
 import { mergeCapabilities } from "./capabilities.ts";
 import type { ProxyConfig, ServerConfig } from "./config.ts";
 import { LspErrorCode, TimeoutMs, VERSION } from "./constants/index.ts";
 import { DocumentStore } from "./docstore.ts";
 import type { Downstream } from "./downstream.ts";
 import {
-  createDecoder,
+  decodeChunks,
   encodeFrame,
   type JsonRpcError,
   type JsonRpcMessage,
@@ -61,17 +67,13 @@ export class LspProxy {
   }
 
   async run(): Promise<void> {
-    const decode = createDecoder((message) => {
-      try {
-        this.onClientMessage(message);
-      } catch (error) {
-        this.log(`client message dispatch error: ${String(error)}`);
-      }
-    }, this.logFailure("client stream"));
     try {
-      for await (const chunk of this.io.readChunks()) {
-        decode(chunk);
-      }
+      await decodeChunks(
+        this.io.readChunks(),
+        (message) => this.onClientMessage(message),
+        (error) => this.log(`client message dispatch error: ${String(error)}`),
+        this.logFailure("client stream"),
+      );
     } catch (error) {
       this.log(`client loop error: ${String(error)}`);
     }
@@ -252,13 +254,9 @@ export class LspProxy {
   }
 
   private openDocument(uri: string, params: unknown): void {
-    const fields = isRecord(params) ? params.textDocument : undefined;
-    if (isRecord(fields)) {
-      const { languageId = "", text = "" } = fields;
-      if (typeof languageId !== "string" || typeof text !== "string") {
-        return;
-      }
-      this.docs.open(uri, languageId, text);
+    const open = openOf(params);
+    if (open !== undefined) {
+      this.docs.open(uri, open.languageId, open.text);
     }
   }
 

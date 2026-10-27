@@ -26,15 +26,22 @@ function changeOf(change: unknown): ContentChange | undefined {
   return { range: change.range, text: change.text };
 }
 
-export function uriOf(params: unknown): string {
+function textDocumentRecordOf(
+  params: unknown,
+): Record<string, unknown> | undefined {
   if (!isRecord(params)) {
-    return "";
+    return undefined;
   }
   const { textDocument } = params;
-  if (isRecord(textDocument) && typeof textDocument.uri === "string") {
+  return isRecord(textDocument) ? textDocument : undefined;
+}
+
+export function uriOf(params: unknown): string {
+  const textDocument = textDocumentRecordOf(params);
+  if (textDocument !== undefined && typeof textDocument.uri === "string") {
     return textDocument.uri;
   }
-  if (typeof params.uri === "string") {
+  if (isRecord(params) && typeof params.uri === "string") {
     return params.uri;
   }
   return "";
@@ -59,6 +66,20 @@ export function changesOf(params: unknown): ContentChange[] {
     }
   }
   return changes;
+}
+
+export function openOf(
+  params: unknown,
+): { languageId: string; text: string } | undefined {
+  const fields = textDocumentRecordOf(params);
+  if (fields === undefined) {
+    return undefined;
+  }
+  const { languageId = "", text = "" } = fields;
+  if (typeof languageId !== "string" || typeof text !== "string") {
+    return undefined;
+  }
+  return { languageId, text };
 }
 
 export function cancelIdOf(params: unknown): number | string | undefined {

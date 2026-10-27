@@ -2,7 +2,7 @@ import process from "node:process";
 import type { Subprocess } from "bun";
 
 import type { ServerConfig } from "./config.ts";
-import { createDecoder, encodeFrame, type JsonRpcMessage } from "./framing.ts";
+import { decodeChunks, encodeFrame, type JsonRpcMessage } from "./framing.ts";
 
 const EXIT_UNKNOWN = -1;
 
@@ -79,21 +79,15 @@ export class Downstream {
     this.log(`[${this.name}] stream: ${String(reason)}`);
   }
 
-  private async readLoop(
+  private readLoop(
     child: Subprocess<"pipe", "pipe", "inherit">,
   ): Promise<void> {
-    const decode = createDecoder(
-      (message) => {
-        try {
-          this.handlers.onMessage(message);
-        } catch (error) {
-          this.log(`[${this.name}] message dispatch error: ${String(error)}`);
-        }
-      },
+    return decodeChunks(
+      child.stdout,
+      (message) => this.handlers.onMessage(message),
+      (error) =>
+        this.log(`[${this.name}] message dispatch error: ${String(error)}`),
       (reason) => this.streamError(reason),
     );
-    for await (const chunk of child.stdout) {
-      decode(chunk);
-    }
   }
 }

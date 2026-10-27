@@ -123,3 +123,21 @@ export function createDecoder(
     buffer = extractFrames(merged, onMessage, report);
   };
 }
+
+export async function decodeChunks(
+  chunks: AsyncIterable<Uint8Array>,
+  onMessage: (message: JsonRpcMessage) => void,
+  onDispatchError: (reason: unknown) => void,
+  onError: (reason: string) => void,
+): Promise<void> {
+  const decode = createDecoder((message) => {
+    try {
+      onMessage(message);
+    } catch (error) {
+      onDispatchError(error);
+    }
+  }, onError);
+  for await (const chunk of chunks) {
+    decode(chunk);
+  }
+}
