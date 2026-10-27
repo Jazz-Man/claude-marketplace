@@ -1,14 +1,25 @@
 import type { ConfigError } from "../guards/index.ts";
-import { collectServerFields, collectServerMessages } from "./validate.ts";
+import { collectServerFields, failFast, withMessages } from "./validate.ts";
 
 export class ServerConfig {
+  static parse(
+    raw: unknown,
+    context: string,
+    errors: ConfigError[],
+  ): ServerConfig | undefined {
+    const fields = collectServerFields(raw, context, errors);
+    return fields === undefined ? undefined : new ServerConfig(raw, context);
+  }
+
   static collectViolations(
     raw: unknown,
     context: string,
     errors: string[],
   ): ServerConfig | undefined {
-    const fields = collectServerMessages(raw, context, errors);
-    return fields === undefined ? undefined : new ServerConfig(raw, context);
+    return withMessages(
+      (collected) => ServerConfig.parse(raw, context, collected),
+      errors,
+    );
   }
 
   private readonly _name: string;
@@ -20,11 +31,9 @@ export class ServerConfig {
   private readonly _settings: unknown;
 
   constructor(raw: unknown, context: string) {
-    const collected: ConfigError[] = [];
-    const fields = collectServerFields(raw, context, collected);
-    if (fields === undefined) {
-      throw collected[0];
-    }
+    const fields = failFast((errors) =>
+      collectServerFields(raw, context, errors),
+    );
     this._name = fields.name;
     this._command = fields.command;
     this._extensionToLanguage = fields.extensionToLanguage;

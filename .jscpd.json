@@ -1,4 +1,5 @@
 {
+  "baseline": "./.jscpd-baseline.json",
   "followSymlinks": true,
   "format": ["typescript", "tsx", "javascript", "jsx"],
   "ignore": ["**/node_modules/**", "**/dist/**", "**/tests/fixtures/**"],

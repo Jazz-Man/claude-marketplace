@@ -56,6 +56,15 @@ export function withMessages<T>(
   return value;
 }
 
+export function failFast<T>(run: (errors: ConfigError[]) => T | undefined): T {
+  const collected: ConfigError[] = [];
+  const value = run(collected);
+  if (value === undefined) {
+    throw collected[0];
+  }
+  return value;
+}
+
 export function recordField(
   raw: unknown,
   context: string,
@@ -208,15 +217,4 @@ export function collectServerFields(
     name,
     settings: record.settings,
   };
-}
-
-export function collectServerMessages(
-  raw: unknown,
-  context: string,
-  errors: string[],
-): ServerFields | undefined {
-  return withMessages(
-    (collected) => collectServerFields(raw, context, collected),
-    errors,
-  );
 }

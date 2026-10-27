@@ -2,8 +2,8 @@ import { ConfigError, isNonEmptyString, isRecord } from "../guards/index.ts";
 import { ServerConfig } from "./ServerConfig.ts";
 import {
   arrayField,
-  collectServerFields,
   conflictingExtension,
+  failFast,
   recordField,
   withMessages,
 } from "./validate.ts";
@@ -84,9 +84,9 @@ function collectServers(
   }
   const servers: ServerConfig[] = [];
   for (const [index, entry] of rawServers.entries()) {
-    const fields = collectServerFields(entry, `servers[${index}]`, errors);
-    if (fields !== undefined) {
-      servers.push(new ServerConfig(entry, `servers[${index}]`));
+    const server = ServerConfig.parse(entry, `servers[${index}]`, errors);
+    if (server !== undefined) {
+      servers.push(server);
     }
   }
   const conflict = extensionConflictError(servers);
@@ -103,12 +103,7 @@ export class ProxyConfig {
   readonly servers: ServerConfig[];
 
   constructor(raw: unknown) {
-    const collected: ConfigError[] = [];
-    const servers = collectServers(raw, collected);
-    if (servers === undefined) {
-      throw collected[0];
-    }
-    this.servers = servers;
+    this.servers = failFast((errors) => collectServers(raw, errors));
   }
 
   static parse(raw: unknown): { config?: ProxyConfig; errors: string[] } {
