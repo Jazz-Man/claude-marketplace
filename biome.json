@@ -108,7 +108,10 @@
       "assist": {
         "enabled": false
       },
-      "includes": ["packages/cli-hook/tests/fixtures/**"],
+      "includes": [
+        "packages/cli-hook/tests/fixtures/**",
+        ".jscpd-baseline.json"
+      ],
       "linter": {
         "enabled": false
       }
