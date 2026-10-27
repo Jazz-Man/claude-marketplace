@@ -13,35 +13,14 @@ export type SkillHooksConfig = NonNullable<Settings["hooks"]>;
 export type HookMatcherGroup = SkillHooksConfig[string][number];
 export type DeclarativeHandler = NonNullable<HookMatcherGroup["hooks"]>[number];
 export type HookHandler = DeclarativeHandler;
-export type CommandHook = Extract<
+type HookOf<K extends DeclarativeHandler["type"]> = Extract<
   DeclarativeHandler,
-  {
-    type: "command";
-  }
+  { type: K }
 >;
-export type HttpHook = Extract<
-  DeclarativeHandler,
-  {
-    type: "http";
-  }
->;
-export type McpToolHook = Extract<
-  DeclarativeHandler,
-  {
-    type: "mcp_tool";
-  }
->;
-export type PromptHook = Extract<
-  DeclarativeHandler,
-  {
-    type: "prompt";
-  }
->;
-export type AgentHook = Extract<
-  DeclarativeHandler,
-  {
-    type: "agent";
-  }
->;
+export type CommandHook = HookOf<"command">;
+export type HttpHook = HookOf<"http">;
+export type McpToolHook = HookOf<"mcp_tool">;
+export type PromptHook = HookOf<"prompt">;
+export type AgentHook = HookOf<"agent">;
 
 export type SkillHooks = Partial<Record<HookEvent, HookMatcherGroup[]>>;

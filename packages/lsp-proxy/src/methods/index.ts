@@ -31,27 +31,24 @@ export interface MethodPolicy {
   readonly triggersPull: boolean;
 }
 
+function requestPolicy(capability: string, merge: MergePolicy): MethodPolicy {
+  return { ...NOTIFICATION_POLICY, capability, merge };
+}
+
+function singleResultPolicy(capability: string): MethodPolicy {
+  return {
+    ...NOTIFICATION_POLICY,
+    capability,
+    isSingleResult: true,
+    merge: "sequential",
+  };
+}
+
 export const METHODS: Record<string, MethodPolicy> = {
-  "codeAction/resolve": {
-    ...NOTIFICATION_POLICY,
-    capability: "codeActionProvider",
-    merge: "firstNonNull",
-  },
-  "textDocument/codeAction": {
-    ...NOTIFICATION_POLICY,
-    capability: "codeActionProvider",
-    merge: "array",
-  },
-  "textDocument/completion": {
-    ...NOTIFICATION_POLICY,
-    capability: "completionProvider",
-    merge: "completion",
-  },
-  "textDocument/definition": {
-    ...NOTIFICATION_POLICY,
-    capability: "definitionProvider",
-    merge: "array",
-  },
+  "codeAction/resolve": requestPolicy("codeActionProvider", "firstNonNull"),
+  "textDocument/codeAction": requestPolicy("codeActionProvider", "array"),
+  "textDocument/completion": requestPolicy("completionProvider", "completion"),
+  "textDocument/definition": requestPolicy("definitionProvider", "array"),
   "textDocument/didChange": {
     ...NOTIFICATION_POLICY,
     isDocumentNotification: true,
@@ -70,33 +67,16 @@ export const METHODS: Record<string, MethodPolicy> = {
     ...NOTIFICATION_POLICY,
     isDocumentNotification: true,
   },
-  "textDocument/documentSymbol": {
-    ...NOTIFICATION_POLICY,
-    capability: "documentSymbolProvider",
-    merge: "array",
-  },
-  "textDocument/formatting": {
-    ...NOTIFICATION_POLICY,
-    capability: "documentFormattingProvider",
-    isSingleResult: true,
-    merge: "sequential",
-  },
-  "textDocument/hover": {
-    ...NOTIFICATION_POLICY,
-    capability: "hoverProvider",
-    merge: "hover",
-  },
-  "textDocument/rangeFormatting": {
-    ...NOTIFICATION_POLICY,
-    capability: "documentRangeFormattingProvider",
-    isSingleResult: true,
-    merge: "sequential",
-  },
-  "textDocument/references": {
-    ...NOTIFICATION_POLICY,
-    capability: "referencesProvider",
-    merge: "array",
-  },
+  "textDocument/documentSymbol": requestPolicy(
+    "documentSymbolProvider",
+    "array",
+  ),
+  "textDocument/formatting": singleResultPolicy("documentFormattingProvider"),
+  "textDocument/hover": requestPolicy("hoverProvider", "hover"),
+  "textDocument/rangeFormatting": singleResultPolicy(
+    "documentRangeFormattingProvider",
+  ),
+  "textDocument/references": requestPolicy("referencesProvider", "array"),
 };
 
 export const METHOD_CAPABILITIES = [
