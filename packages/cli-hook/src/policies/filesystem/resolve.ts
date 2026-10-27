@@ -140,6 +140,10 @@ export function pathCandidates(arg: string): string[] {
   return pairCandidates(arg, pair);
 }
 
+export function inHome(absPath: string): boolean {
+  return HOME !== "" && (absPath === HOME || absPath.startsWith(`${HOME}/`));
+}
+
 export function inAllowedZone(
   absPath: string,
   context: PolicyContext,
@@ -147,7 +151,7 @@ export function inAllowedZone(
   if (SAFE_DEVICES.has(absPath)) {
     return true;
   }
-  if (HOME !== "" && (absPath === HOME || absPath.startsWith(`${HOME}/`))) {
+  if (inHome(absPath)) {
     return true;
   }
   const root = normalize(context.projectRoot);

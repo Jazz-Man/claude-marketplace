@@ -66,11 +66,11 @@ interface CandidateInput {
   intent: intents.Intent | null;
 }
 
-function unresolvedGate(candidate: string, arg: string): PolicyCheckResult {
-  if (unresolvedVar(candidate)) {
+function tokenGate(token: string, arg: string): PolicyCheckResult {
+  if (unresolvedVar(token)) {
     return deny(unresolvedVarReason(arg));
   }
-  if (tildeUser(candidate)) {
+  if (tildeUser(token)) {
     return deny(tildeUserReason(arg));
   }
   return null;
@@ -126,9 +126,7 @@ function classifiedDecision(input: CandidateInput): PolicyCheckResult {
 }
 
 function candidateDecision(input: CandidateInput): PolicyCheckResult {
-  return (
-    unresolvedGate(input.candidate, input.arg) ?? classifiedDecision(input)
-  );
+  return tokenGate(input.candidate, input.arg) ?? classifiedDecision(input);
 }
 
 function argCandidates(arg: string): string[] {
@@ -174,11 +172,9 @@ function severityUnion(hits: PolicyCheckResult[]): PolicyCheckResult {
 }
 
 function nameGate(name: string): PolicyCheckResult {
-  if (unresolvedVar(name)) {
-    return deny(unresolvedVarReason(name));
-  }
-  if (tildeUser(name)) {
-    return deny(tildeUserReason(name));
+  const tokenHit = tokenGate(name, name);
+  if (tokenHit !== null) {
+    return tokenHit;
   }
   if (isAbsolute(name)) {
     return deny(pathRuleReason(name));

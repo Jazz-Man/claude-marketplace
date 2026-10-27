@@ -1,6 +1,6 @@
 import { basename } from "node:path";
 
-import { HOME } from "./resolve.ts";
+import { HOME, inHome } from "./resolve.ts";
 
 const SECRETS_BASENAMES = new Set([
   "id_rsa",
@@ -117,7 +117,7 @@ function secretsTier(base: string): Tier | null {
 }
 
 function tierUnderHome(absPath: string, base: string): Tier | null {
-  if (HOME === "" || (absPath !== HOME && !absPath.startsWith(`${HOME}/`))) {
+  if (!inHome(absPath)) {
     return null;
   }
   return homeTier(absPath.slice(HOME.length + 1), base);
