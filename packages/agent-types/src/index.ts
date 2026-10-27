@@ -12,7 +12,7 @@ export type {
 export type SkillHooksConfig = NonNullable<Settings["hooks"]>;
 export type HookMatcherGroup = SkillHooksConfig[string][number];
 export type DeclarativeHandler = NonNullable<HookMatcherGroup["hooks"]>[number];
-export type HookHandler = DeclarativeHandler;
+
 type HookOf<K extends DeclarativeHandler["type"]> = Extract<
   DeclarativeHandler,
   { type: K }
