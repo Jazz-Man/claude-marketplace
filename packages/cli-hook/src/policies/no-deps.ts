@@ -2,156 +2,104 @@ import { baseName } from "../core/ast.ts";
 import { deny } from "../core/decision.ts";
 import type { Policy } from "../core/policy.ts";
 
-const MUTATIONS: Record<string, readonly (readonly string[])[]> = {
-  brew: [
-    ["install"],
-    ["reinstall"],
-    ["uninstall"],
-    ["remove"],
-    ["rm"],
-    ["upgrade"],
-    ["tap"],
-    ["untap"],
-    ["bundle"],
-    ["autoremove"],
-    ["services", "start"],
-    ["services", "stop"],
-    ["services", "restart"],
-    ["services", "run"],
-    ["services", "kill"],
-    ["services", "cleanup"],
+const JS_TOOLS = ["bun", "npm", "pnpm", "yarn"] as const;
+const PY_TOOLS = ["pip", "pip3"] as const;
+const ALWAYS_MUTATES = ["bunx", "npx", "uvx"] as const;
+
+const VERBS: Readonly<Record<string, readonly string[]>> = {
+  add: ["bun", "cargo", "deno", "pnpm", "poetry", "uv", "yarn"],
+  autoremove: ["brew"],
+  bundle: ["brew"],
+  cache: ["deno"],
+  ci: ["npm"],
+  create: ["npm"],
+  ddp: ["npm"],
+  dedupe: ["npm"],
+  "dist-tag": ["npm"],
+  dlx: ["pnpm", "yarn"],
+  download: [...PY_TOOLS],
+  exec: ["npm"],
+  fetch: ["cargo"],
+  generate: ["cargo"],
+  get: ["go"],
+  i: [...JS_TOOLS],
+  import: ["pnpm"],
+  init: [...JS_TOOLS],
+  inject: ["pipx"],
+  install: [
+    ...JS_TOOLS,
+    "brew",
+    "cargo",
+    "composer",
+    "deno",
+    "gem",
+    "go",
+    ...PY_TOOLS,
+    "pipx",
+    "poetry",
+    "rustup",
   ],
-  bun: [
-    ["add"],
-    ["remove"],
-    ["rm"],
-    ["install"],
-    ["i"],
-    ["update"],
-    ["upgrade"],
-  ],
-  bunx: [[]],
-  cargo: [
-    ["install"],
-    ["add"],
-    ["remove"],
-    ["rm"],
-    ["update"],
-    ["upgrade"],
-    ["fetch"],
-    ["generate"],
-  ],
-  composer: [
-    ["install"],
-    ["update"],
-    ["require"],
-    ["remove"],
-    ["self-update"],
-    ["selfupdate"],
-    ["global", "require"],
-    ["global", "update"],
-    ["global", "remove"],
-  ],
-  deno: [["add"], ["install"], ["cache"], ["upgrade"]],
-  gem: [["install"], ["uninstall"], ["update"]],
-  go: [["install"], ["get"], ["mod", "tidy"], ["mod", "download"]],
-  npm: [
-    ["install"],
-    ["i"],
-    ["install-test"],
-    ["ci"],
-    ["reinstall"],
-    ["uninstall"],
-    ["un"],
-    ["remove"],
-    ["rm"],
-    ["r"],
-    ["update"],
-    ["up"],
-    ["upgrade"],
-    ["link"],
-    ["ln"],
-    ["dedupe"],
-    ["ddp"],
-    ["dist-tag"],
-    ["exec"],
-    ["create"],
-    ["init"],
-  ],
-  npx: [[]],
-  pip: [["install"], ["uninstall"], ["download"]],
-  pip3: [["install"], ["uninstall"], ["download"]],
-  pipx: [["install"], ["upgrade"], ["uninstall"], ["inject"], ["reinstall"]],
-  pnpm: [
-    ["add"],
-    ["remove"],
-    ["rm"],
-    ["install"],
-    ["i"],
-    ["update"],
-    ["up"],
-    ["upgrade"],
-    ["dlx"],
-    ["import"],
-    ["link"],
-  ],
-  poetry: [
-    ["add"],
-    ["remove"],
-    ["install"],
-    ["update"],
-    ["lock"],
-    ["self", "update"],
-  ],
-  python: [
-    ["-m", "pip", "install"],
-    ["-m", "pip", "uninstall"],
-    ["-m", "pip", "download"],
-  ],
-  python3: [
-    ["-m", "pip", "install"],
-    ["-m", "pip", "uninstall"],
-    ["-m", "pip", "download"],
-  ],
-  rustup: [["install"], ["update"], ["uninstall"]],
-  swift: [
-    ["package", "install"],
-    ["package", "update"],
-    ["package", "resolve"],
-  ],
-  uv: [
-    ["add"],
-    ["remove"],
-    ["sync"],
-    ["lock"],
-    ["upgrade"],
-    ["pip", "install"],
-    ["pip", "uninstall"],
-    ["pip", "download"],
-    ["tool", "install"],
-    ["tool", "uninstall"],
-    ["tool", "upgrade"],
-    ["self", "update"],
-  ],
-  uvx: [[]],
-  yarn: [
-    ["add"],
-    ["remove"],
-    ["install"],
-    ["upgrade"],
-    ["up"],
-    ["dlx"],
-    ["link"],
-    ["set", "version"],
-    ["global", "add"],
-    ["global", "remove"],
-    ["global", "install"],
-    ["global", "upgrade"],
-  ],
+  "install-test": ["npm"],
+  link: [...JS_TOOLS, "brew"],
+  ln: ["npm"],
+  lock: ["poetry", "uv"],
+  r: ["npm"],
+  reinstall: ["brew", "npm", "pipx"],
+  remove: [...JS_TOOLS, "brew", "cargo", "composer", "poetry", "uv"],
+  require: ["composer"],
+  rm: ["brew", "bun", "cargo", "npm", "pnpm"],
+  "self-update": ["composer"],
+  selfupdate: ["composer"],
+  sync: ["uv"],
+  tap: ["brew"],
+  un: ["npm"],
+  uninstall: [...PY_TOOLS, "brew", "gem", "npm", "pipx", "rustup"],
+  untap: ["brew"],
+  up: ["npm", "pnpm", "yarn"],
+  update: [...JS_TOOLS, "cargo", "composer", "gem", "poetry", "rustup"],
+  upgrade: [...JS_TOOLS, "brew", "cargo", "deno", "pipx", "uv"],
 };
 
+const SEQUENCE_GROUPS: readonly [
+  string,
+  readonly string[],
+  readonly string[],
+][] = [
+  [
+    "brew",
+    ["services"],
+    ["start", "stop", "restart", "run", "kill", "cleanup"],
+  ],
+  ["composer", ["global"], ["remove", "require", "update"]],
+  ["go", ["mod"], ["download", "tidy"]],
+  ["poetry", ["self"], ["update"]],
+  ["python", ["-m", "pip"], ["download", "install", "uninstall"]],
+  ["python3", ["-m", "pip"], ["download", "install", "uninstall"]],
+  ["swift", ["package"], ["install", "resolve", "update"]],
+  ["uv", ["pip"], ["download", "install", "uninstall"]],
+  ["uv", ["tool"], ["install", "uninstall", "upgrade"]],
+  ["uv", ["self"], ["update"]],
+  ["yarn", ["global"], ["add", "install", "remove", "upgrade"]],
+  ["yarn", ["set"], ["version"]],
+];
+
+const MUTATIONS = new Map<string, readonly (readonly string[])[]>();
+for (const [verb, tools] of Object.entries(VERBS)) {
+  for (const tool of tools) {
+    MUTATIONS.set(tool, [...(MUTATIONS.get(tool) ?? []), [verb]]);
+  }
+}
+for (const tool of ALWAYS_MUTATES) {
+  MUTATIONS.set(tool, [[]]);
+}
+for (const [tool, scope, actions] of SEQUENCE_GROUPS) {
+  for (const action of actions) {
+    MUTATIONS.set(tool, [...(MUTATIONS.get(tool) ?? []), [...scope, action]]);
+  }
+}
+
 function mutates(name: string, args: string[]): boolean {
-  const prefixes = MUTATIONS[baseName(name.toLowerCase())];
+  const prefixes = MUTATIONS.get(baseName(name.toLowerCase()));
   if (prefixes === undefined) {
     return false;
   }

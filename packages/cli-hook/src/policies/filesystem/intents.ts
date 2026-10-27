@@ -7,45 +7,52 @@ function isAssignment(token: string): boolean {
   return Object.keys(parseEnv(token)).length > 0;
 }
 
-const INTENTS: Record<string, Intent> = {
-  cat: "read",
-  chmod: "write",
-  chown: "write",
-  cp: "write",
-  dd: "write",
-  df: "read",
-  diff: "read",
-  du: "read",
-  file: "read",
-  find: "read",
-  grep: "read",
-  head: "read",
-  install: "write",
-  less: "read",
-  ln: "write",
-  ls: "read",
-  md5sum: "read",
-  mkdir: "write",
-  more: "read",
-  mv: "write",
-  perl: "read",
-  rg: "read",
-  rm: "delete",
-  rmdir: "delete",
-  rsync: "write",
-  sed: "read",
-  shasum: "read",
-  shred: "delete",
-  stat: "read",
-  tail: "read",
-  tar: "write",
-  tee: "write",
-  touch: "write",
-  tree: "read",
-  truncate: "write",
-  unlink: "delete",
-  wc: "read",
+const INTENT_GROUPS: Readonly<Record<Intent, readonly string[]>> = {
+  delete: ["rm", "rmdir", "shred", "unlink"],
+  read: [
+    "cat",
+    "df",
+    "diff",
+    "du",
+    "file",
+    "find",
+    "grep",
+    "head",
+    "less",
+    "ls",
+    "md5sum",
+    "more",
+    "perl",
+    "rg",
+    "sed",
+    "shasum",
+    "stat",
+    "tail",
+    "tree",
+    "wc",
+  ],
+  write: [
+    "chmod",
+    "chown",
+    "cp",
+    "dd",
+    "install",
+    "ln",
+    "mkdir",
+    "mv",
+    "rsync",
+    "tar",
+    "tee",
+    "touch",
+    "truncate",
+  ],
 };
+
+const INTENTS = new Map<string, Intent>(
+  (Object.entries(INTENT_GROUPS) as [Intent, readonly string[]][]).flatMap(
+    ([intent, names]) => names.map((name) => [name, intent] as const),
+  ),
+);
 
 const NETWORK_TOOLS = new Set([
   "curl",
@@ -72,7 +79,7 @@ function resolveToken(
   intent: Intent | null;
   network: string | null;
 } {
-  const known = INTENTS[ast.baseName(token)];
+  const known = INTENTS.get(ast.baseName(token));
   if (known !== undefined) {
     return {
       intent: known,
@@ -157,7 +164,7 @@ function adjustForFlags(
 
 export function intentOf(name: string, args: string[]): Unwrapped {
   const base = ast.baseName(name);
-  const intent: Intent | null = INTENTS[base] ?? null;
+  const intent: Intent | null = INTENTS.get(base) ?? null;
   let network: string | null = null;
   if (NETWORK_TOOLS.has(base)) {
     network = base;

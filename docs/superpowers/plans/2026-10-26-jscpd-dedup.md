@@ -55,14 +55,23 @@ Gates: assertion strength preserved (lint-batch review standard — no expect lo
 - Owner commits at every stop point; agents git-read-only.
 - TDD where behavior could shift; refactors are behavior-identical with existing tests green. Zero new comments. Biome preset "all", caps 300/50. No dependency changes. KISS: locals before helpers, helpers before modules, third-instance rule.
 
+## AMENDMENT 2026-10-27 — terminal policy reversed by owner: FIX ABSOLUTELY EVERYTHING
+
+The ignore path is DEAD: no new ignore entries (node_modules/dist only), goal = `check_current_directory` reports **0 clones** with zero project ignores. ignore-proposal.md §2 is void (kept as history). Every remaining row (135 at amendment time) gets a CODE fix across new task waves:
+
+- Wave A (tables): data tables → compact single-expression forms (split-strings; mini-DSL parser for nested tables). Dissolves: UNCONDITIONAL/MUTATIONS/INTENTS/INTERPRETERS/METHODS/agent-types intra rows + git-readonly↔fixtures table rows (both sides compact).
+- Wave B (mirrors): src↔test mirrors become derived — tests import src constants/shapes instead of restating (framing↔fixture, payload↔run-hook, policy~helpers, main~utils, merge~merge.test, stub-server twins). Accepted cost (owner direction): weaker pin independence on those shapes.
+- Wave C (src twins): the 11 architectural pairs get real merges/extractions (proxy-server↔proxy, downstream↔proxy, capabilities~merge, boundary~proxy, router~sync-extensions, ProxyConfig~validate, resolve~tiers, policy~resolve). Behavior-identity gated by the full suites.
+- Wave D (test mass): all remaining intra/inter test pairs dissolve via it.each tables and shared helpers at whatever granularity needed (no third-instance cap now — the goal is dissolution; assertion parity remains the cardinal rule).
+- Wave E (loop): rescan after every wave; newly revealed pairs spawn follow-up tasks until a flat 0. Owner calibration (2026-10-27): minimize to the limit, zero where HONEST — a pair killable only by harming readability/format sanity gets parked with a written reason instead of forced. Owner exception (2026-10-27, later the same day): test fixtures are DATA by definition and the one sanctioned ignore — a single `**/tests/fixtures/**` entry in .jscpd.json; fixture files stay plain original array literals, no reader machinery, no restructuring.
+
 ## Verification
 
-1. Duplication loop via **jscpd-mcp** (owner directive 2026-10-26, replaces all CLI runs): `check_current_directory` after every change batch — 0 clones outside documented ignores; `get_file_clones(path)` targets each refactor; `get_statistics` for the by-kind record.
+1. Duplication loop via **jscpd-mcp** (owner directive 2026-10-26, replaces all CLI runs): `check_current_directory` after every change batch — **0 clones, zero project ignore entries**; `get_file_clones(path)` targets each refactor; `get_statistics` for the by-kind record.
 2. `bun test` (repo root) green; `rtk proxy biome check` clean; `bun check --strict` clean.
 3. `bun run build-bin` in packages/lsp-proxy and packages/cli-hook (whenever src touched).
 4. Live LSP smoke: open the previously-flagged files — jscpd diagnostics stream empty on them.
-5. Triage doc: every one of the 159 pairs has a row; every ignore entry has a reason.
-6. Exploration/navigation briefs use **grepai-api** (`grepai_search` NL queries, refs tracing) for locating code by intent — complements LSP symbol navigation.
+5. Exploration/navigation briefs use **grepai-api** (`grepai_search` NL queries, refs tracing) for locating code by intent — complements LSP symbol navigation.
 
 ## Post-approval admin
 

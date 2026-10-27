@@ -5,70 +5,30 @@ import { deny } from "../core/decision.ts";
 import type { Policy } from "../core/policy.ts";
 import { SHARED_WRAPPERS } from "../core/wrappers.ts";
 
-const INTERPRETERS: Record<
-  string,
-  {
-    longs: readonly string[];
-    shorts: readonly string[];
-  }
-> = {
-  bash: {
-    longs: [],
-    shorts: ["c"],
-  },
-  bun: {
-    longs: ["--eval"],
-    shorts: ["e"],
-  },
-  dash: {
-    longs: [],
-    shorts: ["c"],
-  },
-  fish: {
-    longs: [],
-    shorts: ["c"],
-  },
-  ksh: {
-    longs: [],
-    shorts: ["c"],
-  },
-  node: {
-    longs: ["--eval", "--print"],
-    shorts: ["e", "p"],
-  },
-  osascript: {
-    longs: [],
-    shorts: ["e"],
-  },
-  perl: {
-    longs: [],
-    shorts: ["e", "E"],
-  },
-  php: {
-    longs: [],
-    shorts: ["r"],
-  },
-  python: {
-    longs: [],
-    shorts: ["c"],
-  },
-  python3: {
-    longs: [],
-    shorts: ["c"],
-  },
-  ruby: {
-    longs: [],
-    shorts: ["e"],
-  },
-  sh: {
-    longs: [],
-    shorts: ["c"],
-  },
-  zsh: {
-    longs: [],
-    shorts: ["c"],
-  },
-};
+interface InterpreterFlags {
+  longs: readonly string[];
+  shorts: readonly string[];
+}
+
+const FLAG_C = ["c"] as const;
+const FLAG_E = ["e"] as const;
+
+const INTERPRETERS = new Map<string, InterpreterFlags>([
+  ["bash", { longs: [], shorts: FLAG_C }],
+  ["bun", { longs: ["--eval"], shorts: FLAG_E }],
+  ["dash", { longs: [], shorts: FLAG_C }],
+  ["fish", { longs: [], shorts: FLAG_C }],
+  ["ksh", { longs: [], shorts: FLAG_C }],
+  ["node", { longs: ["--eval", "--print"], shorts: ["e", "p"] }],
+  ["osascript", { longs: [], shorts: FLAG_E }],
+  ["perl", { longs: [], shorts: ["e", "E"] }],
+  ["php", { longs: [], shorts: ["r"] }],
+  ["python", { longs: [], shorts: FLAG_C }],
+  ["python3", { longs: [], shorts: FLAG_C }],
+  ["ruby", { longs: [], shorts: FLAG_E }],
+  ["sh", { longs: [], shorts: FLAG_C }],
+  ["zsh", { longs: [], shorts: FLAG_C }],
+]);
 
 const SHORT_FLAG_CLUSTER = /^-[A-Za-z]+$/u;
 
@@ -77,7 +37,7 @@ const EVAL_SUBCOMMANDS = new Set(["deno"]);
 const WRAPPERS = new Set([...SHARED_WRAPPERS, "find"]);
 
 function isInlineArg(lname: string, arg: string): boolean {
-  const table = INTERPRETERS[lname];
+  const table = INTERPRETERS.get(lname);
   if (table === undefined) {
     return false;
   }
@@ -117,7 +77,7 @@ function wrapperHeredocViolates(
   const wrapped = args.find(
     (token) =>
       !(token.startsWith("-") || isAssignment(token)) &&
-      INTERPRETERS[ast.baseName(token.toLowerCase())] !== undefined,
+      INTERPRETERS.has(ast.baseName(token.toLowerCase())),
   );
   return wrapped !== undefined && heredocFed(args, redirects);
 }
@@ -130,7 +90,7 @@ function interpreterViolates(
   if (EVAL_SUBCOMMANDS.has(name)) {
     return args[0] === "eval";
   }
-  if (INTERPRETERS[name] === undefined) {
+  if (!INTERPRETERS.has(name)) {
     return false;
   }
   if (heredocFed(args, redirects)) {
@@ -155,9 +115,7 @@ function wrapperViolates(lname: string, args: readonly string[]): boolean {
     if (EVAL_SUBCOMMANDS.has(candidate)) {
       return next === "eval";
     }
-    return (
-      INTERPRETERS[candidate] !== undefined && isInlineArg(candidate, next)
-    );
+    return INTERPRETERS.has(candidate) && isInlineArg(candidate, next);
   });
 }
 
