@@ -11,13 +11,12 @@ import {
   request,
   startProxy,
   stub,
+  TS,
   writeConfig,
 } from "./helpers/proxy-harness.ts";
 import { waitFor } from "./helpers/wait.ts";
 
 afterEach(cleanupTempConfigs);
-
-const TS = { ".ts": "typescript" };
 
 const SPAWNED_LINE = /spawned (?<name>\S+) pid=(?<pid>\d+)/gu;
 
@@ -53,26 +52,45 @@ const initRequest = (id: number): JsonRpcMessage & { id: number } => ({
   params: { capabilities: {} },
 });
 
-describe("initialize failure", () => {
-  it("spawn failure: replies an internal error to the client instead of hanging", async () => {
-    const configPath = await writeConfig([BROKEN]);
-    const proxy = startProxy(configPath);
-    const response = await request(proxy, initRequest(1));
-    expect(response?.error?.code).toBe(LspErrorCode.InternalError);
-    expect(response?.error?.message).toContain("failed to start servers");
-    await proxy.stop();
-  }, 20_000);
+const bootFailure = async (servers: unknown[], timeoutMs?: number) => {
+  const configPath = await writeConfig(servers);
+  const proxy = startProxy(configPath);
+  const response = await request(proxy, initRequest(1), timeoutMs);
+  return { proxy, response };
+};
 
-  it("boot hang: a silent server's initialize wait times out and errors to the client", async () => {
-    const configPath = await writeConfig([
-      stub("silent", { hangInitialize: true }, TS),
-    ]);
-    const proxy = startProxy(configPath);
-    const response = await request(proxy, initRequest(1), 35_000);
-    expect(response?.error?.code).toBe(LspErrorCode.InternalError);
-    expect(response?.error?.message).toContain("initialize timeout");
-    await proxy.stop();
-  }, 40_000);
+const itBootFailure = (
+  title: string,
+  servers: unknown[],
+  fragment: string,
+  timeouts: { it: number; boot?: number },
+) => {
+  it(
+    title,
+    async () => {
+      const { proxy, response } = await bootFailure(servers, timeouts.boot);
+      expect(response?.error?.code).toBe(LspErrorCode.InternalError);
+      expect(response?.error?.message).toContain(fragment);
+      await proxy.stop();
+    },
+    timeouts.it,
+  );
+};
+
+describe("initialize failure", () => {
+  itBootFailure(
+    "spawn failure: replies an internal error to the client instead of hanging",
+    [BROKEN],
+    "failed to start servers",
+    { it: 20_000 },
+  );
+
+  itBootFailure(
+    "boot hang: a silent server's initialize wait times out and errors to the client",
+    [stub("silent", { hangInitialize: true }, TS)],
+    "initialize timeout",
+    { boot: 35_000, it: 40_000 },
+  );
 
   it("server-loop isolation: a throwing server frame does not kill the read loop", async () => {
     const proxy = await boot([
@@ -87,9 +105,10 @@ describe("initialize failure", () => {
 
 describe("transactional boot", () => {
   it("mixed boot: drops the healthy child when a sibling fails to spawn", async () => {
-    const configPath = await writeConfig([stub("healthy", {}, TS), BROKEN]);
-    const proxy = startProxy(configPath);
-    const response = await request(proxy, initRequest(1));
+    const { proxy, response } = await bootFailure([
+      stub("healthy", {}, TS),
+      BROKEN,
+    ]);
     expect(response?.error?.code).toBe(LspErrorCode.InternalError);
     const pid = spawnedPids(proxy.stderr(), "healthy").at(0);
     expect(pid).toBeDefined();
@@ -101,9 +120,7 @@ describe("transactional boot", () => {
   }, 15_000);
 
   it("failed boot: shutdown still receives a null reply", async () => {
-    const configPath = await writeConfig([BROKEN]);
-    const proxy = startProxy(configPath);
-    const response = await request(proxy, initRequest(1));
+    const { proxy, response } = await bootFailure([BROKEN]);
     expect(response?.error?.code).toBe(LspErrorCode.InternalError);
     const shutdown = await request(
       proxy,

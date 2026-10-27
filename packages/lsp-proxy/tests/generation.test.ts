@@ -2,10 +2,9 @@ import { describe, expect, it } from "bun:test";
 import { join } from "node:path";
 
 import type { ServerConfig } from "../src/config.ts";
-import { DocumentStore } from "../src/docstore.ts";
 import { Downstream } from "../src/downstream.ts";
-import { RequestBroker, type RequestHost } from "../src/proxy-requests.ts";
 import { type ProxyHost, ServerSide } from "../src/proxy-server.ts";
+import { makeHostFixture } from "./helpers/proxy-harness.ts";
 import { waitFor } from "./helpers/wait.ts";
 
 const STUB = join(import.meta.dir, "fixtures", "stub-server.ts");
@@ -24,41 +23,17 @@ interface Fixture {
 }
 
 const makeFixture = (): Fixture => {
-  const logs: string[] = [];
   const replies: [unknown, unknown][] = [];
-  const servers = new Map<string, Downstream>();
-  const requestHost: RequestHost = {
-    config: { servers: [] },
-    log: (line) => {
-      logs.push(line);
+  const { host, logs } = makeHostFixture({
+    dropServer: (servers, server) => {
+      servers.get(server)?.kill();
+      servers.delete(server);
     },
-    notify: () => undefined,
-    replyErrorTo: () => undefined,
     replyTo: (id, result) => {
       replies.push([id, result]);
     },
-    servers,
-  };
-  return {
-    host: {
-      broker: new RequestBroker(requestHost),
-      clientParams: {},
-      config: { servers: [] },
-      docs: new DocumentStore(),
-      dropServer: (server) => {
-        servers.get(server)?.kill();
-        servers.delete(server);
-      },
-      isStopped: () => false,
-      log: (line) => {
-        logs.push(line);
-      },
-      servers,
-      write: () => undefined,
-    },
-    logs,
-    replies,
-  };
+  });
+  return { host, logs, replies };
 };
 
 const childless = (name: string): Downstream =>

@@ -64,22 +64,25 @@ describe("ServerConfig optional-fields validation", () => {
 });
 
 describe("ProxyConfig validation", () => {
-  it("rejects duplicate server names", () => {
-    expect(
-      () =>
-        new ProxyConfig({
-          servers: [
-            serverEntry("dup", "a", { ".ts": "ts" }),
-            serverEntry("dup", "b", { ".ts": "ts" }),
-          ],
-        }),
-    ).toThrow("duplicate");
-  });
-
-  it("rejects extension mapped to conflicting languages", () => {
-    expect(
-      () => new ProxyConfig(serverPair("typescript", "javascript")),
-    ).toThrow("conflict");
+  it.each([
+    [
+      "rejects duplicate server names",
+      {
+        servers: [
+          serverEntry("dup", "a", { ".ts": "ts" }),
+          serverEntry("dup", "b", { ".ts": "ts" }),
+        ],
+      },
+      "duplicate",
+    ],
+    [
+      "rejects extension mapped to conflicting languages",
+      serverPair("typescript", "javascript"),
+      "conflict",
+    ],
+    ["rejects empty servers array", { servers: [] }, "not be empty"],
+  ])("%s", (_, raw, expected) => {
+    expect(() => new ProxyConfig(raw)).toThrow(expected);
   });
 
   it("allows same extension mapped to same language", () => {
@@ -90,9 +93,5 @@ describe("ProxyConfig validation", () => {
 
   it("rejects non-object server entry", () => {
     expect(() => new ProxyConfig({ servers: [42] })).toThrow(ConfigError);
-  });
-
-  it("rejects empty servers array", () => {
-    expect(() => new ProxyConfig({ servers: [] })).toThrow("not be empty");
   });
 });

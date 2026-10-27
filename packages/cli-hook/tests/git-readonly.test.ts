@@ -19,11 +19,18 @@ describe("git-readonly policy", () => {
     expect(check(command)).toBeNull();
   });
 
-  it("the hook deny carries the dedicated hook reason", () => {
-    expect(reasonOf(check("git hook run pre-commit"))).toBe(GIT_HOOK_REASON);
-  });
-
-  it("write ops carry the generic read-only reason", () => {
-    expect(reasonOf(check("git push"))).toBe(GIT_READONLY_REASON);
+  it.each([
+    [
+      "the hook deny carries the dedicated hook reason",
+      "git hook run pre-commit",
+      GIT_HOOK_REASON,
+    ],
+    [
+      "write ops carry the generic read-only reason",
+      "git push",
+      GIT_READONLY_REASON,
+    ],
+  ])("%s", (_, command, reason) => {
+    expect(reasonOf(check(command))).toBe(reason);
   });
 });

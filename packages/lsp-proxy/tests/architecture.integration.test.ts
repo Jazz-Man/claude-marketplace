@@ -6,6 +6,7 @@ import {
   cleanupTempConfigs,
   request,
   stub,
+  TS,
   writeConfig,
 } from "./helpers/proxy-harness.ts";
 import { waitFor } from "./helpers/wait.ts";
@@ -13,7 +14,6 @@ import { waitFor } from "./helpers/wait.ts";
 afterEach(cleanupTempConfigs);
 
 const MAIN = join(import.meta.dir, "..", "src", "main.ts");
-const TS = { ".ts": "typescript" };
 
 describe("architecture", () => {
   it("regression pin: client stdin close exits 0", async () => {

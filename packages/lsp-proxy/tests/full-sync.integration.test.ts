@@ -1,15 +1,14 @@
 import { describe, expect, it } from "bun:test";
 
 import {
-  boot,
   openDocument,
   type ProxyHandle,
   publications,
   stub,
+  TS,
+  withProxy,
 } from "./helpers/proxy-harness.ts";
 import { waitFor } from "./helpers/wait.ts";
-
-const TS = { ".ts": "typescript" };
 
 const CHANGE_PARAMS = {
   contentChanges: [
@@ -34,29 +33,32 @@ const echoes = (proxy: ProxyHandle) =>
     };
   });
 
-const bootEchoPair = async (): Promise<ProxyHandle> =>
-  boot([
-    stub("full1", { echoDocuments: true, sync: 1 }, TS),
-    stub("delta", { echoDocuments: true }, TS),
-  ]);
+const echoPair = (run: (proxy: ProxyHandle) => Promise<void>) =>
+  withProxy(
+    [
+      stub("full1", { echoDocuments: true, sync: 1 }, TS),
+      stub("delta", { echoDocuments: true }, TS),
+    ],
+    run,
+  );
 
 describe("full-sync adaptation", () => {
   it("didOpen: forwards the original frame to full-sync and incremental stubs alike", async () => {
-    const proxy = await bootEchoPair();
-    expect(proxy.stderr()).not.toContain("rejecting server full1");
-    openDocument(proxy, "file:///proj/sample.ts", "typescript");
-    await waitFor(() => echoes(proxy).length >= 2);
-    for (const echo of echoes(proxy)) {
-      expect(echo.method).toBe("textDocument/didOpen");
-      expect(echo.params).toEqual({
-        textDocument: {
-          languageId: "typescript",
-          text: "const x = 1;\n",
-          uri: "file:///proj/sample.ts",
-        },
-      });
-    }
-    await proxy.stop();
+    await echoPair(async (proxy) => {
+      expect(proxy.stderr()).not.toContain("rejecting server full1");
+      openDocument(proxy, "file:///proj/sample.ts", "typescript");
+      await waitFor(() => echoes(proxy).length >= 2);
+      for (const echo of echoes(proxy)) {
+        expect(echo.method).toBe("textDocument/didOpen");
+        expect(echo.params).toEqual({
+          textDocument: {
+            languageId: "typescript",
+            text: "const x = 1;\n",
+            uri: "file:///proj/sample.ts",
+          },
+        });
+      }
+    });
   });
 
   it.each([
@@ -74,21 +76,21 @@ describe("full-sync adaptation", () => {
       CHANGE_PARAMS,
     ],
   ])("%s", async (_title, name, expected) => {
-    const proxy = await bootEchoPair();
-    openDocument(proxy, "file:///proj/sample.ts", "typescript");
-    await waitFor(() => echoes(proxy).length >= 2);
-    proxy.push({
-      jsonrpc: "2.0",
-      method: "textDocument/didChange",
-      params: CHANGE_PARAMS,
+    await echoPair(async (proxy) => {
+      openDocument(proxy, "file:///proj/sample.ts", "typescript");
+      await waitFor(() => echoes(proxy).length >= 2);
+      proxy.push({
+        jsonrpc: "2.0",
+        method: "textDocument/didChange",
+        params: CHANGE_PARAMS,
+      });
+      await waitFor(() => echoes(proxy).length >= 4);
+      const byName = new Map(
+        echoes(proxy)
+          .slice(2)
+          .map((echo) => [echo.name, echo]),
+      );
+      expect(byName.get(name)?.params).toEqual(expected);
     });
-    await waitFor(() => echoes(proxy).length >= 4);
-    const byName = new Map(
-      echoes(proxy)
-        .slice(2)
-        .map((echo) => [echo.name, echo]),
-    );
-    expect(byName.get(name)?.params).toEqual(expected);
-    await proxy.stop();
   });
 });

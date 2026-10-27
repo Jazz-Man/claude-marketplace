@@ -60,33 +60,29 @@ describe("runHook (unit — routing)", () => {
   });
 
   it("ignores non-Bash tools and non-PreToolUse events", () => {
-    expect(
-      runHook({
-        ...bashPayload("git push"),
-        tool_name: "Read",
-      }),
-    ).toBeNull();
-    expect(
-      runHook({
-        ...bashPayload("git push"),
-        hook_event_name: "PostToolUse",
-      }),
-    ).toBeNull();
+    for (const override of [
+      { tool_name: "Read" },
+      { hook_event_name: "PostToolUse" },
+    ]) {
+      expect(runHook({ ...bashPayload("git push"), ...override })).toBeNull();
+    }
   });
 });
 
 describe("runHook (unit — fail-open)", () => {
   it("fails open on non-object input and missing/empty command", () => {
-    expect(runHook("{not json")).toBeNull();
-    expect(runHook(42)).toBeNull();
-    expect(
-      runHook({
+    for (const input of [
+      "{not json",
+      42,
+      {
         hook_event_name: "PreToolUse",
         tool_input: {},
         tool_name: "Bash",
-      }),
-    ).toBeNull();
-    expect(runHook(bashPayload(""))).toBeNull();
+      },
+      bashPayload(""),
+    ]) {
+      expect(runHook(input)).toBeNull();
+    }
   });
 });
 

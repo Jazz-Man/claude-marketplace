@@ -17,23 +17,25 @@ describe("toHookInput", () => {
   });
 
   it("keeps a defined-but-empty command (not undefined)", () => {
-    const parsed = toHookInput({
-      ...PAYLOAD,
-      tool_input: {
-        command: "",
-      },
-    });
-    expect(parsed?.command).toBe("");
+    expect(
+      toHookInput({
+        ...PAYLOAD,
+        tool_input: {
+          command: "",
+        },
+      })?.command,
+    ).toBe("");
   });
 
   it("treats a non-string command field as absent", () => {
-    const parsed = toHookInput({
-      ...PAYLOAD,
-      tool_input: {
-        command: 42,
-      },
-    });
-    expect(parsed?.command).toBeUndefined();
+    expect(
+      toHookInput({
+        ...PAYLOAD,
+        tool_input: {
+          command: 42,
+        },
+      })?.command,
+    ).toBeUndefined();
   });
 });
 

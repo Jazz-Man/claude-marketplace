@@ -78,50 +78,42 @@ describe("encodeFrame + createDecoder", () => {
 });
 
 describe("createDecoder garbage resync", () => {
-  it("resyncs after garbage that precedes a valid frame", () => {
-    const received = collect();
-    const garbage = new TextEncoder().encode(
+  it.each([
+    [
+      "resyncs after garbage that precedes a valid frame",
       `not-a-header\r\njunk${HEADER_SEPARATOR}`,
-    );
-    received.push(garbage);
-    received.push(encodeFrame(SAMPLE));
-    expect(received.messages).toEqual([SAMPLE]);
-    expect(received.errors.length).toBeGreaterThan(0);
-  });
-
-  it("reports a non-object JSON body instead of delivering it", () => {
-    const received = collect();
-    received.push(rawFrame("3"));
-    received.push(rawFrame("[1, 2]"));
-    received.push(encodeFrame(SAMPLE));
-    expect(received.messages).toEqual([SAMPLE]);
-    expect(received.errors).toEqual([
-      "non-object body: 3",
-      "non-object body: [1, 2]",
-    ]);
-  });
-
-  it("reports an unparseable JSON body instead of delivering it", () => {
-    const received = collect();
-    received.push(rawFrame('{"broken'));
-    received.push(rawFrame("]not json["));
-    received.push(encodeFrame(SAMPLE));
-    expect(received.messages).toEqual([SAMPLE]);
-    expect(received.errors).toEqual([
-      'unparseable body: {"broken',
-      "unparseable body: ]not json[",
-    ]);
-  });
-
-  it("resyncs past a malformed Content-Length value without hanging", () => {
-    const received = collect();
-    const garbage = new TextEncoder().encode(
+    ],
+    [
+      "resyncs past a malformed Content-Length value without hanging",
       `Content-Length: abc${HEADER_SEPARATOR}`,
-    );
-    received.push(garbage);
+    ],
+  ])("%s", (_, garbage) => {
+    const received = collect();
+    received.push(new TextEncoder().encode(garbage));
     received.push(encodeFrame(SAMPLE));
     expect(received.messages).toEqual([SAMPLE]);
     expect(received.errors.length).toBeGreaterThan(0);
+  });
+
+  it.each([
+    [
+      "reports a non-object JSON body instead of delivering it",
+      ["3", "[1, 2]"],
+      ["non-object body: 3", "non-object body: [1, 2]"],
+    ],
+    [
+      "reports an unparseable JSON body instead of delivering it",
+      ['{"broken', "]not json["],
+      ['unparseable body: {"broken', "unparseable body: ]not json["],
+    ],
+  ])("%s", (_, bodies, errors) => {
+    const received = collect();
+    for (const body of bodies) {
+      received.push(rawFrame(body));
+    }
+    received.push(encodeFrame(SAMPLE));
+    expect(received.messages).toEqual([SAMPLE]);
+    expect(received.errors).toEqual(errors);
   });
 
   it("survives garbage with no valid frame behind it", () => {

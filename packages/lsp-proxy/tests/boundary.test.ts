@@ -8,20 +8,24 @@ import {
 } from "../src/boundary.ts";
 
 describe("uriOf", () => {
-  it("extracts uri from textDocument", () => {
-    expect(uriOf({ textDocument: { uri: "file:///test.ts" } })).toBe(
+  it.each([
+    [
+      "extracts uri from textDocument",
+      { textDocument: { uri: "file:///test.ts" } },
       "file:///test.ts",
-    );
-  });
-
-  it("extracts uri from top-level uri field", () => {
-    expect(uriOf({ uri: "file:///other.ts" })).toBe("file:///other.ts");
-  });
-
-  it("falls back to top-level uri when textDocument is malformed", () => {
-    expect(uriOf({ textDocument: 42, uri: "file:///fallback.ts" })).toBe(
+    ],
+    [
+      "extracts uri from top-level uri field",
+      { uri: "file:///other.ts" },
+      "file:///other.ts",
+    ],
+    [
+      "falls back to top-level uri when textDocument is malformed",
+      { textDocument: 42, uri: "file:///fallback.ts" },
       "file:///fallback.ts",
-    );
+    ],
+  ])("%s", (_, params, expected) => {
+    expect(uriOf(params)).toBe(expected);
   });
 
   it.each([
@@ -47,20 +51,36 @@ describe("textDocumentOf", () => {
 });
 
 describe("changesOf", () => {
-  it("extracts valid content changes", () => {
-    const changes = changesOf({
-      contentChanges: [{ text: "new content" }],
-    });
-    expect(changes).toEqual([{ text: "new content" }]);
-  });
+  const range = {
+    end: { character: 2, line: 1 },
+    start: { character: 0, line: 0 },
+  };
 
-  it("keeps ranged changes with valid positions", () => {
-    const range = {
-      end: { character: 2, line: 1 },
-      start: { character: 0, line: 0 },
-    };
-    const changes = changesOf({ contentChanges: [{ range, text: "patched" }] });
-    expect(changes).toEqual([{ range, text: "patched" }]);
+  it.each([
+    [
+      "extracts valid content changes",
+      { contentChanges: [{ text: "new content" }] },
+      [{ text: "new content" }],
+    ],
+    [
+      "keeps ranged changes with valid positions",
+      { contentChanges: [{ range, text: "patched" }] },
+      [{ range, text: "patched" }],
+    ],
+    [
+      "filters out changes without text",
+      { contentChanges: [{ text: "valid" }, { noText: true }, null] },
+      [{ text: "valid" }],
+    ],
+    [
+      "keeps valid changes alongside malformed ones",
+      {
+        contentChanges: [{ range: "junk", text: "dropped" }, { text: "kept" }],
+      },
+      [{ text: "kept" }],
+    ],
+  ])("%s", (_, params, expected) => {
+    expect(changesOf(params)).toEqual(expected);
   });
 
   it.each([
@@ -78,29 +98,14 @@ describe("changesOf", () => {
   ])("returns empty array for malformed params: %j", (params) => {
     expect(changesOf(params)).toEqual([]);
   });
-
-  it("filters out changes without text", () => {
-    const changes = changesOf({
-      contentChanges: [{ text: "valid" }, { noText: true }, null],
-    });
-    expect(changes).toEqual([{ text: "valid" }]);
-  });
-
-  it("keeps valid changes alongside malformed ones", () => {
-    const changes = changesOf({
-      contentChanges: [{ range: "junk", text: "dropped" }, { text: "kept" }],
-    });
-    expect(changes).toEqual([{ text: "kept" }]);
-  });
 });
 
 describe("cancelIdOf", () => {
-  it("extracts numeric id", () => {
-    expect(cancelIdOf({ id: 42 })).toBe(42);
-  });
-
-  it("extracts string id", () => {
-    expect(cancelIdOf({ id: "request-1" })).toBe("request-1");
+  it.each([
+    ["extracts numeric id", 42],
+    ["extracts string id", "request-1"],
+  ])("%s", (_, id) => {
+    expect(cancelIdOf({ id })).toBe(id);
   });
 
   it.each([

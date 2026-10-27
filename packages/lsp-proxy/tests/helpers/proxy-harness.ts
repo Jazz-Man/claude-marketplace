@@ -2,11 +2,63 @@ import { readdirSync, rmSync } from "node:fs";
 import { join } from "node:path";
 import process from "node:process";
 
+import { DocumentStore } from "../../src/docstore.ts";
+import type { Downstream } from "../../src/downstream.ts";
 import type { JsonRpcMessage } from "../../src/framing.ts";
 import { decodeChunks, encodeFrame } from "../../src/framing.ts";
+import type { RequestHost } from "../../src/proxy-requests.ts";
+import { RequestBroker } from "../../src/proxy-requests.ts";
+import type { ProxyHost } from "../../src/proxy-server.ts";
 import { waitFor } from "./wait.ts";
 
 const TESTS_DIR = join(import.meta.dir, "..");
+
+export const TS = { ".ts": "typescript" };
+
+export interface HostFixture {
+  host: ProxyHost;
+  logs: string[];
+  servers: Map<string, Downstream>;
+}
+
+export function makeHostFixture(
+  handlers: {
+    dropServer?: (servers: Map<string, Downstream>, server: string) => void;
+    replyTo?: (id: unknown, result: unknown) => void;
+  } = {},
+): HostFixture {
+  const logs: string[] = [];
+  const servers = new Map<string, Downstream>();
+  const requestHost: RequestHost = {
+    config: { servers: [] },
+    log: (line) => {
+      logs.push(line);
+    },
+    notify: () => undefined,
+    replyErrorTo: () => undefined,
+    replyTo: handlers.replyTo ?? (() => undefined),
+    servers,
+  };
+  return {
+    host: {
+      broker: new RequestBroker(requestHost),
+      clientParams: {},
+      config: { servers: [] },
+      docs: new DocumentStore(),
+      dropServer: (server) => {
+        handlers.dropServer?.(servers, server);
+      },
+      isStopped: () => false,
+      log: (line) => {
+        logs.push(line);
+      },
+      servers,
+      write: () => undefined,
+    },
+    logs,
+    servers,
+  };
+}
 
 export function cleanupTempConfigs(): void {
   for (const entry of readdirSync(TESTS_DIR)) {
@@ -168,4 +220,16 @@ export async function boot(servers: unknown[]): Promise<ProxyHandle> {
   const proxy = startProxy(configPath);
   await initializeSession(proxy);
   return proxy;
+}
+
+export async function withProxy(
+  servers: unknown[],
+  run: (proxy: ProxyHandle) => void | Promise<void>,
+): Promise<void> {
+  const proxy = await boot(servers);
+  try {
+    await run(proxy);
+  } finally {
+    await proxy.stop();
+  }
 }

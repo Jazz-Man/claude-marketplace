@@ -49,3 +49,24 @@ export function policyTableTests(
     expect(check(command)).toBeNull();
   });
 }
+
+export function decisionTableTests(
+  policy: Policy,
+  decisions: { allow: string[]; ask: string[]; deny: string[] },
+): void {
+  const check = (command: string) => policyCheck(policy, command);
+  const registerTier = (
+    title: string,
+    table: string[],
+    decision: "deny" | "ask",
+  ) => {
+    it.each(table)(title, (command) => {
+      expect(decisionOf(check(command))).toBe(decision);
+    });
+  };
+  registerTier("denies %s", decisions.deny, "deny");
+  registerTier("asks on %s", decisions.ask, "ask");
+  it.each(decisions.allow)("allows %s", (command) => {
+    expect(check(command)).toBeNull();
+  });
+}

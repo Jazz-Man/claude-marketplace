@@ -10,20 +10,15 @@ import {
 } from "../src/policies/filesystem/reasons.ts";
 import { ALLOW, ASK, DENY } from "./fixtures/filesystem.ts";
 import { MEMORY_ALLOW, MEMORY_ASK } from "./fixtures/memory.ts";
-import { decisionOf, policyCheck, reasonOf } from "./helpers/policy.ts";
+import {
+  decisionOf,
+  decisionTableTests,
+  policyCheck,
+  reasonOf,
+} from "./helpers/policy.ts";
 
 describe("filesystem policy v2", () => {
-  it.each(DENY)("denies %s", (command) => {
-    expect(decisionOf(policyCheck(filesystemPolicy, command))).toBe("deny");
-  });
-
-  it.each(ASK)("asks on %s", (command) => {
-    expect(decisionOf(policyCheck(filesystemPolicy, command))).toBe("ask");
-  });
-
-  it.each(ALLOW)("allows %s", (command) => {
-    expect(policyCheck(filesystemPolicy, command)).toBeNull();
-  });
+  decisionTableTests(filesystemPolicy, { allow: ALLOW, ask: ASK, deny: DENY });
 
   it("fail-open: unparseable command allows", () => {
     expect(policyCheck(filesystemPolicy, 'cat "')).toBeNull();
@@ -70,40 +65,21 @@ describe("filesystem policy v2 (reasons)", () => {
 
 describe("context", () => {
   it("allows writes inside $HOME and inside projectRoot, denies outside the zone", () => {
+    const zone = (command: string, cwd: string, projectRoot: string) =>
+      decisionOf(policyCheck(filesystemPolicy, command, { cwd, projectRoot }));
+    expect(zone("tee build/x x", "/proj/sub", "/proj")).toBeNull();
     expect(
-      decisionOf(
-        policyCheck(filesystemPolicy, "tee build/x x", {
-          cwd: "/proj/sub",
-          projectRoot: "/proj",
-        }),
-      ),
+      zone("tee /workspace/repo/x x", "/workspace/repo", "/workspace/repo"),
     ).toBeNull();
-    expect(
-      decisionOf(
-        policyCheck(filesystemPolicy, "tee /workspace/repo/x x", {
-          cwd: "/workspace/repo",
-          projectRoot: "/workspace/repo",
-        }),
-      ),
-    ).toBeNull();
-    expect(
-      decisionOf(
-        policyCheck(filesystemPolicy, "tee /elsewhere/x x", {
-          cwd: "/proj/sub",
-          projectRoot: "/proj",
-        }),
-      ),
-    ).toBe("deny");
+    expect(zone("tee /elsewhere/x x", "/proj/sub", "/proj")).toBe("deny");
   });
 });
 
 describe("filesystem policy (project memory)", () => {
-  it.each(MEMORY_ASK)("asks on %s", (command) => {
-    expect(decisionOf(policyCheck(filesystemPolicy, command))).toBe("ask");
-  });
-
-  it.each(MEMORY_ALLOW)("allows %s", (command) => {
-    expect(policyCheck(filesystemPolicy, command)).toBeNull();
+  decisionTableTests(filesystemPolicy, {
+    allow: MEMORY_ALLOW,
+    ask: MEMORY_ASK,
+    deny: [],
   });
 
   it("asks with the plain wording for md and the warning wording for non-md", () => {

@@ -1,6 +1,7 @@
 import { describe, expect, it } from "bun:test";
 
 import { mergeCapabilities } from "../src/capabilities.ts";
+import type { ServerCapabilities } from "../src/types/index.ts";
 
 const COMPLETION_INPUTS = [
   {
@@ -44,32 +45,45 @@ const FALSE_THEN_TRUE = [
   },
 ];
 
-const FALSE_THEN_OBJECT = [
-  {
-    capabilities: { completionProvider: false, textDocumentSync: 2 },
-    server: "vtsls",
-  },
-  {
-    capabilities: {
-      completionProvider: { triggerCharacters: [":"] },
-      textDocumentSync: 2,
-    },
-    server: "biome",
-  },
-];
-
-const OBJECT_THEN_FALSE = [
-  {
-    capabilities: {
-      completionProvider: { triggerCharacters: ["."] },
-      textDocumentSync: 2,
-    },
-    server: "vtsls",
-  },
-  {
-    capabilities: { completionProvider: false, textDocumentSync: 2 },
-    server: "biome",
-  },
+const OBJECT_DECLARATION_CASES: [
+  string,
+  { capabilities: ServerCapabilities; server: string }[],
+  { triggerCharacters: string[] },
+][] = [
+  [
+    "an object declaration is not masked by a priority-first false",
+    [
+      {
+        capabilities: { completionProvider: false, textDocumentSync: 2 },
+        server: "vtsls",
+      },
+      {
+        capabilities: {
+          completionProvider: { triggerCharacters: [":"] },
+          textDocumentSync: 2,
+        },
+        server: "biome",
+      },
+    ],
+    { triggerCharacters: [":"] },
+  ],
+  [
+    "an object declaration survives a lower server's false",
+    [
+      {
+        capabilities: {
+          completionProvider: { triggerCharacters: ["."] },
+          textDocumentSync: 2,
+        },
+        server: "vtsls",
+      },
+      {
+        capabilities: { completionProvider: false, textDocumentSync: 2 },
+        server: "biome",
+      },
+    ],
+    { triggerCharacters: ["."] },
+  ],
 ];
 
 describe("mergeCapabilities", () => {
@@ -107,24 +121,16 @@ describe("mergeCapabilities", () => {
     expect(merged.merged.hoverProvider).toBe(true);
   });
 
-  it("an object declaration is not masked by a priority-first false", () => {
-    const merged = mergeCapabilities(FALSE_THEN_OBJECT, ["vtsls", "biome"]);
-    expect(merged.merged.completionProvider).toEqual({
-      triggerCharacters: [":"],
-    });
-  });
-
-  it("an object declaration survives a lower server's false", () => {
-    const merged = mergeCapabilities(OBJECT_THEN_FALSE, ["vtsls", "biome"]);
-    expect(merged.merged.completionProvider).toEqual({
-      triggerCharacters: ["."],
-    });
+  it.each(OBJECT_DECLARATION_CASES)("%s", (_, inputs, expected) => {
+    const merged = mergeCapabilities(inputs, ["vtsls", "biome"]);
+    expect(merged.merged.completionProvider).toEqual(expected);
   });
 });
 
 describe("mergeCapabilities — sync object form (live vtsls finding)", () => {
-  it("accepts the TextDocumentSyncOptions form with change: 2", () => {
-    const merged = mergeCapabilities(
+  it.each([
+    [
+      "accepts the TextDocumentSyncOptions form with change: 2",
       [
         {
           capabilities: { textDocumentSync: { change: 2, openClose: true } },
@@ -132,13 +138,9 @@ describe("mergeCapabilities — sync object form (live vtsls finding)", () => {
         },
       ],
       ["vtsls"],
-    );
-    expect(merged.rejected).toEqual([]);
-    expect(merged.merged.textDocumentSync).toBe(2);
-  });
-
-  it("accepts the object form whose change is 1", () => {
-    const merged = mergeCapabilities(
+    ],
+    [
+      "accepts the object form whose change is 1",
       [
         {
           capabilities: { textDocumentSync: { change: 1, openClose: true } },
@@ -146,51 +148,53 @@ describe("mergeCapabilities — sync object form (live vtsls finding)", () => {
         },
       ],
       ["legacy"],
-    );
+    ],
+  ])("%s", (_, inputs, priority) => {
+    const merged = mergeCapabilities(inputs, priority);
     expect(merged.rejected).toEqual([]);
     expect(merged.merged.textDocumentSync).toBe(2);
   });
 });
 
 describe("mergeCapabilities — unsupported sync kinds", () => {
-  it("rejects an object sync whose change is outside 1 and 2", () => {
+  it.each([
+    [
+      "rejects an object sync whose change is outside 1 and 2",
+      { textDocumentSync: { change: 3 } },
+      [
+        {
+          reason:
+            'textDocumentSync must be 1 (full) or 2 (incremental), got {"change":3}',
+          server: "odd",
+        },
+      ],
+    ],
+    [
+      "rejects a numeric sync outside 1 and 2",
+      { textDocumentSync: 0 },
+      [
+        {
+          reason: "textDocumentSync must be 1 (full) or 2 (incremental), got 0",
+          server: "odd",
+        },
+      ],
+    ],
+    [
+      "rejects absent sync",
+      {},
+      [
+        {
+          reason:
+            "textDocumentSync must be 1 (full) or 2 (incremental), got undefined",
+          server: "odd",
+        },
+      ],
+    ],
+  ])("%s", (_, sync, expected) => {
     const merged = mergeCapabilities(
-      [{ capabilities: { textDocumentSync: { change: 3 } }, server: "odd" }],
+      [{ capabilities: sync, server: "odd" }],
       ["odd"],
     );
-    expect(merged.rejected).toEqual([
-      {
-        reason:
-          'textDocumentSync must be 1 (full) or 2 (incremental), got {"change":3}',
-        server: "odd",
-      },
-    ]);
-  });
-
-  it("rejects a numeric sync outside 1 and 2", () => {
-    const merged = mergeCapabilities(
-      [{ capabilities: { textDocumentSync: 0 }, server: "odd" }],
-      ["odd"],
-    );
-    expect(merged.rejected).toEqual([
-      {
-        reason: "textDocumentSync must be 1 (full) or 2 (incremental), got 0",
-        server: "odd",
-      },
-    ]);
-  });
-
-  it("rejects absent sync", () => {
-    const merged = mergeCapabilities(
-      [{ capabilities: {}, server: "odd" }],
-      ["odd"],
-    );
-    expect(merged.rejected).toEqual([
-      {
-        reason:
-          "textDocumentSync must be 1 (full) or 2 (incremental), got undefined",
-        server: "odd",
-      },
-    ]);
+    expect(merged.rejected).toEqual(expected);
   });
 });

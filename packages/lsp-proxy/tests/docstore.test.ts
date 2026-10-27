@@ -4,62 +4,53 @@ import { applyChanges, DocumentStore } from "../src/docstore.ts";
 
 const LINES = "one\ntwo\nthree\n";
 
+const at = (
+  start: { character: number; line: number },
+  end: { character: number; line: number },
+) => ({ end, start });
+
+const atLine1 = at({ character: 0, line: 1 }, { character: 3, line: 1 });
+const atZero = at({ character: 0, line: 0 }, { character: 0, line: 0 });
+const atHead = at({ character: 0, line: 0 }, { character: 3, line: 0 });
+const atMidLine1 = at({ character: 0, line: 1 }, { character: 5, line: 1 });
+
 describe("applyChanges", () => {
-  it("replaces the whole text when no range is present", () => {
-    expect(applyChanges(LINES, [{ text: "fresh" }])).toBe("fresh");
-  });
-
-  it("applies a single ranged change", () => {
-    const change = {
-      range: {
-        end: { character: 3, line: 1 },
-        start: { character: 0, line: 1 },
-      },
-      text: "TWO",
-    };
-    expect(applyChanges(LINES, [change])).toBe("one\nTWO\nthree\n");
-  });
-
-  it("applies an insertion as a zero-width range", () => {
-    const change = {
-      range: {
-        end: { character: 0, line: 0 },
-        start: { character: 0, line: 0 },
-      },
-      text: "> ",
-    };
-    expect(applyChanges(LINES, [change])).toBe("> one\ntwo\nthree\n");
-  });
-
-  it("applies several changes in array order against the running text", () => {
-    const changes = [
-      {
-        range: {
-          end: { character: 3, line: 0 },
-          start: { character: 0, line: 0 },
-        },
-        text: "ONE",
-      },
-      {
-        range: {
-          end: { character: 5, line: 1 },
-          start: { character: 0, line: 1 },
-        },
-        text: "2",
-      },
-    ];
-    expect(applyChanges(LINES, changes)).toBe("ONE\n2\nthree\n");
-  });
-
-  it("survives a multibyte edit", () => {
-    const change = {
-      range: {
-        end: { character: 3, line: 0 },
-        start: { character: 0, line: 0 },
-      },
-      text: "тест",
-    };
-    expect(applyChanges("укр\ntext", [change])).toBe("тест\ntext");
+  it.each([
+    [
+      "replaces the whole text when no range is present",
+      LINES,
+      [{ text: "fresh" }],
+      "fresh",
+    ],
+    [
+      "applies a single ranged change",
+      LINES,
+      [{ range: atLine1, text: "TWO" }],
+      "one\nTWO\nthree\n",
+    ],
+    [
+      "applies an insertion as a zero-width range",
+      LINES,
+      [{ range: atZero, text: "> " }],
+      "> one\ntwo\nthree\n",
+    ],
+    [
+      "applies several changes in array order against the running text",
+      LINES,
+      [
+        { range: atHead, text: "ONE" },
+        { range: atMidLine1, text: "2" },
+      ],
+      "ONE\n2\nthree\n",
+    ],
+    [
+      "survives a multibyte edit",
+      "укр\ntext",
+      [{ range: atHead, text: "тест" }],
+      "тест\ntext",
+    ],
+  ])("%s", (_, base, changes, expected) => {
+    expect(applyChanges(base, changes)).toBe(expected);
   });
 });
 

@@ -4,29 +4,37 @@ import { mergeOutcomes, type ServerOutcome } from "../src/merge.ts";
 
 const PRIORITY = ["vtsls", "biome"];
 
-describe("mergeOutcomes — set arrays", () => {
-  it("concatenates definition arrays across servers", () => {
-    const outcomes: ServerOutcome[] = [
-      { result: [{ uri: "file:///a" }], server: "vtsls" },
-      { result: [{ uri: "file:///b" }, { uri: "file:///c" }], server: "biome" },
-    ];
-    const merged = mergeOutcomes("textDocument/definition", outcomes, PRIORITY);
-    expect(merged.result).toEqual([
-      { uri: "file:///a" },
-      { uri: "file:///b" },
-      { uri: "file:///c" },
-    ]);
+const resultTableTests = (
+  method: string,
+  rows: [string, ServerOutcome[], unknown][],
+): void => {
+  it.each(rows)("%s", (_, outcomes, expected) => {
+    expect(mergeOutcomes(method, outcomes, PRIORITY).result).toEqual(expected);
   });
+};
 
-  it("normalizes a single Location into the array", () => {
-    const outcomes: ServerOutcome[] = [
-      { result: { uri: "file:///a" }, server: "vtsls" },
-      { result: null, server: "biome" },
-    ];
-    expect(
-      mergeOutcomes("textDocument/definition", outcomes, PRIORITY).result,
-    ).toEqual([{ uri: "file:///a" }]);
-  });
+describe("mergeOutcomes — set arrays", () => {
+  resultTableTests("textDocument/definition", [
+    [
+      "concatenates definition arrays across servers",
+      [
+        { result: [{ uri: "file:///a" }], server: "vtsls" },
+        {
+          result: [{ uri: "file:///b" }, { uri: "file:///c" }],
+          server: "biome",
+        },
+      ],
+      [{ uri: "file:///a" }, { uri: "file:///b" }, { uri: "file:///c" }],
+    ],
+    [
+      "normalizes a single Location into the array",
+      [
+        { result: { uri: "file:///a" }, server: "vtsls" },
+        { result: null, server: "biome" },
+      ],
+      [{ uri: "file:///a" }],
+    ],
+  ]);
 
   it("returns the first error by priority when every server errored", () => {
     const outcomes: ServerOutcome[] = [
@@ -52,71 +60,60 @@ describe("mergeOutcomes — set arrays", () => {
 });
 
 describe("mergeOutcomes — completion", () => {
-  it("concatenates items and ORs isIncomplete", () => {
-    const outcomes: ServerOutcome[] = [
-      {
-        result: { isIncomplete: true, items: [{ label: "a" }] },
-        server: "vtsls",
-      },
-      {
-        result: { isIncomplete: false, items: [{ label: "b" }] },
-        server: "biome",
-      },
-    ];
-    const merged = mergeOutcomes("textDocument/completion", outcomes, PRIORITY);
-    expect(merged.result).toEqual({
-      isIncomplete: true,
-      items: [{ label: "a" }, { label: "b" }],
-    });
-  });
-
-  it("treats a null list as empty", () => {
-    const outcomes: ServerOutcome[] = [
-      { result: null, server: "vtsls" },
-      {
-        result: { isIncomplete: false, items: [{ label: "b" }] },
-        server: "biome",
-      },
-    ];
-    expect(
-      mergeOutcomes("textDocument/completion", outcomes, PRIORITY).result,
-    ).toEqual({
-      isIncomplete: false,
-      items: [{ label: "b" }],
-    });
-  });
+  resultTableTests("textDocument/completion", [
+    [
+      "concatenates items and ORs isIncomplete",
+      [
+        {
+          result: { isIncomplete: true, items: [{ label: "a" }] },
+          server: "vtsls",
+        },
+        {
+          result: { isIncomplete: false, items: [{ label: "b" }] },
+          server: "biome",
+        },
+      ],
+      { isIncomplete: true, items: [{ label: "a" }, { label: "b" }] },
+    ],
+    [
+      "treats a null list as empty",
+      [
+        { result: null, server: "vtsls" },
+        {
+          result: { isIncomplete: false, items: [{ label: "b" }] },
+          server: "biome",
+        },
+      ],
+      { isIncomplete: false, items: [{ label: "b" }] },
+    ],
+  ]);
 });
 
 describe("mergeOutcomes — hover", () => {
-  it("joins markdown contents with a blank line", () => {
-    const outcomes: ServerOutcome[] = [
-      {
-        result: { contents: { kind: "markdown", value: "one" } },
-        server: "vtsls",
-      },
-      {
-        result: { contents: { kind: "markdown", value: "two" } },
-        server: "biome",
-      },
-    ];
-    expect(
-      mergeOutcomes("textDocument/hover", outcomes, PRIORITY).result,
-    ).toEqual({
-      contents: { kind: "markdown", value: "one\n\ntwo" },
-    });
-  });
-
-  it("falls back to the priority-first hover when contents shapes differ", () => {
-    const outcomes: ServerOutcome[] = [
-      { result: { contents: "plain" }, server: "biome" },
-      { result: null, server: "vtsls" },
-    ];
-    expect(
-      mergeOutcomes("textDocument/hover", outcomes, PRIORITY).result,
-    ).toEqual({
-      contents: "plain",
-    });
-  });
+  resultTableTests("textDocument/hover", [
+    [
+      "joins markdown contents with a blank line",
+      [
+        {
+          result: { contents: { kind: "markdown", value: "one" } },
+          server: "vtsls",
+        },
+        {
+          result: { contents: { kind: "markdown", value: "two" } },
+          server: "biome",
+        },
+      ],
+      { contents: { kind: "markdown", value: "one\n\ntwo" } },
+    ],
+    [
+      "falls back to the priority-first hover when contents shapes differ",
+      [
+        { result: { contents: "plain" }, server: "biome" },
+        { result: null, server: "vtsls" },
+      ],
+      { contents: "plain" },
+    ],
+  ]);
 });
 
 describe("mergeOutcomes — single-document results", () => {

@@ -7,52 +7,38 @@ describe("parseCommand", () => {
     expect(parseCommand('cat "')?.words).toContain("cat");
   });
 
-  it("collects units across && and pipelines", () => {
-    expect(parseCommand("cd /tmp && git push")?.units).toEqual([
-      {
-        args: ["/tmp"],
-        name: "cd",
-      },
-      {
-        args: ["push"],
-        name: "git",
-      },
-    ]);
-  });
-
-  it("collects units across newline separators", () => {
-    expect(parseCommand("git add .\ngit push")?.units).toEqual([
-      {
-        args: ["add", "."],
-        name: "git",
-      },
-      {
-        args: ["push"],
-        name: "git",
-      },
-    ]);
-  });
-
-  it("keeps the command name under an env-prefix assignment", () => {
-    expect(parseCommand("FOO=1 git push origin")?.units).toEqual([
-      {
-        args: ["push", "origin"],
-        name: "git",
-      },
-    ]);
-  });
-
-  it("collects units from nested substitution scripts (deduped, raw text out of args)", () => {
-    expect(parseCommand("echo $(git push)")?.units).toEqual([
-      {
-        args: [],
-        name: "echo",
-      },
-      {
-        args: ["push"],
-        name: "git",
-      },
-    ]);
+  it.each([
+    [
+      "collects units across && and pipelines",
+      "cd /tmp && git push",
+      [
+        { args: ["/tmp"], name: "cd" },
+        { args: ["push"], name: "git" },
+      ],
+    ],
+    [
+      "collects units across newline separators",
+      "git add .\ngit push",
+      [
+        { args: ["add", "."], name: "git" },
+        { args: ["push"], name: "git" },
+      ],
+    ],
+    [
+      "keeps the command name under an env-prefix assignment",
+      "FOO=1 git push origin",
+      [{ args: ["push", "origin"], name: "git" }],
+    ],
+    [
+      "collects units from nested substitution scripts (deduped, raw text out of args)",
+      "echo $(git push)",
+      [
+        { args: [], name: "echo" },
+        { args: ["push"], name: "git" },
+      ],
+    ],
+  ])("%s", (_, command, units) => {
+    expect(parseCommand(command)?.units).toEqual(units);
   });
 
   it("drops only WHOLE-WORD substitutions from args; spliced ones ride for the fail-closed gate", () => {
@@ -82,12 +68,17 @@ describe("parseCommand (redirects, words, functionDefs)", () => {
     ]);
   });
 
-  it("keeps equal-valued distinct commands (substitution + real command)", () => {
-    expect(parseCommand("FOO=$(git status) git status")?.units).toHaveLength(2);
-  });
-
-  it("keeps repeated identical sibling commands as two units (identity, not value)", () => {
-    expect(parseCommand("git status && git status")?.units).toHaveLength(2);
+  it.each([
+    [
+      "keeps equal-valued distinct commands (substitution + real command)",
+      "FOO=$(git status) git status",
+    ],
+    [
+      "keeps repeated identical sibling commands as two units (identity, not value)",
+      "git status && git status",
+    ],
+  ])("%s", (_, command) => {
+    expect(parseCommand(command)?.units).toHaveLength(2);
   });
 
   it("keeps quoted args as single values", () => {
