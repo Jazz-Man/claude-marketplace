@@ -83,6 +83,12 @@ work.
   reading RANKS instead of absolute score thresholds, iterative refinement,
   and the stale-index/ignore-layer checks behind "no results". Read it
   before writing the first query.
+- **`references/ignore.md`** — the five ignore layers and the curation
+  craft: .gitignore → .grepaiignore negations → config `ignore` →
+  external_gitignore → built-ins; name-vs-anchored pattern semantics,
+  dependency re-inclusion recipes, the ignore-vs-boost division, and the
+  re-index requirement. Read it when setting up ignore or curating
+  dependencies.
 - **`references/trace.md`** — call-graph tools through MCP: the symbol-index
   prerequisite, tool-call shapes, the VERIFIED trust profile (call_site
   coordinates are exact; enclosing-symbol attribution and graph caller-side
