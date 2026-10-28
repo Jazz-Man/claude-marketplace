@@ -5,7 +5,8 @@ server (`grepai mcp-serve`) plus one skill, `grepai-workflow`.
 
 ## What it provides
 
-- **MCP server** — `grepai-api` exposing search, trace (callers/callees/
+- **MCP server** — `grepai` (name kept unique; distinct from any
+  project-level `grepai-api` entry) exposing search, trace (callers/callees/
   graph), refs, and index-status tools against the project's grepai index.
 - **grepai-workflow skill** — per-project setup (config `ignore` defaults,
   `.grepaiignore` dependency curation with `!` negations, `search.boost`

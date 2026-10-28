@@ -1,6 +1,6 @@
 {
   "mcpServers": {
-    "grepai-api": {
+    "grepai": {
       "args": ["mcp-serve"],
       "command": "grepai"
     }
