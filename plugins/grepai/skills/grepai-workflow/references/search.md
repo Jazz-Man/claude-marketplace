@@ -58,7 +58,9 @@ grepai_search { root: "<project>", query: "frame encoding", compact: true, limit
 ```
 
 `limit` (default 10) — 3-5 while iterating, 15-20 when surveying. `format`:
-`json` (default) or `toon` (token-oriented, roughly half the JSON size).
+`json` (default) or `toon` — the saving is structural: near half the size
+with `compact: true`, barely smaller with full content (content passes
+through verbatim).
 `workspace` + `projects` scope a search across a configured multi-project
 workspace.
 
@@ -79,7 +81,7 @@ scale depends on BOTH the embedding model and the scoring path:
   around 0.033, one list around 0.016 — exactly the small values a perfect
   hit actually returns.
 
-Trust the numbers by band (hybrid on, this setup):
+Trust the numbers by band (hybrid on, single-project search):
 
 - **~0.03x** — rank-1 in both fused lists: a direct, strong hit. Small
   numbers are normal here; never read 0.03 as "3% relevant".
@@ -90,10 +92,17 @@ Trust the numbers by band (hybrid on, this setup):
 - With hybrid off, judge by distance above the ~0.46 unrelated-code floor,
   not by distance from zero.
 
+Two qualifiers: boost multiplies the fused value, so a both-lists hit on a
+penalized path (docs, tests) can read in the single-list band — the bands
+hold exactly for boost-neutral paths; and workspace-mode searches never
+fuse (they report cosine and may repeat a file across projects).
+
 What actually carries signal within one result set: the ORDER (boost-shaped
-— see references/search-boost.md), the RELATIVE gap between adjacent scores
-(a cliff after the third hit means three real answers), and whether the same
-file returns with multiple chunks.
+— see references/search-boost.md) and the RELATIVE gap between adjacent
+scores (a cliff after the third hit means three real answers). The same
+file repeating with multiple chunks is a signal only when dedup is off —
+the default keeps the single best chunk per file, so each file appears at
+most once.
 
 ## Iterative refinement
 
