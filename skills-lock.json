@@ -37,12 +37,6 @@
       "source": "yoanbernabeu/grepai-skills",
       "sourceType": "github"
     },
-    "grepai-search-boosting": {
-      "computedHash": "a0a38813abc393fee7b2ab5c21f45ce979ec6a55bd7d04ef0f4c024106080e6c",
-      "skillPath": "skills/search/grepai-search-boosting/SKILL.md",
-      "source": "yoanbernabeu/grepai-skills",
-      "sourceType": "github"
-    },
     "grepai-search-tips": {
       "computedHash": "82cc599fdc810adfdce58e96c5da83b2561ea05dca0fd16df1a2145b5dee0015",
       "skillPath": "skills/search/grepai-search-tips/SKILL.md",
