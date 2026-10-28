@@ -110,7 +110,8 @@
       },
       "includes": [
         "packages/cli-hook/tests/fixtures/**",
-        ".jscpd-baseline.json"
+        ".jscpd-baseline.json",
+        "plugins/grepai/skills/grepai-workflow/references/config.schema.json"
       ],
       "linter": {
         "enabled": false
