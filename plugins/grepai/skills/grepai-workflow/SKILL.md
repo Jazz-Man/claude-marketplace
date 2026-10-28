@@ -78,6 +78,10 @@ work.
   profile (Ollama embedder, GOB store): every section, defaults, and the
   pitfalls that break indexes. Read it when setting up or editing
   `.grepai/config.yaml`.
+- **`references/search-boost.md`** — ranking rules: mechanics (reorder-only,
+  cumulative, config-only), pattern semantics, shipped defaults, the
+  curation-interplay rule (never penalize what `.grepaiignore` curated in),
+  project recipes, and the pitfalls. Read it before editing `search.boost`.
 - **`references/chunking.md`** — how files split into chunks: the `fixed`
   window strategy with tuning tables, the `ast` syntax-aware strategy
   (active in this build — treesitter + CGO), custom extensions, and the
