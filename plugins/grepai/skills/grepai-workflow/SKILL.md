@@ -47,6 +47,8 @@ library does not surface, check the ignore layers in order: .gitignore →
 - MCP tools (this plugin's server): `grepai_search` (natural-language query,
   optional path prefix, compact mode), `grepai_trace_callers` /
   `grepai_trace_callees` / `grepai_trace_graph` for call structure,
+  `grepai_rpg_search` / `grepai_rpg_fetch` / `grepai_rpg_explore` for
+  feature-hierarchy orientation (word-overlap queries, not embeddings),
   `grepai_index_status` for index health.
 - Before building anything new, run a mandatory pre-check pass —
   "what already exists like this" — and reuse what it finds; duplicated
@@ -63,6 +65,7 @@ Pick the tool by question type:
 |---|---|
 | Exact symbol: definition, references, type, implementations (LSP exists) | LSP (apply the lsp-code-analysis skill where present) |
 | Intent / architecture / "does this already exist" | grepai search |
+| Which feature does this belong to / what sits around it | grepai RPG (fetch/explore) |
 | How a curated dependency works internally | grepai (indexed source) |
 | Call structure in a language with no LSP server | grepai trace_callers / callees |
 | String literals, comments, config values | text Grep |
@@ -90,6 +93,12 @@ work.
   dependency re-inclusion recipes, the ignore-vs-boost division, and the
   re-index requirement. Read it when setting up ignore or curating
   dependencies.
+- **`references/rpg.md`** — the Repository Planning Graph: feature-hierarchy
+  orientation on top of the symbol index. rpg_search is word-overlap, NOT
+  embeddings (opposite query craft from search); node IDs, fetch context,
+  explore neighborhoods with typed edges, feature-label modes and their
+  noise. Read it when a hit needs its feature context, or for browsing
+  structure by area/category.
 - **`references/trace.md`** — call-graph tools through MCP: the symbol-index
   prerequisite, tool-call shapes, the VERIFIED trust profile (call_site
   coordinates are exact; enclosing-symbol attribution and graph caller-side
