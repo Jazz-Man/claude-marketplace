@@ -113,12 +113,6 @@ shipped default). Fast regex extractor covers .go .js .ts .jsx .tsx .py .php
 fewer languages. `.vue` works through framework_processing. Extensions
 outside extractor coverage are indexed but yield no symbols.
 
-`trace.mode`, `trace.exclude_patterns`, `update.check_on_startup`, and
-`rpg.store_path` NEVER had any effect in any version — grepai drops them
-on the next config save. Remove them if present. To exclude files from
-trace, use the top-level `ignore` layer (it covers both the vector and the
-symbol index).
-
 ## rpg
 
 Repository Program Graph (`.grepai/rpg.gob`) — hierarchy with
@@ -143,6 +137,9 @@ are excluded built-in, not via this list.
 
 `external_gitignore`: path to one more gitignore applied from the project
 root (supports `~`); a missing file only warns.
+
+The ignore layer excludes files from BOTH indexes at once — the vector
+search index and the trace symbol index.
 
 ## Solo pitfalls
 
