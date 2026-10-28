@@ -72,25 +72,27 @@ scale depends on BOTH the embedding model and the scoring path:
 
 - Raw bge-m3 cosine similarity for code lives in a narrow, high-biased band:
   ~0.46 for unrelated code, ~0.53 for a perfect intent match, 1.0 only for
-  identical text (measured 2026-10-28 via the Ollama embed endpoint). The
-  "0.9 = excellent match" bands from generic docs are unreachable on this
-  model.
+  identical text. The "0.9 = excellent match" bands from generic docs are
+  unreachable on this model.
 - With `search.hybrid.enabled: true` (this setup, k=60), grepai reports
   Reciprocal Rank Fusion scores instead: a top rank in both lists lands
-  around 1/61 + 1/61 ≈ 0.033, one list ≈ 0.016 — exactly the small values
-  a perfect hit actually returns.
+  around 0.033, one list around 0.016 — exactly the small values a perfect
+  hit actually returns.
 
-To verify any model's scale yourself, embed the pair directly and take the
-cosine — one call to the Ollama endpoint:
+Trust the numbers by band (hybrid on, this setup):
 
-```
-POST http://localhost:11434/api/embed
-{"model": "bge-m3", "input": ["<query>", "<chunk text>"]}
-```
+- **~0.03x** — rank-1 in both fused lists: a direct, strong hit. Small
+  numbers are normal here; never read 0.03 as "3% relevant".
+- **~0.016x** — rank-1 in one list only: a plausible hit; check the chunk
+  content before acting on it.
+- **Below ~0.016** — the tail: weak fusion support; treat as leads, not
+  answers.
+- With hybrid off, judge by distance above the ~0.46 unrelated-code floor,
+  not by distance from zero.
 
-What carries signal within one result set: the ORDER (boost-shaped — see
-references/search-boost.md), the RELATIVE gap between adjacent scores (a
-cliff after the third hit means three real answers), and whether the same
+What actually carries signal within one result set: the ORDER (boost-shaped
+— see references/search-boost.md), the RELATIVE gap between adjacent scores
+(a cliff after the third hit means three real answers), and whether the same
 file returns with multiple chunks.
 
 ## Iterative refinement
