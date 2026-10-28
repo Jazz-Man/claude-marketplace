@@ -24,24 +24,6 @@
       "skillPath": "skills/integration/grepai-mcp-tools/SKILL.md",
       "source": "yoanbernabeu/grepai-skills",
       "sourceType": "github"
-    },
-    "grepai-trace-callees": {
-      "computedHash": "d5e39bf3c3cf0c3ee4fb63d66b48cd3ec8b2ecbf43c049ee3a30388b5338f61b",
-      "skillPath": "skills/trace/grepai-trace-callees/SKILL.md",
-      "source": "yoanbernabeu/grepai-skills",
-      "sourceType": "github"
-    },
-    "grepai-trace-callers": {
-      "computedHash": "2f9ba2d3f051247bed54ec30a76874e22a175597ed0236d73e8de751ace6f75b",
-      "skillPath": "skills/trace/grepai-trace-callers/SKILL.md",
-      "source": "yoanbernabeu/grepai-skills",
-      "sourceType": "github"
-    },
-    "grepai-trace-graph": {
-      "computedHash": "eff44529eaeb6f4f6d198d513db05fb609dcebc4bdcacda4226d421c030c878c",
-      "skillPath": "skills/trace/grepai-trace-graph/SKILL.md",
-      "source": "yoanbernabeu/grepai-skills",
-      "sourceType": "github"
     }
   }
 }
