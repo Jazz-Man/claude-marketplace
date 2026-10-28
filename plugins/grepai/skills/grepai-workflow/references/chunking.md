@@ -11,8 +11,8 @@ Tokens are estimated at ~4 characters per token.
 ## fixed (default)
 
 Sliding window of `size` tokens with `overlap` tokens shared between
-neighbors; splits prefer logical boundaries (empty lines, closing braces,
-statement ends), so real chunk sizes vary around the target.
+neighbors; each window backs up to the last newline inside it, so real
+chunks come in at or below the target — never above.
 
 ### Tuning
 
@@ -29,7 +29,8 @@ statement ends), so real chunk sizes vary around the target.
 
 Rules of thumb from the author, by codebase shape: small functions /
 microservices → 384/40; mixed → 512/50; large classes / monolith → 768/100.
-Overlap multiplies chunk count (256/50 roughly doubles the index vs 512/50).
+Size multiplies chunk count (256/50 roughly doubles the index vs 512/50);
+overlap does too, more weakly.
 
 Symptom-driven fixes: fragmented results → raise size; noisy results with
 unrelated code in one chunk → lower size; matches cut at function boundaries
@@ -60,7 +61,8 @@ for everything else — the fallback handles that per file automatically.
 ## custom_extensions
 
 Extra indexed extensions beyond the built-in list, each with a leading dot
-(e.g. `.tengo`, `.mdx`), matched case-insensitively. Binary detection
+(e.g. `.tengo`, `.mdx`), matched case-insensitively; an entry missing the
+leading dot is silently dropped — no error, no effect. Binary detection
 (UTF-8 + null-byte check) still applies, so adding a binary extension is
 safe. These files chunk with `fixed`.
 
@@ -71,12 +73,14 @@ safe. These files chunk with `fixed`.
   yourself: warn the owner that a rebuild is needed.
 - Embedder context limit: if the embedder rejects an oversized chunk, grepai
   splits it in half and retries — up to 3 re-chunking attempts, visible as
-  "Re-chunking … context limit exceeded" log lines.
+  "Re-chunking … context limit exceeded" log lines. Sub-chunks of an ast
+  chunk are re-cut by the fixed chunker, losing syntax alignment.
 
 ## Pitfalls
 
-1. `overlap: 0` cannot be forced — 0 or missing resets to 50 at load. The
-   only real lever for a smaller index is `size` and `ignore`.
+1. `overlap: 0` cannot be forced — 0 or missing resets to 50 at load.
+   Besides `size` and `ignore`, lowering `overlap` (1-49) also shrinks the
+   index, though modestly; zero itself is unattainable.
 2. `size: 0` or missing resets to 512; unknown `strategy` values silently
    fall back to `fixed` (warning in logs only).
 3. ast reads its budget in non-whitespace characters, not tokens — the same
