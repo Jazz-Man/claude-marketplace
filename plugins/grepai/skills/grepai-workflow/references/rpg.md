@@ -19,7 +19,10 @@ empty" (enable + build), or an outdated-graph error after a grepai upgrade
 feature labels / symbol names — no embeddings. Query with the words that
 appear in names: "command line search flow", not an intent description.
 An embedding-style phrase scores zero here; an identifier-style word list
-scores well — the exact opposite of references/search.md.
+scores well — the exact opposite of references/search.md. Raw camelCase
+identifiers do not split during matching (`HandleRequest` is one token) —
+identifiers are reachable through their feature labels, which DO split
+camelCase; prefer plain words.
 
 ```
 grepai_rpg_search { query: "frame encoding", limit: 5 }
@@ -48,8 +51,9 @@ grepai_rpg_fetch { node_id: "sym:cli/search.go:runSearch" }
 ```
 
 Returns the node's hierarchy parents (symbol → file → subcategory →
-category → area), its edges, and a code preview — the fastest way to
-answer "what feature is this file/symbol part of".
+category → area), its children, its edges, the resolved feature path, and
+a code preview — the fastest way to answer "what feature is this
+file/symbol part of".
 
 ## explore — neighborhoods, not exact call graphs
 
@@ -81,7 +85,7 @@ keyword noise (a file's feature may read like "operate if" when its
 dominant symbols are control flow). `llm` / `hybrid` ask an
 OpenAI-compatible chat model instead (`llm_endpoint`, `llm_model`; both
 currently behave the same and fall back to local on error or when the
-model is unset). Treat feature paths as NAVIGATION structure, not as
+endpoint or model is unset). Treat feature paths as NAVIGATION structure, not as
 semantic truth about the codebase.
 
 `drift_threshold` (0.0–1.0) controls how much a file's features must
