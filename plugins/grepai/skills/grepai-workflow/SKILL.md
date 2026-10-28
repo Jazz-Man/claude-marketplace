@@ -13,11 +13,12 @@ LSP verifies.
 ## Setup (first run in a project)
 
 1. Run `grepai init` — it writes `.grepai/config.yaml`.
-2. `ignore` entries match as directory/file names and as gitignore-style
-   patterns anchored at the project root, layered on top of every
-   .gitignore; a custom list REPLACES the defaults (.git, node_modules,
-   vendor, bin, dist, …) — copy the defaults and append. `.grepaiignore`
-   negations override even config ignore entries.
+2. `ignore` entries are root-level gitignore patterns (no slash — match at
+   any depth; leading slash — anchored), layered on top of every
+   .gitignore; the file's list is the effective list verbatim — nothing
+   merges at runtime, so keep the defaults `grepai init` wrote and append
+   to them. `.grepaiignore` negations override config ignore entries (a
+   deeper .gitignore can still win).
 3. Curate dependency sources with `.grepaiignore` — gitignore syntax, where
    `!` re-includes: JS/TS `!node_modules/<lib>/`, PHP `!vendor/<lib>/`.
    A pattern without a leading slash matches the directory name at ANY depth

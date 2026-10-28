@@ -9,14 +9,19 @@ Ignore changes always require a re-index; boost changes never do.
 
 1. **`.gitignore`** files — root and subdirectories, standard semantics.
 2. **`.grepaiignore`** — same syntax as .gitignore, plus `!` negations that
-   RE-INCLUDE paths excluded by any other layer, including the config
-   `ignore` list below.
-3. **`ignore` in `.grepai/config.yaml`** — entries match as directory/file
-   NAMES (skips the subtree at any depth) and as gitignore-style patterns;
-   setting the list REPLACES the shipped defaults (.git, .grepai,
-   node_modules, vendor, bin, dist, __pycache__, .venv, venv, .idea,
-   .vscode, target, .zig-cache, zig-out, qdrant_storage) — copy them and
-   append.
+   RE-INCLUDE paths excluded by other layers, including the config `ignore`
+   list below. Nested .grepaiignore files are supported; for a given path
+   the most specific (deepest) one decides. One boundary: a DEEPER
+   .gitignore still beats a shallower .grepaiignore negation.
+3. **`ignore` in `.grepai/config.yaml`** — the list in the file IS the
+   effective list, verbatim: nothing merges at runtime. `grepai init`
+   writes the shipped defaults (.git, .grepai, node_modules, vendor, bin,
+   dist, __pycache__, .venv, venv, .idea, .vscode, target, .zig-cache,
+   zig-out, qdrant_storage) into the file — edit by appending to them; a
+   missing `ignore:` section means NO config-layer ignore at all (the
+   gitignore layers still apply). Entries compile as root-level gitignore
+   patterns (no slash — match at any depth; leading slash — anchored), and
+   a bare directory name prunes that whole subtree at any depth.
 4. **`external_gitignore`** — one extra gitignore file applied from the
    project root (`~/` expansion supported; a missing file only warns).
 5. **Built-in** — minified files (.min.js, .min.css, .bundle.js,
@@ -45,6 +50,9 @@ node_modules/<lib>/CLAUDE.md
 
 Craft rules, all live-tested:
 
+- Re-inclusion works mechanically: whenever any .grepaiignore carries a
+  negation, the indexer descends into ignored directories instead of
+  pruning them — negations never sit dead inside an excluded tree.
 - A pattern WITHOUT a leading slash matches the directory NAME at any
   depth — including versioned package-store copies
   (`node_modules/.bun/<lib>@1.2.3/node_modules/<lib>/`). After a store

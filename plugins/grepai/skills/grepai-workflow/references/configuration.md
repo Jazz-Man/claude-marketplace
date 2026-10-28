@@ -125,15 +125,17 @@ the whole config at load. `feature_group_strategy`: sample | split.
 
 ## ignore and external_gitignore
 
-`ignore` entries are layered on top of every `.gitignore` in the project;
-each entry matches as a directory/file NAME (skips the subtree) and as a
-gitignore-style pattern anchored at the project root. A nested
-`.grepaiignore` can re-include (override) even these entries — negations
-beat every ignore layer. The shipped default list covers .git, .grepai,
-node_modules, vendor, bin, dist, __pycache__, .venv, venv, .idea, .vscode,
-target, .zig-cache, zig-out, qdrant_storage; a custom list replaces it —
-copy the defaults and append. Minified files (.min.js/.min.css/.bundle.*)
-are excluded built-in, not via this list.
+`ignore` entries are layered on top of every `.gitignore` in the project
+and compile as root-level gitignore patterns (no slash — match at any
+depth; leading slash — anchored; a bare directory name prunes the subtree
+at any depth). A nested `.grepaiignore` can re-include (override) even
+these entries — though a deeper .gitignore still beats a shallower
+negation. The file's list is the effective list verbatim: nothing merges
+at runtime, so keep the defaults `grepai init` wrote (.git, .grepai,
+node_modules, vendor, bin, dist, __pycache__, .venv, venv, .idea,
+.vscode, target, .zig-cache, zig-out, qdrant_storage) and append. Minified
+files (.min.js/.min.css/.bundle.*) are excluded built-in, not via this
+list.
 
 `external_gitignore`: path to one more gitignore applied from the project
 root (supports `~`); a missing file only warns.
