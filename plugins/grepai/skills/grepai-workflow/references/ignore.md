@@ -52,13 +52,16 @@ Craft rules, all live-tested:
 
 - Re-inclusion works mechanically: whenever any .grepaiignore carries a
   negation, the indexer descends into ignored directories instead of
-  pruning them — negations never sit dead inside an excluded tree.
+  pruning them — negations never sit dead, provided the file itself is
+  discoverable (a .grepaiignore placed inside a config-ignored directory
+  is never read).
 - A pattern WITHOUT a leading slash matches the directory NAME at any
   depth — including versioned package-store copies
   (`node_modules/.bun/<lib>@1.2.3/node_modules/<lib>/`). After a store
   cleanup this is harmless; to be immune to duplicates, pin the version or
   anchor the negation to the exact store path.
-- A leading slash anchors to the project root.
+- A leading slash anchors to the project root (in a nested .grepaiignore,
+  to that file's own directory).
 - A negation can be followed by ordinary exclusions of its sub-paths —
   last match wins, gitignore-style.
 - Rust/Go honesty: dependencies live in global caches outside the project
@@ -90,7 +93,9 @@ Craft rules, all live-tested:
 ## Applying and verifying
 
 - Every ignore change (any layer) requires a re-index before the index
-  reflects it — unlike boost, which applies to the next search.
+  reflects it — unlike boost, which applies to the next search. A running
+  watch daemon builds its ignore matcher once at startup: after ignore
+  edits, restart the daemon or run a fresh index.
 - Verify by file count: `grepai_index_status { root }` before and after a
   re-index; a successful curation shows a small increase (the re-included
   library) or a large drop (a corrected exclude), never silence.
