@@ -1,0 +1,9 @@
+{
+  "author": {
+    "name": "Vasyl Sokolyk"
+  },
+  "description": "grepai semantic code search as a plugin: the grepai MCP server plus the grepai-workflow skill for per-project setup, intent-shaped search, and LSP synergy",
+  "displayName": "grepai",
+  "name": "grepai",
+  "version": "0.1.0"
+}

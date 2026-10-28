@@ -1,5 +1,5 @@
 {
-  "description": "Local marketplace for the sdd, biome-lsp, security-guard, and lsp-proxy plugins",
+  "description": "Local plugin marketplace: the sdd plugin and its siblings",
   "name": "sdd-local",
   "owner": {
     "name": "Vasyl Sokolyk"
@@ -24,6 +24,11 @@
       "description": "One registered LSP for Claude Code that fans out to multiple downstream stdio LSP servers (vtsls + biome by default) and merges their results",
       "name": "lsp-proxy",
       "source": "./plugins/lsp-proxy"
+    },
+    {
+      "description": "grepai semantic code search: the grepai MCP server plus a workflow skill for per-project setup, intent-shaped search, and LSP synergy",
+      "name": "grepai",
+      "source": "./plugins/grepai"
     }
   ]
 }
