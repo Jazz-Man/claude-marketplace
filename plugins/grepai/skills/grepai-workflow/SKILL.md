@@ -78,6 +78,11 @@ work.
   profile (Ollama embedder, GOB store): every section, defaults, and the
   pitfalls that break indexes. Read it when setting up or editing
   `.grepai/config.yaml`.
+- **`references/chunking.md`** — how files split into chunks: the `fixed`
+  window strategy with tuning tables, the `ast` syntax-aware strategy
+  (active in this build — treesitter + CGO), custom extensions, and the
+  re-index rule after any chunking change. Read it before touching
+  `chunking:` in the config.
 - **`references/config.schema.json`** — the machine truth for the config,
   generated from grepai source (v1.1.0 + 2026-10-28). Consult it for any
   key not covered in the prose reference, or to validate a config shape.
