@@ -7,12 +7,6 @@
       "source": "Effect-TS/skills",
       "sourceType": "github"
     },
-    "grepai-chunking": {
-      "computedHash": "f38f859563ad056b004e37c8a9786a88c1bbcabf92b9f2966622a9a477c89563",
-      "skillPath": "skills/indexing/grepai-chunking/SKILL.md",
-      "source": "yoanbernabeu/grepai-skills",
-      "sourceType": "github"
-    },
     "grepai-ignore-patterns": {
       "computedHash": "49f145812578da2f0b6e1b849367b50c05311930b3dde75d583f87963ce2cd52",
       "skillPath": "skills/configuration/grepai-ignore-patterns/SKILL.md",
