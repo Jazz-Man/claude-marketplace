@@ -6,18 +6,6 @@
       "skillPath": "skills/effect-ts/SKILL.md",
       "source": "Effect-TS/skills",
       "sourceType": "github"
-    },
-    "grepai-ignore-patterns": {
-      "computedHash": "49f145812578da2f0b6e1b849367b50c05311930b3dde75d583f87963ce2cd52",
-      "skillPath": "skills/configuration/grepai-ignore-patterns/SKILL.md",
-      "source": "yoanbernabeu/grepai-skills",
-      "sourceType": "github"
-    },
-    "grepai-mcp-tools": {
-      "computedHash": "c756de15603cc76bdb9ac1b8ab19ddabb4f3383bac8f999d04cf82de5eb2c92f",
-      "skillPath": "skills/integration/grepai-mcp-tools/SKILL.md",
-      "source": "yoanbernabeu/grepai-skills",
-      "sourceType": "github"
     }
   }
 }
