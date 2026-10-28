@@ -100,9 +100,10 @@ Common add-ons on TOP of the shipped defaults:
 
 Verification runs exclusively through the MCP tools.
 
-- Changes apply to the next `grepai_search` call — tune live, no reindex.
-  The server re-reads the config when a call passes the project `root`, so
-  edits to `search.boost` take effect immediately, with no server restart.
+- Changes apply to the next `grepai_search` call — tune live, no reindex:
+  the server re-loads the config on EVERY search call (the `root` parameter
+  only selects the project, falling back to its startup root), so edits to
+  `search.boost` take effect immediately, with no server restart.
 - Verify with a real query before/after: results from penalized paths sink
   but remain findable (a "test authentication" query still returns tests,
   ranked lower).
