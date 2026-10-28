@@ -13,12 +13,6 @@
       "source": "yoanbernabeu/grepai-skills",
       "sourceType": "github"
     },
-    "grepai-languages": {
-      "computedHash": "4455b834ebd11ce4bfd2890fd1d9fe3a5a857bc08e670e7a0ea0f9f89cb7290b",
-      "skillPath": "skills/advanced/grepai-languages/SKILL.md",
-      "source": "yoanbernabeu/grepai-skills",
-      "sourceType": "github"
-    },
     "grepai-mcp-tools": {
       "computedHash": "c756de15603cc76bdb9ac1b8ab19ddabb4f3383bac8f999d04cf82de5eb2c92f",
       "skillPath": "skills/integration/grepai-mcp-tools/SKILL.md",

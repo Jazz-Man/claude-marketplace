@@ -71,18 +71,34 @@ finds them, and property accesses inside object literals can appear as
 pseudo-call edges. For a caller view, run trace_callers; treat graph as a
 callee dependency map.
 
-## Language coverage
+## Language coverage — two tiers
 
-Extracted kinds: functions, methods, classes, interfaces, types. Coverage:
-Go, JS/JSX, TS/TSX, Vue SFC (converted to TS first via framework
-processing), Python, PHP, Lua, Java, C, C++, Rust, Zig, C#, F#,
-Pascal/Delphi, GDScript, Ruby. Ruby caveat: receiver.method calls are found
-with or without parentheses; bare parenthesis-less calls are not (they are
-indistinguishable from variables for the extractor).
+The semantic index and the symbol index cover different worlds:
 
-Only extensions in `trace.enabled_languages` are indexed; configs from
-older grepai versions may lack newer entries (`.vue`, F# extensions) — add
-them by hand if a language silently yields nothing.
+- **Search tier** — every file with a supported extension (~60: all major
+  languages plus Shell, SQL, HTML/CSS, Markdown, YAML/JSON/TOML/XML, ini,
+  env, proto, terraform), extended by `chunking.custom_extensions`.
+  Detection is by file EXTENSION ONLY — no shebang or content sniffing —
+  and files over 1 MB or binary are skipped regardless of any config.
+- **Trace tier** — only languages with an extractor: Go, JS/JSX, TS/TSX,
+  Vue SFC (converted to TS first via framework processing), Python, PHP,
+  Lua, GDScript, Ruby, C/C++, Rust, Zig, C#, Java, F#, Pascal/Delphi.
+  Extracted kinds: functions, methods, classes, interfaces, types.
+
+Everything else — Swift, Kotlin, Scala, Dart, Elixir, Erlang, Clojure,
+Haskell, OCaml, Elm, Nim, and all config/markup — is searchable but yields
+no call graphs. Custom extensions are indexed for search with the fixed
+chunker and are never traced.
+
+Ruby caveat: receiver.method calls are found with or without parentheses;
+bare parenthesis-less calls are not (indistinguishable from variables for
+the extractor). Expect misses wherever syntax is dynamic — dynamic
+dispatch, magic methods, reflection-based calls: the extractor reads
+explicit syntax only.
+
+Only extensions in `trace.enabled_languages` get symbol extraction; configs
+from older grepai versions may lack newer entries (`.vue`, F#) — add them
+by hand if a language silently yields nothing.
 
 File-level exclusion from trace has exactly ONE mechanism: the top-level
 `ignore` layer — and it removes the files from BOTH indexes (vector and
