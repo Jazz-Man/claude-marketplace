@@ -78,6 +78,11 @@ work.
   profile (Ollama embedder, GOB store): every section, defaults, and the
   pitfalls that break indexes. Read it when setting up or editing
   `.grepai/config.yaml`.
+- **`references/search.md`** — how to search through MCP: intent-vs-identifier
+  query craft, tool-call shapes (path scoping, compact economy pattern),
+  reading RANKS instead of absolute score thresholds, iterative refinement,
+  and the stale-index/ignore-layer checks behind "no results". Read it
+  before writing the first query.
 - **`references/search-boost.md`** — ranking rules: mechanics (reorder-only,
   cumulative, config-only), pattern semantics, shipped defaults, the
   curation-interplay rule (never penalize what `.grepaiignore` curated in),
