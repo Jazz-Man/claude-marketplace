@@ -72,12 +72,6 @@
       "skillPath": "skills/trace/grepai-trace-graph/SKILL.md",
       "source": "yoanbernabeu/grepai-skills",
       "sourceType": "github"
-    },
-    "grepai-watch-daemon": {
-      "computedHash": "1e070e0677ceb3961057f9495089cfa9091a92420b5578b2b4fffc6a5b635a2b",
-      "skillPath": "skills/indexing/grepai-watch-daemon/SKILL.md",
-      "source": "yoanbernabeu/grepai-skills",
-      "sourceType": "github"
     }
   }
 }
