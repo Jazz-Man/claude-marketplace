@@ -60,9 +60,10 @@ called, are correctly absent.
 **DISTRUST — the enclosing `symbol` attribution of a caller:** for call
 sites inside a proper named function it resolves correctly, but for
 module-level or inline sites the attribution can name a keyword
-pseudo-symbol ("if", "for") from a completely unrelated file. Read the
-caller's identity from the call_site context line, not from
-symbol.name, whenever the enclosing symbol looks wrong.
+pseudo-symbol ("if", "for") from a completely unrelated file — the
+regex-based extractor is the root cause. Read the caller's identity from
+the call_site context line, not from symbol.name, whenever the enclosing
+symbol looks wrong.
 
 **DISTRUST — `graph` caller-side:** trace_graph reliably returns the
 callee subtree, but caller edges are often absent even when trace_callers
@@ -70,24 +71,23 @@ finds them, and property accesses inside object literals can appear as
 pseudo-call edges. For a caller view, run trace_callers; treat graph as a
 callee dependency map.
 
-## Language coverage and extraction reality
+## Language coverage
 
 Extracted kinds: functions, methods, classes, interfaces, types. Coverage:
 Go, JS/JSX, TS/TSX, Vue SFC (converted to TS first via framework
 processing), Python, PHP, Lua, Java, C, C++, Rust, Zig, C#, F#,
 Pascal/Delphi, GDScript, Ruby. Ruby caveat: receiver.method calls are found
 with or without parentheses; bare parenthesis-less calls are not (they are
-indistinguishable from variables for a regex extractor).
-
-Extraction is ALWAYS the fast regex extractor. The "precise" tree-sitter
-mode was never wired into indexing — the mode flag is deprecated and every
-result reports `"mode": "fast"` regardless, even in treesitter builds.
-Adjust trust accordingly: regex extraction is why enclosing-symbol
-attribution degrades on unusual shapes.
+indistinguishable from variables for the extractor).
 
 Only extensions in `trace.enabled_languages` are indexed; configs from
 older grepai versions may lack newer entries (`.vue`, F# extensions) — add
 them by hand if a language silently yields nothing.
+
+File-level exclusion from trace has exactly ONE mechanism: the top-level
+`ignore` layer — and it removes the files from BOTH indexes (vector and
+symbol) at once. A trace-specific exclude does not exist; wanting files in
+vector search but out of trace is not an expressible configuration.
 
 ## refs — property-level reads and writes
 

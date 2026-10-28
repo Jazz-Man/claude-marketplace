@@ -113,8 +113,11 @@ shipped default). Fast regex extractor covers .go .js .ts .jsx .tsx .py .php
 fewer languages. `.vue` works through framework_processing. Extensions
 outside extractor coverage are indexed but yield no symbols.
 
-`trace.mode` and `trace.exclude_patterns` NEVER had any effect — grepai
-drops them on the next config save. Remove them if present.
+`trace.mode`, `trace.exclude_patterns`, `update.check_on_startup`, and
+`rpg.store_path` NEVER had any effect in any version — grepai drops them
+on the next config save. Remove them if present. To exclude files from
+trace, use the top-level `ignore` layer (it covers both the vector and the
+symbol index).
 
 ## rpg
 
