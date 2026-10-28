@@ -7,6 +7,12 @@
     "jscpd-mcp": {
       "args": ["--mcp"],
       "command": "jscpd"
+    },
+    "lightpanda": {
+      "args": ["mcp", "--obey-robots"],
+      "command": "lightpanda",
+      "env": {},
+      "type": "stdio"
     }
   }
 }
