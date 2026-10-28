@@ -1,0 +1,609 @@
+{
+	"$schema": "https://json-schema.org/draft/2020-12/schema",
+	"title": "grepai project configuration",
+	"description": "Schema for .grepai/config.yaml, the per-project grepai configuration. Source of truth: config/config.go (Config struct, DefaultConfig, applyDefaults, validators); consumers verified in embedder/factory.go, cli/ (index, watch, search, init), mcp/server.go, search/, indexer/, trace/, rpg/, framework/. Reflects main at v1.1.0 + follow-up commits (2026-10-28). Notes: grepai itself silently ignores unknown YAML keys; this schema sets additionalProperties:false to flag typos. Every option is optional at load time - missing or zero values are filled from defaults. The global multi-project file ~/.grepai/workspace.yaml is described separately in #/$defs/workspaceFile.",
+	"x-grepai-config-file": ".grepai/config.yaml",
+	"type": "object",
+	"additionalProperties": false,
+	"properties": {
+		"version": {
+			"type": "integer",
+			"enum": [1],
+			"default": 1,
+			"description": "Config format version. Only 1 exists today."
+		},
+		"embedder": { "$ref": "#/$defs/embedderConfig" },
+		"store": { "$ref": "#/$defs/storeConfig" },
+		"chunking": {
+			"type": "object",
+			"additionalProperties": false,
+			"description": "How source files are split into embeddable chunks. Consumed by indexer.NewFileChunker and indexer.Scanner.",
+			"properties": {
+				"size": {
+					"type": "integer",
+					"default": 512,
+					"description": "Target chunk size in tokens (approx. 4 chars per token). With strategy=ast the budget is converted to non-whitespace characters. 0 or missing resets to 512 at load."
+				},
+				"overlap": {
+					"type": "integer",
+					"default": 50,
+					"minimum": 0,
+					"description": "Overlap between consecutive chunks in tokens. Unused by strategy=ast. 0 or missing resets to 50 at load (so 0 cannot be forced)."
+				},
+				"strategy": {
+					"type": "string",
+					"enum": ["fixed", "ast"],
+					"default": "fixed",
+					"description": "fixed: sliding window of size+overlap. ast: cAST recursive split-then-merge respecting syntax trees; covers .go .js .jsx .ts .tsx .py, every other file falls back to fixed. Requires a build with the treesitter tag + CGO (enabled on main after the v1.1.0 release, commit 87a66ac); in builds without it, logs a warning and falls back to fixed. Unknown values also fall back to fixed with a warning."
+				},
+				"custom_extensions": {
+					"type": "array",
+					"items": { "type": "string", "pattern": "^\\." },
+					"default": [],
+					"description": "Extra file extensions to index beyond the built-in SupportedExtensions list (e.g. [\".tengo\", \".el\"]). Each entry needs the leading dot; matched case-insensitively. Binary detection (UTF-8 + null-byte check) still applies, so adding a binary extension is safe."
+				}
+			}
+		},
+		"framework_processing": {
+			"type": "object",
+			"additionalProperties": false,
+			"description": "Node-based preprocessing of single-file components (Vue/Svelte/Astro/Solid) before chunking and symbol extraction, with line numbers remapped to the original file. Consumed by cli/buildFrameworkRegistry -> framework.ProcessorRegistry.",
+			"properties": {
+				"enabled": {
+					"type": "boolean",
+					"default": true,
+					"description": "Master switch. false forces mode=off (source passes through untouched), regardless of mode."
+				},
+				"mode": {
+					"type": "string",
+					"enum": ["auto", "require", "off"],
+					"default": "auto",
+					"description": "auto: transform when the processor is available, otherwise pass through with a warning. require: hard-error when a matched processor is unavailable (e.g. node not found). off: never transform."
+				},
+				"node_path": {
+					"type": "string",
+					"default": "node",
+					"description": "Node.js executable used by the Vue compiler. Empty resets to 'node'."
+				},
+				"frameworks": {
+					"type": "object",
+					"additionalProperties": false,
+					"description": "Per-framework switches. Omitting a whole framework block inherits the shipped default (vue: true, svelte/astro/solid: false).",
+					"properties": {
+						"vue": {
+							"type": "object",
+							"additionalProperties": false,
+							"properties": {
+								"enabled": {
+									"type": "boolean",
+									"default": true,
+									"description": "Vue SFC processor: real compiler implementation, runs via node_path. Default on."
+								}
+							}
+						},
+						"svelte": {
+							"type": "object",
+							"additionalProperties": false,
+							"properties": {
+								"enabled": {
+									"type": "boolean",
+									"default": false,
+									"description": "Scaffold processor: in auto mode falls back to passthrough; in require mode it fails. Default off."
+								}
+							}
+						},
+						"astro": {
+							"type": "object",
+							"additionalProperties": false,
+							"properties": {
+								"enabled": {
+									"type": "boolean",
+									"default": false,
+									"description": "Scaffold processor: in auto mode falls back to passthrough; in require mode it fails. Default off."
+								}
+							}
+						},
+						"solid": {
+							"type": "object",
+							"additionalProperties": false,
+							"properties": {
+								"enabled": {
+									"type": "boolean",
+									"default": false,
+									"description": "Scaffold processor: in auto mode falls back to passthrough; in require mode it fails. Default off."
+								}
+							}
+						}
+					}
+				}
+			}
+		},
+		"watch": {
+			"type": "object",
+			"additionalProperties": false,
+			"description": "Daemon behavior (grepai watch). The four rpg_* timings are validated at config load - invalid values make every command fail, not just watch.",
+			"properties": {
+				"debounce_ms": {
+					"type": "integer",
+					"default": 500,
+					"description": "Debounce window for filesystem events before incremental reindexing. 0 or missing resets to 500."
+				},
+				"last_index_time": {
+					"type": "string",
+					"format": "date-time",
+					"x-grepai-internal": true,
+					"description": "INTERNAL - managed by grepai, do not edit. Timestamp persisted after each indexing pass; drives incremental indexing. Read by cli/index.go, written back into config.yaml by the watcher."
+				},
+				"rpg_persist_interval_ms": {
+					"type": "integer",
+					"default": 1000,
+					"minimum": 200,
+					"description": "How often the watcher flushes the RPG graph to .grepai/rpg.gob. Validated at load: must be >= 200."
+				},
+				"rpg_derived_debounce_ms": {
+					"type": "integer",
+					"default": 300,
+					"minimum": 100,
+					"description": "Debounce for recomputing derived RPG edges (invokes/imports/semantic). Validated at load: must be >= 100."
+				},
+				"rpg_full_reconcile_interval_sec": {
+					"type": "integer",
+					"default": 300,
+					"minimum": 30,
+					"description": "Period between full RPG reconciliation passes. Validated at load: must be >= 30."
+				},
+				"rpg_max_dirty_files_per_batch": {
+					"type": "integer",
+					"default": 128,
+					"minimum": 1,
+					"description": "Cap on dirty files processed per RPG update batch. Validated at load: must be >= 1."
+				},
+				"discover_worktrees": {
+					"type": "boolean",
+					"default": true,
+					"description": "Set false to stop grepai watch from auto-initializing and watching linked git worktrees. Only the main worktree's config is consulted; the key is ignored in linked-worktree config copies."
+				}
+			}
+		},
+		"search": {
+			"type": "object",
+			"additionalProperties": false,
+			"description": "Query-time ranking options. Consumed by search.NewSearcher (both CLI search and the MCP server).",
+			"properties": {
+				"boost": {
+					"type": "object",
+					"additionalProperties": false,
+					"description": "Path-based score multipliers applied after retrieval, before ranking.",
+					"properties": {
+						"enabled": {
+							"type": "boolean",
+							"default": true,
+							"description": "Apply boost rules to search results."
+						},
+						"penalties": {
+							"type": "array",
+							"items": { "$ref": "#/$defs/boostRule" },
+							"description": "Rules with factor < 1 demote matching paths. Shipped defaults penalize tests, mocks, fixtures, generated code and docs.",
+							"default": [
+								{ "pattern": "/tests/", "factor": 0.5 },
+								{ "pattern": "/test/", "factor": 0.5 },
+								{ "pattern": "__tests__", "factor": 0.5 },
+								{ "pattern": "_test.", "factor": 0.5 },
+								{ "pattern": ".test.", "factor": 0.5 },
+								{ "pattern": ".spec.", "factor": 0.5 },
+								{ "pattern": "test_", "factor": 0.5 },
+								{ "pattern": "/mocks/", "factor": 0.4 },
+								{ "pattern": "/mock/", "factor": 0.4 },
+								{ "pattern": ".mock.", "factor": 0.4 },
+								{ "pattern": "/fixtures/", "factor": 0.4 },
+								{ "pattern": "/testdata/", "factor": 0.4 },
+								{ "pattern": "/generated/", "factor": 0.4 },
+								{ "pattern": ".generated.", "factor": 0.4 },
+								{ "pattern": ".gen.", "factor": 0.4 },
+								{ "pattern": ".md", "factor": 0.6 },
+								{ "pattern": "/docs/", "factor": 0.6 }
+							]
+						},
+						"bonuses": {
+							"type": "array",
+							"items": { "$ref": "#/$defs/boostRule" },
+							"description": "Rules with factor > 1 promote matching paths.",
+							"default": [
+								{ "pattern": "/src/", "factor": 1.1 },
+								{ "pattern": "/lib/", "factor": 1.1 },
+								{ "pattern": "/app/", "factor": 1.1 }
+							]
+						}
+					}
+				},
+				"hybrid": {
+					"type": "object",
+					"additionalProperties": false,
+					"description": "Vector + keyword search fused with Reciprocal Rank Fusion.",
+					"properties": {
+						"enabled": {
+							"type": "boolean",
+							"default": false,
+							"description": "Fuse vector search with naive word-overlap text search via RRF. Works on every backend (gob, postgres, qdrant all implement GetAllChunks), but loads ALL chunks through the store to score them - costly on large indexes."
+						},
+						"k": {
+							"type": "number",
+							"default": 60,
+							"description": "RRF constant. Values <= 0 fall back to 60 at runtime."
+						}
+					}
+				},
+				"dedup": {
+					"type": "object",
+					"additionalProperties": false,
+					"properties": {
+						"enabled": {
+							"type": "boolean",
+							"default": true,
+							"description": "Keep only the highest-scoring chunk per file (over-fetches 4x, then collapses to one result per file)."
+						}
+					}
+				}
+			}
+		},
+		"trace": {
+			"type": "object",
+			"additionalProperties": false,
+			"description": "Symbol extraction for trace/refs call graphs (grepai trace, grepai refs, MCP equivalents).",
+			"properties": {
+				"enabled_languages": {
+					"type": "array",
+					"items": { "type": "string", "pattern": "^\\." },
+					"description": "File extensions whose files get symbol/reference extraction. An empty array falls back to the shipped default. Fast regex extractor coverage: .go .js .ts .jsx .tsx .py .php .lua .c .h .zig .rs .cpp .hpp .cc .cxx .hxx .java .cs .pas .dpr .fs .fsx .fsi .gd .rb; precise tree-sitter extractor (treesitter builds) covers .go .js .jsx .ts .tsx .py .php .cs .fs .fsx .fsi. Extensions outside extractor coverage are read but yield no symbols. .vue works through framework_processing.",
+					"default": [
+						".go",
+						".js",
+						".ts",
+						".jsx",
+						".tsx",
+						".vue",
+						".py",
+						".php",
+						".lua",
+						".gd",
+						".rb",
+						".c",
+						".h",
+						".cpp",
+						".hpp",
+						".cc",
+						".cxx",
+						".hxx",
+						".rs",
+						".zig",
+						".cs",
+						".java",
+						".fs",
+						".fsx",
+						".fsi",
+						".pas",
+						".dpr"
+					]
+				}
+			}
+		},
+		"rpg": {
+			"type": "object",
+			"additionalProperties": false,
+			"description": "Repository Program Graph (.grepai/rpg.gob): hierarchy of code entities with invokes/imports/semantic edges, queried via grepai rpg search/fetch/explore. All numeric ranges below are validated at config load ONLY when enabled=true (see the conditional at the end of this schema).",
+			"properties": {
+				"enabled": {
+					"type": "boolean",
+					"default": false,
+					"description": "Build and maintain the RPG graph during index/watch."
+				},
+				"feature_mode": {
+					"type": "string",
+					"enum": ["local", "hybrid", "llm"],
+					"default": "local",
+					"description": "local: heuristic feature extraction. llm / hybrid: extract features with an OpenAI-compatible chat model (llm_endpoint, llm_model); when llm_model or llm_endpoint is empty, falls back to the local extractor with a warning."
+				},
+				"drift_threshold": {
+					"type": "number",
+					"default": 0.35,
+					"description": "Jaccard drift above which a modified file is re-placed in the feature hierarchy (0 = never, 1 = always). Valid range 0.0-1.0 when rpg.enabled. A literal 0 is treated as unset and resets to 0.35."
+				},
+				"max_traversal_depth": {
+					"type": "integer",
+					"default": 3,
+					"description": "Hierarchy traversal depth bound. Valid range 1-10 when rpg.enabled. Values <= 0 reset to 3."
+				},
+				"llm_provider": {
+					"type": "string",
+					"default": "ollama",
+					"description": "Provider label for the RPG LLM extractor (informational; requests go to llm_endpoint). Empty resets to ollama."
+				},
+				"llm_model": {
+					"type": "string",
+					"default": "",
+					"description": "Chat model for feature extraction. NO default - deliberately left empty; empty means llm/hybrid modes fall back to the local extractor."
+				},
+				"llm_endpoint": {
+					"type": "string",
+					"default": "http://localhost:11434/v1",
+					"description": "OpenAI-compatible chat endpoint for the RPG LLM extractor."
+				},
+				"llm_api_key": {
+					"type": "string",
+					"description": "API key for the RPG LLM endpoint (optional for local endpoints)."
+				},
+				"llm_timeout_ms": {
+					"type": "integer",
+					"default": 8000,
+					"description": "Per-request timeout for the RPG LLM extractor. Values <= 0 reset to 8000."
+				},
+				"feature_group_strategy": {
+					"type": "string",
+					"enum": ["sample", "split"],
+					"default": "sample",
+					"description": "How oversized feature groups are handled: sample picks representatives, split divides them."
+				}
+			}
+		},
+		"ignore": {
+			"type": "array",
+			"items": { "type": "string" },
+			"description": "Extra ignore entries layered on top of every .gitignore found in the project. Entries are matched both as directory names (skip subtree) and as gitignore-style patterns anchored at the project root. Nested .grepaiignore files can re-include (override) these.",
+			"default": [
+				".git",
+				".grepai",
+				"node_modules",
+				"vendor",
+				"bin",
+				"dist",
+				"__pycache__",
+				".venv",
+				"venv",
+				".idea",
+				".vscode",
+				"target",
+				".zig-cache",
+				"zig-out",
+				"qdrant_storage"
+			]
+		},
+		"external_gitignore": {
+			"type": "string",
+			"description": "Path to an additional gitignore file applied from the project root (supports ~/ expansion). A missing file only logs a warning."
+		}
+	},
+	"allOf": [
+		{
+			"if": {
+				"properties": {
+					"rpg": {
+						"properties": { "enabled": { "const": true } },
+						"required": ["enabled"]
+					}
+				}
+			},
+			"then": {
+				"properties": {
+					"rpg": { "$ref": "#/$defs/rpgEnabled" }
+				}
+			}
+		}
+	],
+	"$defs": {
+		"embedderConfig": {
+			"type": "object",
+			"additionalProperties": false,
+			"description": "Embedding provider settings. Consumed by embedder.NewFromConfig (CLI + MCP).",
+			"properties": {
+				"provider": {
+					"type": "string",
+					"enum": [
+						"ollama",
+						"lmstudio",
+						"openai",
+						"synthetic",
+						"openrouter",
+						"requesty"
+					],
+					"default": "ollama",
+					"description": "Embedding provider. Empty resets to ollama; unknown values fail at runtime with 'unknown embedding provider'."
+				},
+				"model": {
+					"type": "string",
+					"default": "nomic-embed-text",
+					"description": "Model name. Per-provider defaults: ollama nomic-embed-text (768d); lmstudio text-embedding-nomic-embed-text-v1.5 (768d); openai text-embedding-3-small (1536d); synthetic hf:nomic-ai/nomic-embed-text-v1.5; openrouter openai/text-embedding-3-small; requesty openai/text-embedding-3-small."
+				},
+				"endpoint": {
+					"type": "string",
+					"description": "Provider endpoint; when empty the per-provider default is filled in at load: ollama http://localhost:11434; lmstudio http://127.0.0.1:1234; openai https://api.openai.com/v1; synthetic https://api.synthetic.new/openai/v1; openrouter https://openrouter.ai/api/v1; requesty https://router.requesty.ai/v1."
+				},
+				"api_key": {
+					"type": "string",
+					"description": "API key for cloud providers. When empty, resolved from the environment: openai <- OPENAI_API_KEY; synthetic <- SYNTHETIC_API_KEY then OPENAI_API_KEY; openrouter <- OPENROUTER_API_KEY then OPENAI_API_KEY; requesty <- REQUESTY_API_KEY then OPENAI_API_KEY. Local providers (ollama, lmstudio) ignore it. Excluded from the embedding-cache namespace, so rotating the key does not invalidate the index."
+				},
+				"dimensions": {
+					"type": "integer",
+					"minimum": 1,
+					"description": "Vector dimensionality. Local providers (ollama, lmstudio, synthetic) default to 768 when unset. For openai/openrouter/requesty, unset means the model's native dimensions (1536 for *-small, 3072 for *-large, 4096 for qwen3-embedding-8b). Must match what the model actually returns: the embedder identity (provider+model+dimensions+endpoint) is recorded in .grepai/index.meta and a mismatch triggers a rebuild/warning."
+				},
+				"parallelism": {
+					"type": "integer",
+					"minimum": 1,
+					"default": 4,
+					"x-grepai-consumers": ["openai provider only"],
+					"description": "Parallel workers for batch embedding. Consumed ONLY by the openai provider; other providers ignore it. Values <= 0 reset to 4."
+				},
+				"request_timeout_seconds": {
+					"type": "integer",
+					"minimum": 1,
+					"x-grepai-consumers": ["all providers except requesty"],
+					"description": "HTTP timeout for a single embedding request. 0/absent keeps the provider default (60s; synthetic 90s). Raise it for slow self-hosted endpoints (e.g. ollama on a shared GPU). Consumed by all providers EXCEPT requesty."
+				},
+				"max_retries": {
+					"type": "integer",
+					"minimum": 1,
+					"x-grepai-consumers": ["openai provider only"],
+					"description": "Retry attempts for transient failures (HTTP 429/5xx, exponential backoff 1s-32s). 0/absent keeps the default of 5. Consumed ONLY by the openai provider."
+				},
+				"max_batch_size": {
+					"type": "integer",
+					"minimum": 1,
+					"x-grepai-consumers": ["openai provider only"],
+					"description": "Max inputs per embedding request. 0/absent keeps the OpenAI limit of 2000. Lower it for OpenAI-compatible endpoints that reject large batches. Consumed ONLY by the openai provider."
+				},
+				"max_batch_tokens": {
+					"type": "integer",
+					"minimum": 1,
+					"x-grepai-consumers": ["openai provider only"],
+					"description": "Max estimated tokens per embedding request. 0/absent keeps the OpenAI limit of 280000. Consumed ONLY by the openai provider."
+				}
+			}
+		},
+		"storeConfig": {
+			"type": "object",
+			"additionalProperties": false,
+			"description": "Vector store settings. Consumed by cli + mcp/server.go createStore.",
+			"properties": {
+				"backend": {
+					"type": "string",
+					"enum": ["gob", "postgres", "qdrant"],
+					"default": "gob",
+					"description": "gob: single-file .grepai/index.gob, per-project, not shareable (warns when too large). postgres: pgvector. qdrant: gRPC client. Empty resets to gob; unknown values fail at store creation."
+				},
+				"postgres": { "$ref": "#/$defs/postgresConfig" },
+				"qdrant": { "$ref": "#/$defs/qdrantConfig" }
+			}
+		},
+		"postgresConfig": {
+			"type": "object",
+			"additionalProperties": false,
+			"properties": {
+				"dsn": {
+					"type": "string",
+					"default": "postgres://localhost:5432/grepai",
+					"description": "PostgreSQL connection string for the pgvector database."
+				}
+			}
+		},
+		"qdrantConfig": {
+			"type": "object",
+			"additionalProperties": false,
+			"properties": {
+				"endpoint": {
+					"type": "string",
+					"default": "localhost",
+					"description": "Qdrant host or base URL, e.g. localhost or http://localhost."
+				},
+				"port": {
+					"type": "integer",
+					"default": 6334,
+					"minimum": 1,
+					"maximum": 65535,
+					"description": "gRPC port (6334). The REST port 6333 is not used. Values <= 0 reset to 6334 when backend=qdrant."
+				},
+				"collection": {
+					"type": "string",
+					"description": "Collection name. When empty, derived from the sanitized absolute project path."
+				},
+				"api_key": {
+					"type": "string",
+					"description": "API key for Qdrant Cloud."
+				},
+				"use_tls": {
+					"type": "boolean",
+					"default": false,
+					"description": "Enable TLS on the gRPC connection (for Qdrant Cloud)."
+				}
+			}
+		},
+		"boostRule": {
+			"type": "object",
+			"additionalProperties": false,
+			"required": ["pattern", "factor"],
+			"properties": {
+				"pattern": {
+					"type": "string",
+					"description": "Case-sensitive substring matched against the slash-separated project-relative path with a leading '/' prepended (so '/src/', '.test.', '__tests__' all work as expected)."
+				},
+				"factor": {
+					"type": "number",
+					"exclusiveMinimum": 0,
+					"description": "Score multiplier: < 1 penalizes, > 1 boosts. All matching rules multiply together; results are re-sorted afterwards."
+				}
+			}
+		},
+		"rpgEnabled": {
+			"description": "Extra constraints enforced by ValidateRPGConfig when rpg.enabled is true. grepai rejects the whole config on violation.",
+			"type": "object",
+			"properties": {
+				"drift_threshold": { "type": "number", "minimum": 0, "maximum": 1 },
+				"max_traversal_depth": {
+					"type": "integer",
+					"minimum": 1,
+					"maximum": 10
+				}
+			}
+		},
+		"workspaceFile": {
+			"title": "~/.grepai/workspace.yaml (global multi-project workspace config)",
+			"description": "Separate global file for cross-project workspaces; NOT part of .grepai/config.yaml. Managed by grepai workspace create/add/remove. Only store + embedder are consumed at query time; chunking provides workspace-level defaults of which ONLY custom_extensions is currently consumed (size/overlap/strategy come from each project's own config).",
+			"type": "object",
+			"additionalProperties": false,
+			"properties": {
+				"version": { "type": "integer", "enum": [1], "default": 1 },
+				"workspaces": {
+					"type": "object",
+					"additionalProperties": { "$ref": "#/$defs/workspaceEntry" },
+					"description": "Map of workspace name to workspace definition."
+				}
+			}
+		},
+		"workspaceEntry": {
+			"type": "object",
+			"additionalProperties": false,
+			"properties": {
+				"name": { "type": "string" },
+				"store": {
+					"type": "object",
+					"additionalProperties": false,
+					"description": "gob is rejected for workspaces (file-based, cannot be shared); only postgres and qdrant are valid.",
+					"properties": {
+						"backend": { "type": "string", "enum": ["postgres", "qdrant"] },
+						"postgres": { "$ref": "#/$defs/postgresConfig" },
+						"qdrant": { "$ref": "#/$defs/qdrantConfig" }
+					}
+				},
+				"embedder": { "$ref": "#/$defs/embedderConfig" },
+				"chunking": {
+					"type": "object",
+					"additionalProperties": false,
+					"properties": {
+						"custom_extensions": {
+							"type": "array",
+							"items": { "type": "string", "pattern": "^\\." },
+							"description": "The only chunking key consumed at workspace level."
+						}
+					}
+				},
+				"projects": {
+					"type": "array",
+					"items": {
+						"type": "object",
+						"additionalProperties": false,
+						"required": ["name", "path"],
+						"properties": {
+							"name": {
+								"type": "string",
+								"description": "Project name used in path prefixes and --project filters."
+							},
+							"path": {
+								"type": "string",
+								"description": "Absolute path to the project root."
+							}
+						}
+					}
+				}
+			}
+		}
+	}
+}

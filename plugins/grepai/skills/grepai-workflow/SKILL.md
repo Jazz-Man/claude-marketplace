@@ -13,9 +13,11 @@ LSP verifies.
 ## Setup (first run in a project)
 
 1. Run `grepai init` — it writes `.grepai/config.yaml`.
-2. `ignore` in that file compares by NAME (not glob), and setting the list
-   REPLACES the defaults (.git, node_modules, vendor, bin, dist, …) — start
-   from the defaults and append project-specific names.
+2. `ignore` entries match as directory/file names and as gitignore-style
+   patterns anchored at the project root, layered on top of every
+   .gitignore; a custom list REPLACES the defaults (.git, node_modules,
+   vendor, bin, dist, …) — copy the defaults and append. `.grepaiignore`
+   negations override even config ignore entries.
 3. Curate dependency sources with `.grepaiignore` — gitignore syntax, where
    `!` re-includes: JS/TS `!node_modules/<lib>/`, PHP `!vendor/<lib>/`.
    A pattern without a leading slash matches the directory name at ANY depth
@@ -69,3 +71,13 @@ The composing flow: grepai DISCOVERS candidates → LSP VERIFIES precisely
 to. Never re-verify a classified non-empty LSP result with a text sweep —
 cross-tool flow means each tool covers what the other cannot, not double
 work.
+
+## References
+
+- **`references/configuration.md`** — full configuration map for the solo
+  profile (Ollama embedder, GOB store): every section, defaults, and the
+  pitfalls that break indexes. Read it when setting up or editing
+  `.grepai/config.yaml`.
+- **`references/config.schema.json`** — the machine truth for the config,
+  generated from grepai source (v1.1.0 + 2026-10-28). Consult it for any
+  key not covered in the prose reference, or to validate a config shape.
