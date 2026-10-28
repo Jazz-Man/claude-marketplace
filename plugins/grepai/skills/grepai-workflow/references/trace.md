@@ -37,10 +37,12 @@ Graph around a symbol — `depth` (default 2) bounds the traversal:
 grepai_trace_graph { root: "<project>", symbol: "buildBinary", depth: 3 }
 ```
 
-All three accept `compact: true` (drops context lines — coordinates only)
-and `format: "json" | "toon"`; `workspace` + `project` scope to a
-configured workspace (per-project symbol indexes are then merged; RPG
-feature paths are not attached in workspace mode).
+trace_callers and trace_callees accept `compact: true` (drops context
+lines — coordinates only) and `format: "json" | "toon"`; trace_graph has
+no compact mode (symbol, depth, format, workspace, project only).
+`workspace` + `project` scope to a configured workspace (per-project
+symbol indexes are then merged; RPG feature paths are not attached in
+workspace mode).
 
 ## Verified accuracy profile — what to trust
 
@@ -48,15 +50,17 @@ Live-tested on real call graphs. Split every result into two fields and
 trust them differently:
 
 **TRUST — `call_site` (file, line, context):** coordinates are precise and
-the result is semantic: string literals, comments, and same-named symbols
-in other scopes never appear. An 11-caller verification returned 11/11
-exact sites with zero false positives — the same set an LSP
-findReferences produced.
+string literals and comments never appear (they are masked before
+scanning). Matching is by NAME ONLY, with no scope resolution: same-named
+symbols in other scopes or files surface indistinguishably, so a result
+set is exact for collision-free names (the 11/11 LSP-equivalence
+verification used one) and needs hand-merging when the name collides.
 
 **TRUST — `callees` overall:** resolved callees are accurate, including
 callback invocations inside the body (callback names carry empty symbol
 records but correct call sites); arguments that are merely passed, not
-called, are correctly absent.
+called, are correctly absent. At most one property-derived pseudo-callee
+can leak per query (a fallback path in the store).
 
 **DISTRUST — the enclosing `symbol` attribution of a caller:** for call
 sites inside a proper named function it resolves correctly, but for
@@ -66,11 +70,12 @@ regex-based extractor is the root cause. Read the caller's identity from
 the call_site context line, not from symbol.name, whenever the enclosing
 symbol looks wrong.
 
-**DISTRUST — `graph` caller-side:** trace_graph reliably returns the
-callee subtree, but caller edges are often absent even when trace_callers
-finds them, and property accesses inside object literals can appear as
-pseudo-call edges. For a caller view, run trace_callers; treat graph as a
-callee dependency map.
+**DISTRUST — `graph` caller-side:** trace_graph returns the callee
+subtree, but caller edges are often absent even when trace_callers finds
+them, property accesses in function bodies can appear as pseudo-call
+edges, and traversal silently truncates at nodes whose name collides
+elsewhere in the project. For a caller view, run trace_callers; treat
+graph as a callee dependency map.
 
 ## Language coverage — two tiers
 
@@ -101,10 +106,12 @@ Only extensions in `trace.enabled_languages` get symbol extraction; configs
 from older grepai versions may lack newer entries (`.vue`, F#) — add them
 by hand if a language silently yields nothing.
 
-File-level exclusion from trace has exactly ONE mechanism: the top-level
-`ignore` layer — and it removes the files from BOTH indexes (vector and
-symbol) at once. A trace-specific exclude does not exist; wanting files in
-vector search but out of trace is not an expressible configuration.
+The only CONFIGURABLE file-level exclusion is the top-level `ignore`
+layer — it removes files from BOTH indexes (vector and symbol) at once.
+Minified files, files over 1 MB, and binary files are also always excluded
+from both indexes, regardless of config. A trace-specific exclude does not
+exist; wanting files in vector search but out of trace is not an
+expressible configuration.
 
 ## refs — property-level reads and writes
 
