@@ -94,8 +94,10 @@ Craft rules, all live-tested:
 
 - Every ignore change (any layer) requires a re-index before the index
   reflects it — unlike boost, which applies to the next search. A running
-  watch daemon builds its ignore matcher once at startup: after ignore
-  edits, restart the daemon or run a fresh index.
+  watch daemon builds its ignore matcher once at startup, so ignore edits
+  also invalidate the daemon. Never index or restart anything yourself —
+  warn the owner that a re-index (and a daemon restart, if watch runs) is
+  needed.
 - Verify by file count: `grepai_index_status { root }` before and after a
   re-index; a successful curation shows a small increase (the re-included
   library) or a large drop (a corrected exclude), never silence.

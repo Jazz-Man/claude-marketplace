@@ -13,8 +13,9 @@ first pass everywhere else.
 Trace queries a separate symbol index (`<project>/.grepai/symbols.gob`)
 built by indexing/watching. Before blaming a query, check
 `grepai_index_status { root }` — `symbols_ready: true` is what the trace
-tools need. An empty symbol index fails with "symbol index is empty"; the
-fix is (re)building the index, not rephrasing the symbol.
+tools need. An empty symbol index fails with "symbol index is empty"; that
+is an index-build problem, not a query problem — flag the rebuild to the
+owner, never run it yourself.
 
 ## Tool calls
 

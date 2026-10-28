@@ -11,7 +11,7 @@ Enabled in config (`rpg.enabled` — default off), stored in
 (`trace.enabled_languages`). `grepai_index_status` shows `rpg_enabled`
 plus node and edge counts. Failing states: "RPG is not enabled or index is
 empty" (enable + build), or an outdated-graph error after a grepai upgrade
-(rebuild the graph).
+(a graph rebuild the owner performs).
 
 ## The query craft is the opposite of semantic search
 

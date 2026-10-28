@@ -19,7 +19,10 @@ grepai discovers, LSP verifies.
    rule: references/ignore.md.
 3. Shape `search.boost` ranking — rules, defaults, and the
    curation-interplay rule: references/search-boost.md.
-4. Build the index: `grepai index` (one-shot) or `grepai watch` (daemon).
+4. Never run indexing or watching yourself — the owner builds and maintains
+   the index (`grepai index` / `grepai watch`); after any change that
+   requires a re-index (ignore layers, chunking, embedder identity, the RPG
+   graph), your job is to SAY so, not to run it.
 5. Verify with a ground-truth query; if a curated library does not
    surface, walk the ignore layers in order.
 

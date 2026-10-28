@@ -67,8 +67,8 @@ safe. These files chunk with `fixed`.
 ## Applying changes
 
 - Changing `size`, `overlap`, or `strategy` does NOT re-chunk what is
-  already indexed. Delete the index and rebuild:
-  `rm .grepai/index.gob && grepai index` (or restart `grepai watch`).
+  already indexed — a full re-index is required. Never run indexing
+  yourself: warn the owner that a rebuild is needed.
 - Embedder context limit: if the embedder rejects an oversized chunk, grepai
   splits it in half and retries — up to 3 re-chunking attempts, visible as
   "Re-chunking … context limit exceeded" log lines.
