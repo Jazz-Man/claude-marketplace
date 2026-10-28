@@ -1,14 +1,14 @@
 # grepai configuration reference
 
 Scope: a solo-developer profile — local Ollama embedder, GOB store, one
-machine. The machine truth is `references/config.schema.json` in this skill
-(generated from grepai source: config/config.go at v1.1.0 + 2026-10-28
-commits); this file is the prose map. Anything not covered here is in the
+machine. The machine truth is `references/config.schema.json` in this
+skill; this file is the prose map. Anything not covered here is in the
 schema.
 
-Config lives at `.grepai/config.yaml`. Every option is optional at load —
-missing or zero values are filled from defaults. Unknown YAML keys are
-silently ignored by grepai itself (the schema flags them as typos).
+Config lives at `.grepai/config.yaml`. Most options are optional at load —
+but a missing `search:` section leaves boost/hybrid/dedup off (see
+pitfalls), and an empty `provider` errors at runtime. Unknown YAML keys
+are silently ignored by grepai itself (the schema flags them as typos).
 
 ## The solo baseline
 
@@ -38,24 +38,28 @@ search:
 ## embedder
 
 - `provider`: ollama | lmstudio | openai | synthetic | openrouter | requesty.
-  Empty resets to ollama; unknown fails at runtime.
+  An empty value is NOT auto-filled — only `grepai init` writes the
+  provider; an empty string fails at runtime with
+  `unknown embedding provider`.
 - `model`: per-provider defaults differ (ollama: nomic-embed-text 768d;
   bge-m3 returns 1024d — set `dimensions` to match).
-- `dimensions`: the embedder identity (provider+model+dimensions+endpoint)
-  is recorded in `.grepai/index.meta`; a mismatch triggers a rebuild/warning.
-  Local providers default to 768 when unset.
+- `dimensions`: the embedder identity — provider+model+dimensions, with the
+  endpoint deliberately excluded — is recorded in
+  `.grepai/index-meta.json`; a mismatch triggers a rebuild. Local providers
+  default to 768 when unset.
 - `parallelism`, `max_retries`, `max_batch_size`, `max_batch_tokens`:
   consumed ONLY by the openai provider — ollama silently ignores them.
 - `api_key`: local providers ignore it; cloud providers resolve from env
   (OPENAI_API_KEY and per-provider fallbacks). Rotating a key does NOT
   invalidate the index (excluded from the cache namespace).
-- `request_timeout_seconds`: default 60s; consumed by all providers except
-  requesty — the one tuning knob that matters for slow self-hosted Ollama.
+- `request_timeout_seconds`: default 60s (synthetic hardcodes 90s);
+  consumed by all providers except requesty — the one tuning knob that
+  matters for slow self-hosted Ollama.
 
 ## store
 
 - `backend: gob` — single file `.grepai/index.gob`, per-project, not
-  shareable; grepai warns when it grows too large. This is the solo default.
+  shareable. This is the solo default.
 - `postgres` (pgvector, `dsn`) and `qdrant` (gRPC, port 6334, TLS/api_key for
   Cloud) exist for teams and shared workspaces — and workspaces REJECT gob
   (file-based stores cannot be shared).
@@ -107,11 +111,11 @@ off; `node_path` defaults to `node`. `enabled: false` forces off.
 ## trace
 
 Only `enabled_languages` exists (extensions with a leading dot; empty =
-shipped default). Fast regex extractor covers .go .js .ts .jsx .tsx .py .php
-.lua .c .h .zig .rs .cpp/.hpp/.cc/.cxx/.hxx .java .cs .pas .dpr .fs .fsx
-.fsi .gd .rb; the precise tree-sitter extractor (treesitter builds) covers
-fewer languages. `.vue` works through framework_processing. Extensions
-outside extractor coverage are indexed but yield no symbols.
+shipped default). The regex extractor covers .go .js .ts .jsx .tsx .py
+.php .lua .c .h .zig .rs .cpp/.hpp/.cc/.cxx/.hxx .java .cs .pas .dpr .fs
+.fsx .fsi .gd .rb — and it is the only extractor production ever builds.
+`.vue` works through framework_processing. Extensions outside extractor
+coverage are indexed but yield no symbols.
 
 ## rpg
 

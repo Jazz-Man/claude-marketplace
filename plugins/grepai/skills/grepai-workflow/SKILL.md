@@ -71,4 +71,4 @@ double work.
 - **chunking.md** — fixed vs ast strategies, tuning tables, the re-index rule
 - **trace.md** — call graphs: verified trust profile, language tiers, refs
 - **rpg.md** — the feature graph: word-overlap search, node IDs, edge types
-- **config.schema.json** — the machine truth for the config (grepai v1.1.0+)
+- **config.schema.json** — the machine truth for the config
