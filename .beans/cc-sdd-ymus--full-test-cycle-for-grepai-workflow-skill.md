@@ -5,7 +5,7 @@ status: completed
 type: task
 priority: normal
 created_at: 2026-10-29T10:04:18Z
-updated_at: 2026-10-29T13:08:53Z
+updated_at: 2026-10-29T13:39:53Z
 ---
 
 skill-creator loop for plugins/grepai/skills/grepai-workflow: iteration-1 (current skill vs no-skill, 3 evals incl. the owner-ignore-pruning regression from user observation), fix instructions, iteration-2 verification.
@@ -21,3 +21,7 @@ Three causes identified: (1) small-file math — slicing under ~150-200 lines co
 ## Iterations 3-4 (hard research tasks, large files)
 
 i3 Effect-rewrite plan (9 assertions): 9/9 vs 9/9 parity; all APIs source-verified by orchestrator (v4 traps caught by both: fromNullishOr, no runIntoSink, catchAll gone; unique finds: with=CLI presenter stdout pollution + empty-argv decision, baseline=ConfigProvider eager env snapshot). with_skill 93 calls vs baseline 135 (-31%). i4 config-to-Schema plan, compact forbidden by task (8 assertions): 8/8 vs 8/8; unique finds: with=checked-Record silent key drop (Schema.ts:3984) + 12-site byte-compat ConfigError table, baseline=ParseOptions errors:first default + empirical probe.ts on real fixtures. Contradiction adjudicated: effect resolves via root symlink today (baseline right, with_skill isolated-linker blocker overstated). Compact experiment: no-compact did not inflate tokens or degrade quality — verification-heavy research uses few searches; compact economy matters in search-heavy loops only. Doctrine stays default-not-dogma.
+
+## Day close
+
+Iteration-5 verdict (grepai-only 132.4k/76 calls vs grepai+LSP 104.8k/65, both 7/7): LSP pays hardest in consumer-census questions (hard pins: sync-extensions.ts imports conflictingExtension, config-oop.test.ts imports ProxyConfig class directly — via findReferences in one call); grepai-only compensates with empiricism (6 probes; three new v4 behaviors: struct-check skipped on inner decode failure, pathless filter issues crash Pointer formatters, annotate not reaching InvalidType) at +27% tokens. Both critical v4 traps (no Schema.parse/parseResult, errors:'first' default) caught by all four modes — zero invented APIs. Metadata carry-over mistake (i4's no-compact assertion in i5) graded honestly at 7/7 both. Day totals: 5 iterations, 18 runs, ~1.6M subagent tokens, 8 skill calibrations. Workspaces cleaned from tmp/ at owner request; per-run evidence lives in this bean and the gradings summarized above.
