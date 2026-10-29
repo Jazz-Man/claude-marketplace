@@ -1,4 +1,8 @@
+docs/grepai
 !node_modules/bun-types/
-node_modules/bun-types/CLAUDE.md
 node_modules/bun-types/vendor/
 !node_modules/unbash/dist/
+
+!node_modules/@effect/platform-bun/src/
+!node_modules/@effect/platform-node-shared/src/
+!node_modules/effect/src/
