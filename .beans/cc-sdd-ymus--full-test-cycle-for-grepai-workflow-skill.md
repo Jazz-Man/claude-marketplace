@@ -5,7 +5,7 @@ status: completed
 type: task
 priority: normal
 created_at: 2026-10-29T10:04:18Z
-updated_at: 2026-10-29T10:55:12Z
+updated_at: 2026-10-29T13:08:53Z
 ---
 
 skill-creator loop for plugins/grepai/skills/grepai-workflow: iteration-1 (current skill vs no-skill, 3 evals incl. the owner-ignore-pruning regression from user observation), fix instructions, iteration-2 verification.
@@ -17,3 +17,7 @@ Two-iteration skill-creator cycle for grepai-workflow. Iteration-1 (vs no-skill)
 ## Post-feedback codification (user question: why whole-file reads)
 
 Three causes identified: (1) small-file math — slicing under ~150-200 lines costs more calls than it saves (framing.ts=150, downstream.ts=93); (2) comprehension-shaped tasks — the module IS the answer, so its span is the bounded range (the contract was written for lookup-shaped questions); (3) genuine drift — reading from line 1 after exact LSP coordinates. Codified in search.md + SKILL.md: whole-file reads legitimate for (a) comprehension tasks, (b) small files; span-based reads mandatory after coordinates. Viewer i2 killed.
+
+## Iterations 3-4 (hard research tasks, large files)
+
+i3 Effect-rewrite plan (9 assertions): 9/9 vs 9/9 parity; all APIs source-verified by orchestrator (v4 traps caught by both: fromNullishOr, no runIntoSink, catchAll gone; unique finds: with=CLI presenter stdout pollution + empty-argv decision, baseline=ConfigProvider eager env snapshot). with_skill 93 calls vs baseline 135 (-31%). i4 config-to-Schema plan, compact forbidden by task (8 assertions): 8/8 vs 8/8; unique finds: with=checked-Record silent key drop (Schema.ts:3984) + 12-site byte-compat ConfigError table, baseline=ParseOptions errors:first default + empirical probe.ts on real fixtures. Contradiction adjudicated: effect resolves via root symlink today (baseline right, with_skill isolated-linker blocker overstated). Compact experiment: no-compact did not inflate tokens or degrade quality — verification-heavy research uses few searches; compact economy matters in search-heavy loops only. Doctrine stays default-not-dogma.
