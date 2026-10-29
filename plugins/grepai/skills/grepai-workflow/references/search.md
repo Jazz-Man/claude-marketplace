@@ -49,18 +49,29 @@ starts with the prefix:
 grepai_search { root: "<project>", query: "retry failed requests", path: "packages/api/" }
 ```
 
-Token-economy pattern for agents — `compact: true` drops the content field
-and returns the map (score, file, line range); use it to locate, then Read
-only the bounded range of the best hit:
+Token-economy contract — the DEFAULT, not an option: `compact: true`
+drops the content field and returns the map (score, file, line range);
+locate with the map, then Read only the bounded range of the WINNING hit.
+Full-content search results are the single largest avoidable token spend:
+they dump several whole chunks where one bounded Read of the winner
+suffices at equal or better precision:
 
 ```
 grepai_search { root: "<project>", query: "frame encoding", compact: true, limit: 5 }
 ```
 
-`limit` (default 10) — 3-5 while iterating, 15-20 when surveying. `format`:
+When a WHOLE-FILE read is still the economical choice — two legitimate
+cases: (a) the task is comprehension-shaped (evaluate a module for reuse,
+explain how it works) — the module itself is the answer, so its full span
+is the bounded range; (b) the file is small (~under 150-200 lines) —
+slicing costs more calls than it saves. For lookup-shaped questions on
+large files, slice; and once LSP/trace handed you exact coordinates, read
+the symbol span plus a little context — never restart from line 1.
+
+`limit` — 3-5 by default; 15-20 only when deliberately surveying. `format`:
 `json` (default) or `toon` — the saving is structural: near half the size
-with `compact: true`, barely smaller with full content (content passes
-through verbatim).
+with `compact: true` (combine both for the floor), barely smaller with
+full content (content passes through verbatim).
 `workspace` + `projects` scope a search across a configured multi-project
 workspace.
 

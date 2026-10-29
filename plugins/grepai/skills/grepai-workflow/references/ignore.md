@@ -17,9 +17,12 @@ Ignore changes always require a re-index; boost changes never do.
    effective list, verbatim: nothing merges at runtime. `grepai init`
    writes the shipped defaults (.git, .grepai, node_modules, vendor, bin,
    dist, __pycache__, .venv, venv, .idea, .vscode, target, .zig-cache,
-   zig-out, qdrant_storage) into the file — edit by appending to them; a
-   missing `ignore:` section means NO config-layer ignore at all (the
-   gitignore layers still apply). Entries compile as root-level gitignore
+   zig-out, qdrant_storage) as a STARTING POINT — the owner's list is a
+   curation decision: never re-add entries the owner removed (a shorter
+   list is usually intentional, and the .gitignore layers still cover the
+   big dependency trees); suggest additions only when the project shape
+   names something specific. A missing `ignore:` section means NO
+   config-layer ignore at all. Entries compile as root-level gitignore
    patterns (no slash — match at any depth; leading slash — anchored), and
    a bare directory name prunes that whole subtree at any depth.
 4. **`external_gitignore`** — one extra gitignore file applied from the

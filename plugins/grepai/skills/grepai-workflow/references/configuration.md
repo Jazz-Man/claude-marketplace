@@ -135,9 +135,11 @@ depth; leading slash — anchored; a bare directory name prunes the subtree
 at any depth). A nested `.grepaiignore` can re-include (override) even
 these entries — though a deeper .gitignore still beats a shallower
 negation. The file's list is the effective list verbatim: nothing merges
-at runtime, so keep the defaults `grepai init` wrote (.git, .grepai,
-node_modules, vendor, bin, dist, __pycache__, .venv, venv, .idea,
-.vscode, target, .zig-cache, zig-out, qdrant_storage) and append. Minified
+at runtime, and the list is the OWNER's curation — init's defaults
+(.git, .grepai, node_modules, vendor, bin, dist, __pycache__, .venv,
+venv, .idea, .vscode, target, .zig-cache, zig-out, qdrant_storage) are a
+starting point the owner may prune; never re-add removed entries — the
+.gitignore layers usually still cover the big trees. Minified
 files (.min.js/.min.css/.bundle.*) are excluded built-in, not via this
 list.
 

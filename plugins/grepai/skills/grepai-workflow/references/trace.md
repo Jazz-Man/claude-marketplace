@@ -39,10 +39,11 @@ grepai_trace_graph { root: "<project>", symbol: "buildBinary", depth: 3 }
 
 trace_callers and trace_callees accept `compact: true` (drops context
 lines — coordinates only) and `format: "json" | "toon"`; trace_graph has
-no compact mode (symbol, depth, format, workspace, project only).
-`workspace` + `project` scope to a configured workspace (per-project
-symbol indexes are then merged; RPG feature paths are not attached in
-workspace mode).
+no compact mode (symbol, depth, format, workspace, project only). Economy
+default: run compact when counting or mapping call sites; pull the context
+lines only when classifying a specific site. `workspace` + `project` scope
+to a configured workspace (per-project symbol indexes are then merged; RPG
+feature paths are not attached in workspace mode).
 
 ## Verified accuracy profile — what to trust
 

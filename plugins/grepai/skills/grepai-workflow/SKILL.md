@@ -16,7 +16,10 @@ grepai discovers, LSP verifies.
    settled for this workflow: local Ollama, GOB backend).
 2. Shape the ignore layers and curate the dependency sources worth
    trusting — the five layers, negation craft, and the Rust/Go honesty
-   rule: references/ignore.md.
+   rule: references/ignore.md. The ignore list is the OWNER's curation:
+   `grepai init` defaults are a starting point the owner may prune — never
+   re-add entries the owner removed; a shorter list is usually intentional
+   (the .gitignore layers still cover the big trees).
 3. Shape `search.boost` ranking — rules, defaults, and the
    curation-interplay rule: references/search-boost.md.
 4. Never run indexing or watching yourself — the owner builds and maintains
@@ -33,7 +36,13 @@ references/chunking.md.
 ## Searching
 
 Query by intent, not identifier ("where does the proxy parse incoming
-frames", not "framing"). Tool map:
+frames", not "framing"). Default call shape — the token-economy contract:
+`compact: true` and `limit: 3-5` on every search; fetch content ONLY for
+the winning hit via a bounded Read; stop at the score cliff (a gap means
+the answers above it are all there are). Whole-file reads stay correct
+only for comprehension-shaped tasks or small files (~under 150-200 lines);
+after LSP/trace coordinates, read the symbol span, not from line 1.
+Tool map:
 
 - `grepai_search` — semantic search, path scoping, compact economy mode
 - `grepai_trace_callers` / `_callees` / `_graph` — call structure
