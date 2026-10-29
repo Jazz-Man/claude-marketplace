@@ -1,8 +1,11 @@
 {
   "dependencies": {
+    "@effect/platform-bun": "catalog:core",
+    "effect": "catalog:core",
     "unbash": "catalog:core"
   },
   "devDependencies": {
+    "@effect/platform-node-shared": "catalog:core",
     "@effect/tsgo": "catalog:lsp",
     "@tsconfig/bun": "catalog:types",
     "@types/bun": "catalog:types",
@@ -23,6 +26,9 @@
   "workspaces": {
     "catalogs": {
       "core": {
+        "@effect/platform-bun": "4.1.0",
+        "@effect/platform-node-shared": "4.1.0",
+        "effect": "4.1.0",
         "unbash": "6.0.0"
       },
       "effect": {
