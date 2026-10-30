@@ -1,5 +1,5 @@
 {
-  "$schema": "https://biomejs.dev/schemas/2.6.3/schema.json",
+  "$schema": "https://biomejs.dev/schemas/2.6.4/schema.json",
   "assist": {
     "actions": {
       "source": {
@@ -17,15 +17,7 @@
     "enabled": true
   },
   "files": {
-    "ignoreUnknown": true,
-    "includes": [
-      "**",
-      "!skills-lock.json",
-      "!data-src",
-      "!.grepai",
-      "!packages/cli-hook/tests/fixtures",
-      "!.jscpd-baseline.json"
-    ]
+    "ignoreUnknown": true
   },
   "formatter": {
     "attributePosition": "multiline",
@@ -111,6 +103,26 @@
       "enabled": false
     }
   },
+  "overrides": [
+    {
+      "assist": {
+        "enabled": false
+      },
+      "formatter": {
+        "enabled": false
+      },
+      "includes": [
+        "**/config.schema.json",
+        "**/tests/fixtures/**",
+        ".jscpd-baseline.json",
+        "skills-lock.json",
+        "**/.grepai/**"
+      ],
+      "linter": {
+        "enabled": false
+      }
+    }
+  ],
   "root": true,
   "vcs": {
     "clientKind": "git",
