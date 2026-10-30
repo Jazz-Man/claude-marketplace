@@ -1,6 +1,7 @@
 docs/grepai
 !node_modules/bun-types/
 node_modules/bun-types/vendor/
+node_modules/bun-types/docs/lint/
 !node_modules/unbash/dist/
 
 !node_modules/@effect/platform-bun/src/
