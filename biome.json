@@ -17,7 +17,15 @@
     "enabled": true
   },
   "files": {
-    "ignoreUnknown": true
+    "ignoreUnknown": true,
+    "includes": [
+      "**",
+      "!skills-lock.json",
+      "!data-src",
+      "!.grepai",
+      "!packages/cli-hook/tests/fixtures",
+      "!.jscpd-baseline.json"
+    ]
   },
   "formatter": {
     "attributePosition": "multiline",
@@ -103,21 +111,6 @@
       "enabled": false
     }
   },
-  "overrides": [
-    {
-      "assist": {
-        "enabled": false
-      },
-      "includes": [
-        "packages/cli-hook/tests/fixtures/**",
-        ".jscpd-baseline.json",
-        "plugins/grepai/skills/grepai-workflow/references/config.schema.json"
-      ],
-      "linter": {
-        "enabled": false
-      }
-    }
-  ],
   "root": true,
   "vcs": {
     "clientKind": "git",
