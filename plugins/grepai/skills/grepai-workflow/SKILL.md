@@ -1,6 +1,6 @@
 ---
 name: grepai-workflow
-description: Set up and work with grepai semantic code search — configure the index for the project (ignore defaults, .grepaiignore dependency curation, search boost), run intent-shaped searches, and combine grepai with LSP into one discovery workflow. Use when initializing grepai in a project, before building new functionality to check whether it already exists, for natural-language questions about the codebase ("how does this project use X", "what implements the framing logic"), for questions about a curated dependency's source, or when no LSP server covers the language.
+description: This skill should be used when the user asks to "set up grepai" or configure it (.grepaiignore, search boost), mentions the grepai tools (grepai_search, trace, rpg), or needs any code discovery that is not an exact symbol lookup — natural-language codebase questions ("what implements the framing logic"), pre-build "does this already exist" checks, curated-dependency internals, call structure where no LSP server covers the language, feature orientation ("which feature does this belong to"). grepai discovers, LSP verifies.
 ---
 
 # grepai workflow — semantic search configured per project, working with LSP
