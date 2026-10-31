@@ -1,11 +1,11 @@
 ---
 # cc-sdd-n713
-title: "sdd: integrate LSP-first code-analysis rule"
-status: in-progress
+title: 'sdd: integrate LSP-first code-analysis rule'
+status: completed
 type: task
 priority: normal
 created_at: 2026-10-05T15:23:19Z
-updated_at: 2026-10-05T15:40:22Z
+updated_at: 2026-10-31T17:54:23Z
 ---
 
 User always instructs agents to use LSP tools for codebase analysis; most target projects have an LSP server for the main language. Research all 15 skills + assets + impl templates, find the consolidation points for one canonical LSP-first rule, wire it with one-line references (DRY: one home in assets/rules, pointers elsewhere).
@@ -28,3 +28,7 @@ User always instructs agents to use LSP tools for codebase analysis; most target
 
 - Delayed hook-mechanics report (docs-verified) confirms the implemented design: PreToolUse fires for the Skill tool (skill field), typed /sdd:* covered by UserPromptExpansion (block-capable), deny via exit 2 or JSON permissionDecision (exit 1 does NOT block - our scripts use 2), Edit/Write field names as parsed, plugin hooks.json supports all events. Two flags closed in tech.md: UserPromptExpansion docs-confirmed (bare-vs-qualified command_name still unlogged, in-skill gate covers it); frontmatter context/background/model confirmed functional.
 - Eval agents reported DONE with status contracts; all stopped after grading.
+
+## Summary of Changes
+
+Closed as complete by owner decision, 2026-10-31 (in-progress cleanup, unrelated to no-deps research).

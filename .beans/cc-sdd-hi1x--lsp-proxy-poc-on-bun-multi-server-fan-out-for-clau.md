@@ -1,11 +1,11 @@
 ---
 # cc-sdd-hi1x
 title: LSP proxy POC on Bun (multi-server fan-out for Claude Code)
-status: in-progress
+status: completed
 type: feature
 priority: normal
 created_at: 2026-10-20T15:38:51Z
-updated_at: 2026-10-20T17:40:38Z
+updated_at: 2026-10-31T17:54:23Z
 ---
 
 POC: single stdio LSP server (Bun, Bun.stdin/Bun.stdout) registered once in Claude Code; fans out to N downstream stdio LSP servers (biome LSP + vtsls target case) — id multiplexing, capability union, diagnostics passthrough, extension-based routing. TDD mandatory. Branch feature/lsp-proxy, package packages/lsp-proxy.
@@ -19,3 +19,7 @@ Design addendum 2 (owner, 2026-10-20): D10 — per-server extensionToLanguage ma
 Design addendum 3 (owner, 2026-10-20): D11 — native Bun.spawn typing only (typeof Bun.spawn / Bun.Subprocess, no custom process types; onExit callback + per-server AbortSignal); pidfile registry ~/.local/state/lsp-proxy + lsp-proxy --kill-all wired to a SessionEnd plugin hook (hook-development skill confirms SessionEnd exists and is documented for session-end cleanup); cascade teardown = SIGTERM, exited()-driven exit, SIGKILL after 2s grace. Plan now 14 tasks (new Task 11 = pidfile + kill-all).
 
 Design addendum 4 (owner + probe, 2026-10-20): md-lsp-probe experiment (tmp/md-lsp-probe.log, claude -p with edit of .md) — CC spawns LSP lazily on first matching-file action and terminates it at session end with protocol shutdown request + immediate SIGTERM (~1ms later); no SIGKILL observed, no orphans. D11 simplified: in-memory Map registry + graceful teardown on shutdown/exit/EOF/SIGTERM; --kill-all flag, SessionEnd hook and pidfiles all DROPPED. SIGKILL-orphan edge = accepted out-of-POC limitation. Spec 6.7 rewritten; plan Task 11 slimmed to build wrapper + smoke; SIGTERM-cascade became Task 10 scenario 13.
+
+## Summary of Changes
+
+Closed as complete by owner decision, 2026-10-31 (in-progress cleanup, unrelated to no-deps research).

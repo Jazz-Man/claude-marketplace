@@ -1,11 +1,11 @@
 ---
 # cc-sdd-19bu
 title: Test grepai trace utilities
-status: in-progress
+status: completed
 type: task
 priority: normal
 created_at: 2026-10-28T08:58:15Z
-updated_at: 2026-10-28T12:41:40Z
+updated_at: 2026-10-31T17:54:23Z
 ---
 
 Exercise grepai_trace_callers/callees/graph against known ground-truth symbols (encodeFrame 11 callers, decodeChunks callees createDecoder/decode, buildBinary graph) and record whether results are empty or populated.
@@ -37,3 +37,7 @@ User's curation: .gitignore:18 excludes node_modules/ (layer 1), .grepaiignore r
 ## Store rebuild + reindex verification (final)
 
 rm node_modules + bun install rebuilt the store clean (single bun-types@1.4.4, 113 pkgs). Full reindex at 14:40: 3432->1701 files, 9433->4556 chunks, 77->36.8 MB, RPG 16363->8149 nodes. Bun-API probe: all hits from bun-types@1.4.4 only (no 1.4.2/canary duplicates), bun.d.ts source on top, mdx guides below via .md x0.6 — source-first as designed. Old noise probe (encoding conversion typed array) now returns curated relevant bun-types 1.4.4 material instead of triple-version noise. grepai re-saved config.yaml on its own (normalization: comments dropped) — rules intact.
+
+## Summary of Changes
+
+Closed as complete by owner decision, 2026-10-31 (in-progress cleanup, unrelated to no-deps research).
