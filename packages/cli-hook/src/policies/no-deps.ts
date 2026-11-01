@@ -1,6 +1,6 @@
 import { baseName } from "../core/ast.ts";
 import { deny } from "../core/decision.ts";
-import type { Policy } from "../core/policy.ts";
+import { firstUnitHit, type Policy } from "../core/policy.ts";
 import commandList from "../mutable-commands.txt";
 
 const ALIASES: Record<string, string> = {
@@ -108,12 +108,9 @@ export const REASON =
 
 export const noDepsPolicy: Policy = {
   check(cmd) {
-    for (const unit of cmd.units) {
-      if (denies(unit.name, unit.args)) {
-        return deny(REASON);
-      }
-    }
-    return null;
+    return firstUnitHit(cmd.units, (unit) =>
+      denies(unit.name, unit.args) ? deny(REASON) : null,
+    );
   },
   name: "no-deps",
 };

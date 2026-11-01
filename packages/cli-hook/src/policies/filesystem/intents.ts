@@ -1,11 +1,5 @@
-import { parseEnv } from "node:util";
-
 import * as ast from "../../core/ast.ts";
-import { SHARED_WRAPPERS } from "../../core/wrappers.ts";
-
-function isAssignment(token: string): boolean {
-  return token.includes("=") && Object.keys(parseEnv(token)).length > 0;
-}
+import { isNoiseToken, SHARED_WRAPPERS } from "../../core/wrappers.ts";
 
 const INTENT_GROUPS: Readonly<Record<Intent, readonly string[]>> = {
   delete: ["rm", "rmdir", "shred", "unlink"],
@@ -69,9 +63,6 @@ export const NETWORK_TOOLS = new Set([
   "openssl",
 ]);
 
-const isScanNoise = (token: string) =>
-  token.startsWith("-") || isAssignment(token);
-
 function resolveToken(
   token: string,
   network: string | null,
@@ -108,7 +99,7 @@ function unwrapScan(
   let network = networkIn;
   for (const [index, token] of args.entries()) {
     sudo ||= token === "sudo";
-    if (token !== "sudo" && !isScanNoise(token)) {
+    if (token !== "sudo" && !isNoiseToken(token)) {
       const resolved = resolveToken(token, network);
       if (resolved.intent !== null) {
         const rest = args.slice(index + 1);

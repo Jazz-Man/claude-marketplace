@@ -2,19 +2,9 @@ import { bench, do_not_optimize, group, run } from "mitata";
 import { baseName, parseCommand } from "../src/core/ast.ts";
 import commandList from "../src/mutable-commands.txt";
 import { noDepsPolicy } from "../src/policies/no-deps.ts";
+import { commands } from "./corpus.ts";
 
 const CONTEXT = { cwd: "/proj", projectRoot: "/proj" };
-
-const EXEMPLARS: Record<string, string> = {
-  "deno run <url>": "deno run https://example.com/x.ts",
-  "go run <pkg>@<version>": "go run example.com/pkg@latest",
-};
-
-const commands = commandList
-  .split("\n")
-  .map((line) => line.trim())
-  .filter((line) => line !== "")
-  .map((line) => EXEMPLARS[line] ?? line);
 
 const parsed = commands
   .map((command) => parseCommand(command))

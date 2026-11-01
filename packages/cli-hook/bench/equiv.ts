@@ -17,7 +17,6 @@ import {
   type Word,
 } from "unbash";
 import { parseCommand } from "../src/core/ast.ts";
-import commandList from "../src/mutable-commands.txt";
 import {
   ALLOW as FS_ALLOW,
   ASK as FS_ASK,
@@ -37,17 +36,7 @@ import {
   DENY as NIS_DENY,
   FUNCTIONS as NIS_FN,
 } from "../tests/fixtures/no-inline-scripts.ts";
-
-const EXEMPLARS: Record<string, string> = {
-  "deno run <url>": "deno run https://example.com/x.ts",
-  "go run <pkg>@<version>": "go run example.com/pkg@latest",
-};
-
-const arsenal = commandList
-  .split("\n")
-  .map((line) => line.trim())
-  .filter((line) => line !== "")
-  .map((line) => EXEMPLARS[line] ?? line);
+import { commands as arsenal } from "./corpus.ts";
 
 const ADVERSARIAL: string[] = [
   "env FOO=1 python -c 'print(1)'",

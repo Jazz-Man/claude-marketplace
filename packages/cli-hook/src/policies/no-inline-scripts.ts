@@ -1,9 +1,7 @@
-import { parseEnv } from "node:util";
-
 import * as ast from "../core/ast.ts";
 import { deny } from "../core/decision.ts";
-import type { Policy } from "../core/policy.ts";
-import { SHARED_WRAPPERS } from "../core/wrappers.ts";
+import { firstUnitHit, type Policy } from "../core/policy.ts";
+import { isNoiseToken, SHARED_WRAPPERS } from "../core/wrappers.ts";
 
 interface InterpreterFlags {
   longs: readonly string[];
@@ -49,9 +47,6 @@ function isInlineArg(table: InterpreterFlags, arg: string): boolean {
 const readsStdinScript = (args: readonly string[]) =>
   args.length === 0 || args.includes("-");
 
-const isAssignment = (token: string) =>
-  token.includes("=") && Object.keys(parseEnv(token)).length > 0;
-
 const FED_OPERATORS = new Set(["<<", "<<-", "<<<"]);
 
 const heredocFed = (
@@ -73,7 +68,7 @@ function wrapperHeredocViolates(
   }
   const wrapped = args.find(
     (token) =>
-      !(token.startsWith("-") || isAssignment(token)) &&
+      !isNoiseToken(token) &&
       INTERPRETERS.has(ast.baseName(token.toLowerCase())),
   );
   return wrapped !== undefined && heredocFed(args, redirects);
@@ -147,12 +142,9 @@ export const noInlineScriptsPolicy: Policy = {
     if (cmd.functionDefs.length > 0) {
       return deny(FUNCTION_REASON);
     }
-    for (const unit of cmd.units) {
-      if (unitViolates(unit, cmd.redirects)) {
-        return deny(REASON);
-      }
-    }
-    return null;
+    return firstUnitHit(cmd.units, (unit) =>
+      unitViolates(unit, cmd.redirects) ? deny(REASON) : null,
+    );
   },
   name: "no-inline-scripts",
 };

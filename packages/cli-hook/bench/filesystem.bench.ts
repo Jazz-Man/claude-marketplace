@@ -10,7 +10,6 @@ import { baseName, type ParsedCommand, parseCommand } from "../src/core/ast.ts";
 import { ask, deny, permissionOf } from "../src/core/decision.ts";
 import type { PolicyCheckResult, PolicyContext } from "../src/core/policy.ts";
 import { SHARED_WRAPPERS } from "../src/core/wrappers.ts";
-import commandList from "../src/mutable-commands.txt";
 import {
   INJECTION_SUBSTRINGS,
   injectionHit,
@@ -69,15 +68,11 @@ import {
   DENY as NIS_DENY,
   FUNCTIONS as NIS_FN,
 } from "../tests/fixtures/no-inline-scripts.ts";
+import { commands } from "./corpus.ts";
 
 // Corpus: identical to bench/equiv.ts — the 233-command arsenal (two
 // placeholder lines substituted), every fixture table, plus the adversarial
 // parse set. check() consumes the ParsedCommand, so all arms pre-parse once.
-const EXEMPLARS: Record<string, string> = {
-  "deno run <url>": "deno run https://example.com/x.ts",
-  "go run <pkg>@<version>": "go run example.com/pkg@latest",
-};
-
 const ADVERSARIAL: string[] = [
   "env FOO=1 python -c 'print(1)'",
   "FOO=bar npm install",
@@ -119,11 +114,7 @@ const ADVERSARIAL: string[] = [
 ];
 
 const corpus: string[] = [
-  ...commandList
-    .split("\n")
-    .map((line) => line.trim())
-    .filter((line) => line !== "")
-    .map((line) => EXEMPLARS[line] ?? line),
+  ...commands,
   ...FS_ALLOW,
   ...FS_ASK,
   ...FS_DENY,

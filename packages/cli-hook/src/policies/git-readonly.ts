@@ -1,6 +1,6 @@
 import type { CommandUnit } from "../core/ast.ts";
 import { deny } from "../core/decision.ts";
-import type { Policy } from "../core/policy.ts";
+import { firstUnitHit, type Policy } from "../core/policy.ts";
 
 const UNCONDITIONAL = new Set([
   "add",
@@ -259,20 +259,17 @@ export const GIT_HOOK_REASON =
 
 export const gitReadonlyPolicy: Policy = {
   check(cmd) {
-    for (const unit of cmd.units) {
+    return firstUnitHit(cmd.units, (unit) => {
       const call = gitUnitCall(unit);
       if (call === null) {
-        continue;
+        return null;
       }
       const sub = call.sub.toLowerCase();
       if (sub === "hook") {
         return deny(GIT_HOOK_REASON);
       }
-      if (mutating(sub, call.rest)) {
-        return deny(GIT_READONLY_REASON);
-      }
-    }
-    return null;
+      return mutating(sub, call.rest) ? deny(GIT_READONLY_REASON) : null;
+    });
   },
   name: "git-readonly",
 };

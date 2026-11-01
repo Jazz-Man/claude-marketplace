@@ -13,18 +13,7 @@ import {
   type Word,
 } from "unbash";
 import { parseCommand } from "../src/core/ast.ts";
-import commandList from "../src/mutable-commands.txt";
-
-const EXEMPLARS: Record<string, string> = {
-  "deno run <url>": "deno run https://example.com/x.ts",
-  "go run <pkg>@<version>": "go run example.com/pkg@latest",
-};
-
-const commands = commandList
-  .split("\n")
-  .map((line) => line.trim())
-  .filter((line) => line !== "")
-  .map((line) => EXEMPLARS[line] ?? line);
+import { commands } from "./corpus.ts";
 
 interface WordLike {
   text: string;
