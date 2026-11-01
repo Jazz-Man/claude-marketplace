@@ -1,52 +1,57 @@
 import * as ast from "../../core/ast.ts";
 import { isNoiseToken, SHARED_WRAPPERS } from "../../core/wrappers.ts";
 
-const INTENT_GROUPS: Readonly<Record<Intent, readonly string[]>> = {
-  delete: ["rm", "rmdir", "shred", "unlink"],
-  read: [
-    "cat",
-    "df",
-    "diff",
-    "du",
-    "file",
-    "find",
-    "grep",
-    "head",
-    "less",
-    "ls",
-    "md5sum",
-    "more",
-    "perl",
-    "rg",
-    "sed",
-    "shasum",
-    "stat",
-    "tail",
-    "tree",
-    "wc",
-  ],
-  write: [
-    "chmod",
-    "chown",
-    "cp",
-    "dd",
-    "install",
-    "ln",
-    "mkdir",
-    "mv",
-    "rsync",
-    "tar",
-    "tee",
-    "touch",
-    "truncate",
-  ],
-};
+export type Intent = "read" | "write" | "delete";
 
-export const INTENTS = new Map<string, Intent>(
-  (Object.entries(INTENT_GROUPS) as [Intent, readonly string[]][]).flatMap(
-    ([intent, names]) => names.map((name) => [name, intent] as const),
-  ),
-);
+const DELETE_TOOLS = ["rm", "rmdir", "shred", "unlink"] as const;
+const READ_TOOLS = [
+  "cat",
+  "df",
+  "diff",
+  "du",
+  "file",
+  "find",
+  "grep",
+  "head",
+  "less",
+  "ls",
+  "md5sum",
+  "more",
+  "perl",
+  "rg",
+  "sed",
+  "shasum",
+  "stat",
+  "tail",
+  "tree",
+  "wc",
+] as const;
+const WRITE_TOOLS = [
+  "chmod",
+  "chown",
+  "cp",
+  "dd",
+  "install",
+  "ln",
+  "mkdir",
+  "mv",
+  "rsync",
+  "tar",
+  "tee",
+  "touch",
+  "truncate",
+] as const;
+
+export const INTENTS = new Map<string, Intent>();
+for (const name of DELETE_TOOLS) {
+  INTENTS.set(name, "delete");
+}
+for (const name of READ_TOOLS) {
+  INTENTS.set(name, "read");
+}
+for (const name of WRITE_TOOLS) {
+  INTENTS.set(name, "write");
+}
 
 export const NETWORK_TOOLS = new Set([
   "curl",
@@ -127,8 +132,6 @@ interface Unwrapped {
   rest: string[];
   sudo: boolean;
 }
-
-export type Intent = "read" | "write" | "delete";
 
 export const IN_PLACE_CLUSTER = /^-[A-Za-z]*i[A-Za-z]*$/u;
 
