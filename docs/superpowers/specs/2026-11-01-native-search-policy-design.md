@@ -48,9 +48,16 @@ for them, so no policy could see them even if routed.
 - `SEARCH_TOOLS = new Set(["Grep", "Glob"])`.
 - `routeSearchTool(payload) = checkFilePath(payload.filePath, "read", ctx)`
   — literally the same rules, tiers, and reason texts as the Read tool.
-- Absent `path` param → allow (tool defaults to the session cwd, which is
-  in-zone by definition; consistent with the hook's fail-open stance on
-  missing fields).
+- Absent `path` param → allow. Probe-verified (2026-11-01, live hook dump):
+  the harness sends NO `path` key at all when the model omits it — not the
+  project root, not the cwd, not empty. The tool's effective default root is
+  unobservable from the hook; the allow rests on the harness contract that a
+  path-less search runs inside the session working tree (in-zone by
+  construction), which the guard trusts because it cannot verify it.
+- A given `path` stays RELATIVE and unresolved in the payload
+  (`"packages/cli-hook"`, not absolute). `checkFilePath` → `expandToken`
+  resolves it against the payload `cwd` — the same root the tool itself
+  uses, so the policy judges the exact scope the tool searches.
 
 ### Component 3 — payload (`src/core/payload.ts`)
 
