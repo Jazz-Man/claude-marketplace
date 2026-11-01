@@ -4,7 +4,8 @@
   },
   "devDependencies": {
     "@cc-sdd/agent-types": "workspace:*",
-    "@cc-sdd/bin-builder": "workspace:*"
+    "@cc-sdd/bin-builder": "workspace:*",
+    "mitata": "catalog:core"
   },
   "name": "@cc-sdd/claude-code-cli-hook",
   "private": true,

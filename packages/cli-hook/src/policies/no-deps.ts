@@ -8,22 +8,48 @@ const ALIASES: Record<string, string> = {
   yarnpkg: "yarn",
 };
 
+function isUrl(value: string): boolean {
+  return URL.canParse(value);
+}
+
+function isModuleRef(value: string): boolean {
+  const at = value.lastIndexOf("@");
+  if (at <= 0) {
+    return false;
+  }
+  const prefix = `https://${value.slice(0, at)}`;
+  if (!URL.canParse(prefix)) {
+    return false;
+  }
+  const { host } = new URL(prefix);
+  return host !== "" && host !== ".";
+}
+
 const FETCH_FORMS: readonly [
   string,
   readonly string[],
   (arg: string) => boolean,
 ][] = [
-  ["go", ["run"], (arg) => arg.includes("@")],
-  ["deno", ["run"], (arg) => /^(?:https?:|npm:|jsr:)/u.test(arg)],
+  ["go", ["run"], isModuleRef],
+  ["deno", ["run"], isUrl],
 ];
 
+type Pattern = readonly string[];
+
+const toolCache = new Map<string, string>();
 function toolOf(name: string): string {
+  const cached = toolCache.get(name);
+  if (cached !== undefined) {
+    return cached;
+  }
   const raw = name.toLowerCase();
-  return baseName(ALIASES[raw] ?? raw);
+  const tool = baseName(ALIASES[raw] ?? raw);
+  toolCache.set(name, tool);
+  return tool;
 }
 
 const RUNNERS = new Set<string>();
-const DENY = new Map<string, Set<string>>();
+const source = new Map<string, Set<string>>();
 const lines = commandList
   .split("\n")
   .map((line) => line.trim().toLowerCase())
@@ -34,11 +60,17 @@ for (const line of lines) {
   if (pattern.length === 0) {
     RUNNERS.add(tool);
   } else {
-    const patterns = DENY.get(tool) ?? new Set<string>();
-    patterns.add(pattern.join(" "));
-    DENY.set(tool, patterns);
+    const joined = source.get(tool) ?? new Set<string>();
+    joined.add(pattern.join(" "));
+    source.set(tool, joined);
   }
 }
+const DENY = new Map<string, readonly Pattern[]>(
+  [...source].map(([tool, joined]) => [
+    tool,
+    [...joined].map((pattern) => pattern.split(" ")),
+  ]),
+);
 
 function startsWithTokens(tokens: readonly string[], args: string[]): boolean {
   return (
@@ -65,12 +97,8 @@ function denies(name: string, args: string[]): boolean {
     return true;
   }
   const patterns = DENY.get(tool);
-  if (patterns !== undefined) {
-    for (const pattern of patterns) {
-      if (startsWithTokens(pattern.split(" "), args)) {
-        return true;
-      }
-    }
+  if (patterns?.some((pattern) => startsWithTokens(pattern, args))) {
+    return true;
   }
   return fetches(tool, args);
 }
