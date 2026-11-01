@@ -51,7 +51,7 @@ function splitPair(token: string): NameValue | null {
   }
 }
 
-const SAFE_DEVICES = new Set([
+export const SAFE_DEVICES = new Set([
   "/dev/null",
   "/dev/stdin",
   "/dev/stdout",
@@ -61,7 +61,7 @@ const SAFE_DEVICES = new Set([
   "/dev/random",
 ]);
 
-const TMP_PREFIXES = [
+export const TMP_PREFIXES = [
   "/tmp/",
   "/private/tmp/",
   "/var/tmp/",

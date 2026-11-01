@@ -32,14 +32,14 @@ import {
 } from "./resolve.ts";
 import * as tiers from "./tiers.ts";
 
-const WRITE_ONLY_TIERS = new Set<tiers.Tier>([
+export const WRITE_ONLY_TIERS = new Set<tiers.Tier>([
   "personal",
   "git-config",
   "macos-personal",
 ]);
 
-const GLUED_DIR_FLAG = /^-C.+/u;
-const LEADING_EQUALS = /^=/u;
+export const GLUED_DIR_FLAG = /^-C.+/u;
+export const LEADING_EQUALS = /^=/u;
 
 function scopeDenyOrAsk(
   intent: intents.Intent,

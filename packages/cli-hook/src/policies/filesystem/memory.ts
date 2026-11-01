@@ -1,7 +1,7 @@
 import { parse, relative } from "node:path";
 import { HOME } from "./resolve.ts";
 
-const PROJECTS_ROOT = `${HOME}/.claude/projects`;
+export const PROJECTS_ROOT = `${HOME}/.claude/projects`;
 
 export type MemoryTarget = "dir" | "md" | "other";
 

@@ -48,13 +48,13 @@ const INTENT_GROUPS: Readonly<Record<Intent, readonly string[]>> = {
   ],
 };
 
-const INTENTS = new Map<string, Intent>(
+export const INTENTS = new Map<string, Intent>(
   (Object.entries(INTENT_GROUPS) as [Intent, readonly string[]][]).flatMap(
     ([intent, names]) => names.map((name) => [name, intent] as const),
   ),
 );
 
-const NETWORK_TOOLS = new Set([
+export const NETWORK_TOOLS = new Set([
   "curl",
   "wget",
   "nc",
@@ -139,7 +139,7 @@ interface Unwrapped {
 
 export type Intent = "read" | "write" | "delete";
 
-const IN_PLACE_CLUSTER = /^-[A-Za-z]*i[A-Za-z]*$/u;
+export const IN_PLACE_CLUSTER = /^-[A-Za-z]*i[A-Za-z]*$/u;
 
 function adjustForFlags(
   base: string,

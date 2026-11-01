@@ -1,4 +1,4 @@
-const INJECTION_SUBSTRINGS = [
+export const INJECTION_SUBSTRINGS = [
   "/dev/tcp/",
   "/dev/udp/",
   "LD_PRELOAD",
@@ -11,7 +11,7 @@ const INJECTION_SUBSTRINGS = [
 const isControlByte = (code: number) =>
   (code >= 1 && code <= 8) || (code >= 14 && code <= 31) || code === 127;
 
-const WORD_SPLIT = /\s+/u;
+export const WORD_SPLIT = /\s+/u;
 
 function isNonAsciiWhitespace(code: number): boolean {
   return (
