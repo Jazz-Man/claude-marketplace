@@ -9,12 +9,10 @@ import type {
 } from "../../core/policy.ts";
 import { injectionHit } from "./guards.ts";
 import * as intents from "./intents.ts";
-import { memoryTargetOf } from "./memory.ts";
 import {
   askReason,
   boundaryReason,
   injectionReason,
-  memoryReason,
   networkReason,
   pathRuleReason,
   SUDO_REASON,
@@ -103,12 +101,6 @@ function scopedDecision(input: CandidateInput, abs: string): PolicyCheckResult {
   }
   if (!inAllowedZone(abs, context)) {
     return deny(boundaryReason(arg, abs));
-  }
-  if (intent !== "read") {
-    const memory = memoryTargetOf(abs);
-    if (memory !== null) {
-      return ask(memoryReason(arg, memory !== "other"));
-    }
   }
   if (intent === "read" && abs === HOME) {
     return ask(askReason("reading the home directory as a whole", arg));
@@ -208,10 +200,6 @@ export function checkFilePath(
   const abs = expandToken(filePath, context);
   if (abs === null) {
     return null;
-  }
-  const memory = memoryTargetOf(abs);
-  if (memory !== null && intent === "write") {
-    return ask(memoryReason(filePath, memory !== "other"));
   }
   const tier = tiers.tierOf(abs);
   if (tier === null || (WRITE_ONLY_TIERS.has(tier) && intent === "read")) {

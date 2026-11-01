@@ -2,7 +2,7 @@
 /** biome-ignore-all lint/complexity/noExcessiveLinesPerFunction: each arm is one deliberately monolithic measured sweep; splitting it would distort the measurement */
 /** biome-ignore-all lint/complexity/noExcessiveCognitiveComplexity: the truncated-flow mirror carries its stage gating inline by design */
 
-import { isAbsolute, join, normalize, parse, relative } from "node:path";
+import { isAbsolute, join, normalize } from "node:path";
 import process from "node:process";
 import { parseEnv } from "node:util";
 import { bench, do_not_optimize, group, run } from "mitata";
@@ -17,10 +17,6 @@ import {
 } from "../src/policies/filesystem/guards.ts";
 import * as intents from "../src/policies/filesystem/intents.ts";
 import {
-  memoryTargetOf,
-  PROJECTS_ROOT,
-} from "../src/policies/filesystem/memory.ts";
-import {
   filesystemPolicy,
   GLUED_DIR_FLAG,
   LEADING_EQUALS,
@@ -30,7 +26,6 @@ import {
   askReason,
   boundaryReason,
   injectionReason,
-  memoryReason,
   networkReason,
   pathRuleReason,
   SUDO_REASON,
@@ -58,7 +53,6 @@ import {
   ALLOW as GIT_ALLOW,
   DENY as GIT_DENY,
 } from "../tests/fixtures/git-readonly.ts";
-import { MEMORY_ALLOW, MEMORY_ASK } from "../tests/fixtures/memory.ts";
 import {
   ALLOW as ND_ALLOW,
   DENY as ND_DENY,
@@ -120,8 +114,6 @@ const corpus: string[] = [
   ...FS_DENY,
   ...GIT_ALLOW,
   ...GIT_DENY,
-  ...MEMORY_ALLOW,
-  ...MEMORY_ASK,
   ...ND_ALLOW,
   ...ND_DENY,
   ...NIS_ALLOW,
@@ -242,12 +234,6 @@ function scopedDecision(input: CandidateInput, abs: string): PolicyCheckResult {
   }
   if (!inAllowedZone(abs, context)) {
     return deny(boundaryReason(arg, abs));
-  }
-  if (intent !== "read") {
-    const memory = memoryTargetOf(abs);
-    if (memory !== null) {
-      return ask(memoryReason(arg, memory !== "other"));
-    }
   }
   if (intent === "read" && abs === HOME) {
     return ask(askReason("reading the home directory as a whole", arg));
@@ -498,12 +484,6 @@ function scopedDecisionAllOld(
   }
   if (!inAllowedZoneOld(abs, context)) {
     return deny(boundaryReason(arg, abs));
-  }
-  if (intent !== "read") {
-    const memory = memoryTargetOf(abs);
-    if (memory !== null) {
-      return ask(memoryReason(arg, memory !== "other"));
-    }
   }
   if (intent === "read" && abs === HOME) {
     return ask(askReason("reading the home directory as a whole", arg));
@@ -879,30 +859,6 @@ const injectionHitRegex = (raw: string): string | null => {
   return WEIRD_WS_RE.test(raw) ? "non-ASCII whitespace" : null;
 };
 
-// E3: skip node:path.relative for every abs path not under the projects root.
-// Equivalent because relative() yields "" or a ".."-prefixed path exactly for
-// those inputs, and both cases return null.
-function memoryTargetOfGated(abs: string): ReturnType<typeof memoryTargetOf> {
-  if (HOME === "") {
-    return null;
-  }
-  if (!abs.startsWith(`${PROJECTS_ROOT}/`)) {
-    return null;
-  }
-  const rel = relative(PROJECTS_ROOT, abs);
-  if (rel === "" || rel.startsWith("..")) {
-    return null;
-  }
-  const segments = rel.split("/");
-  if (segments[1] !== "memory") {
-    return null;
-  }
-  if (segments.length === 2) {
-    return "dir";
-  }
-  return parse(abs).ext === ".md" ? "md" : "other";
-}
-
 // ---------------------------------------------------------------------------
 // Manual split-pair parser, built from probed Bun.Cookie.parse semantics:
 // token must be HTTP-header-value shaped (no leading/trailing SP/HTAB, no
@@ -1062,18 +1018,12 @@ for (const command of corpus) {
     console.log(`E2 MISMATCH: ${command}`);
   }
 }
-for (const abs of absAll) {
-  if (memoryTargetOfGated(abs) !== memoryTargetOf(abs)) {
-    mirrorMismatches += 1;
-    console.log(`E3 MISMATCH: ${abs}`);
-  }
-}
 if (mirrorMismatches > 0) {
   console.log(`SELF-CHECK FAILED: ${mirrorMismatches} mismatches — aborting`);
   process.exit(1);
 }
 console.log(
-  `self-check: stage mirror + old-flow + all-old composites identical to filesystemPolicy.check; E1-E3 mirrors identical to production; over ${parsed.length} commands`,
+  `self-check: stage mirror + old-flow + all-old composites identical to filesystemPolicy.check; E1-E2 mirrors identical to production; over ${parsed.length} commands`,
 );
 console.log(
   `corpus: ${corpus.length} commands (${parsed.length} parsed), ${unitPairs.length} units, ${eqTokens.length} "=" args, ${candidatesAll.length} candidates, ${absAll.length} abs paths`,
@@ -1237,18 +1187,6 @@ function injectionRegexAll(): void {
   }
 }
 
-function memoryGatedAll(): void {
-  for (const abs of absAll) {
-    do_not_optimize(memoryTargetOfGated(abs));
-  }
-}
-
-function memoryProdAll(): void {
-  for (const abs of absAll) {
-    do_not_optimize(memoryTargetOf(abs));
-  }
-}
-
 function injectionOldAll(): void {
   for (const command of corpus) {
     do_not_optimize(injectionHitOld(command));
@@ -1382,10 +1320,6 @@ group(`D splitPair: ${eqTokens.length} "=" args`, () => {
 group("E exploratory (next-round candidates, same run)", () => {
   bench("E1 injectionHit: PATH= pre-gate", injectionGatedAll).gc("inner");
   bench("E2 injectionHit: native regex control/ws", injectionRegexAll).gc(
-    "inner",
-  );
-  bench("E3a memoryTargetOf: production relative()", memoryProdAll).gc("inner");
-  bench("E3b memoryTargetOf: PROJECTS_ROOT pre-gate", memoryGatedAll).gc(
     "inner",
   );
 });

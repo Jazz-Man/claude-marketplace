@@ -26,7 +26,6 @@ import {
   ALLOW as GIT_ALLOW,
   DENY as GIT_DENY,
 } from "../tests/fixtures/git-readonly.ts";
-import { MEMORY_ALLOW, MEMORY_ASK } from "../tests/fixtures/memory.ts";
 import {
   ALLOW as ND_ALLOW,
   DENY as ND_DENY,
@@ -85,8 +84,6 @@ const corpus: string[] = [
   ...FS_DENY,
   ...GIT_ALLOW,
   ...GIT_DENY,
-  ...MEMORY_ALLOW,
-  ...MEMORY_ASK,
   ...ND_ALLOW,
   ...ND_DENY,
   ...NIS_ALLOW,

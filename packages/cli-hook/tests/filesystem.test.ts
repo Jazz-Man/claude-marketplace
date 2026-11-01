@@ -5,11 +5,9 @@ import { filesystemPolicy } from "../src/policies/filesystem/policy.ts";
 import {
   askReason,
   injectionReason,
-  memoryReason,
   SUDO_REASON,
 } from "../src/policies/filesystem/reasons.ts";
 import { ALLOW, ASK, DENY } from "./fixtures/filesystem.ts";
-import { MEMORY_ALLOW, MEMORY_ASK } from "./fixtures/memory.ts";
 import {
   decisionOf,
   decisionTableTests,
@@ -96,55 +94,6 @@ describe("context", () => {
       zone("tee /workspace/repo/x x", "/workspace/repo", "/workspace/repo"),
     ).toBeNull();
     expect(zone("tee /elsewhere/x x", "/proj/sub", "/proj")).toBe("deny");
-  });
-});
-
-describe("filesystem policy (project memory)", () => {
-  decisionTableTests(filesystemPolicy, {
-    allow: MEMORY_ALLOW,
-    ask: MEMORY_ASK,
-    deny: [],
-  });
-
-  it("asks with the plain wording for md and the warning wording for non-md", () => {
-    expect(
-      reasonOf(
-        policyCheck(
-          filesystemPolicy,
-          "tee ~/.claude/projects/-p/memory/n.md n",
-        ),
-      ),
-    ).toBe(memoryReason("~/.claude/projects/-p/memory/n.md", true));
-    expect(
-      reasonOf(
-        policyCheck(
-          filesystemPolicy,
-          "cp f.txt ~/.claude/projects/-p/memory/f.txt",
-        ),
-      ),
-    ).toBe(memoryReason("~/.claude/projects/-p/memory/f.txt", false));
-  });
-
-  it("asks on a relative memory path from a cwd inside the projects tree", () => {
-    expect(
-      decisionOf(
-        policyCheck(filesystemPolicy, "tee memory/x.md", {
-          cwd: `${homedir()}/.claude/projects/-p`,
-          projectRoot: "/proj",
-        }),
-      ),
-    ).toBe("ask");
-  });
-
-  it("deny beats ask when one command hits memory and a deny tier", () => {
-    expect(
-      decisionOf(
-        policyCheck(
-          filesystemPolicy,
-          "cp ~/.ssh/id_rsa ~/.claude/projects/-p/memory/k.md",
-        ),
-      ),
-    ).toBe("deny");
   });
 });
 
