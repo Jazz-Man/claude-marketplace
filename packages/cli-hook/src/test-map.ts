@@ -1,14 +1,15 @@
-export type Subcommands = readonly string[];
+export type Pattern = readonly string[];
 
-const subs = (...groups: readonly Subcommands[]): Subcommands => [
-  ...new Set(groups.flat()),
-];
+const subs = (...groups: readonly (readonly string[])[]): readonly Pattern[] =>
+  [...new Set(groups.flat())].map((pattern) => pattern.split(" "));
 
-const prefixed = (prefix: string, list: Subcommands): string[] =>
+const prefixed = (prefix: string, list: readonly string[]): string[] =>
   list.map((subcommand) => `${prefix} ${subcommand}`);
 
-const except = (list: Subcommands, ...skip: readonly string[]): string[] =>
-  list.filter((subcommand) => !skip.includes(subcommand));
+const except = (
+  list: readonly string[],
+  ...skip: readonly string[]
+): string[] => list.filter((subcommand) => !skip.includes(subcommand));
 
 const ADD = "add";
 const BUNDLE = "bundle";
@@ -48,14 +49,14 @@ const PIP_ALIASES = [DOWNLOAD, INSTALL, LOCK, UNINSTALL, WHEEL] as const;
 const POETRY_ALIASES = [ADD, INSTALL, LOCK, REMOVE, SYNC, UPDATE] as const;
 const SELF_UPDATE = prefixed("self", [UPDATE]);
 
-export const mutableCommands = new Map<string, Subcommands>();
+export const mutableCommands = new Map<string, readonly Pattern[]>();
 
 mutableCommands.set(
   "brew",
   subs(
     [BUNDLE, FETCH, INSTALL, REINSTALL, UNINSTALL, UPDATE, UPGRADE],
     LINK_ALIASES,
-    ["autoremove", "pin", "tap", "unpin", "untap"],
+    ["autoremove", "pin", "services", "tap", "unpin", "untap"],
   ),
 );
 mutableCommands.set(
@@ -117,7 +118,6 @@ mutableCommands.set(
       UNINSTALL,
       X,
       "compile",
-      "run <url>",
     ],
     except(UPDATE_ALIASES, UP),
   ),
@@ -126,7 +126,7 @@ mutableCommands.set("gem", subs(["cleanup", INSTALL, UNINSTALL, UPDATE]));
 mutableCommands.set(
   "go",
   subs(
-    ["get", INSTALL, "run <pkg>@<version>"],
+    ["get", INSTALL],
     prefixed("mod", [DOWNLOAD, "tidy", "vendor"]),
     prefixed("work", [SYNC]),
   ),
@@ -165,7 +165,6 @@ mutableCommands.set(
 );
 mutableCommands.set("npx", subs());
 mutableCommands.set("pip", subs(PIP_ALIASES));
-mutableCommands.set("pip3", subs(PIP_ALIASES));
 mutableCommands.set(
   "pipx",
   subs([
@@ -226,7 +225,7 @@ mutableCommands.set(
     prefixed("source", [ADD]),
   ),
 );
-mutableCommands.set("python3", subs(prefixed("-m pip", PIP_ALIASES)));
+mutableCommands.set("python", subs(prefixed("-m pip", PIP_ALIASES)));
 mutableCommands.set(
   "rustup",
   subs(

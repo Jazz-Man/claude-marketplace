@@ -1,122 +1,87 @@
 import { baseName } from "../core/ast.ts";
 import { deny } from "../core/decision.ts";
 import type { Policy } from "../core/policy.ts";
+import commandList from "../mutable-commands.txt";
 
-const JS_TOOLS = ["bun", "npm", "pnpm", "yarn"] as const;
-const PY_TOOLS = ["pip", "pip3"] as const;
-const ALWAYS_MUTATES = ["bunx", "npx", "uvx"] as const;
-
-const VERBS: Readonly<Record<string, readonly string[]>> = {
-  add: ["bun", "cargo", "deno", "pnpm", "poetry", "uv", "yarn"],
-  autoremove: ["brew"],
-  bundle: ["brew"],
-  cache: ["deno"],
-  ci: ["npm"],
-  create: ["npm"],
-  ddp: ["npm"],
-  dedupe: ["npm"],
-  "dist-tag": ["npm"],
-  dlx: ["pnpm", "yarn"],
-  download: [...PY_TOOLS],
-  exec: ["npm"],
-  fetch: ["cargo"],
-  generate: ["cargo"],
-  get: ["go"],
-  i: [...JS_TOOLS],
-  import: ["pnpm"],
-  init: [...JS_TOOLS],
-  inject: ["pipx"],
-  install: [
-    ...JS_TOOLS,
-    "brew",
-    "cargo",
-    "composer",
-    "deno",
-    "gem",
-    "go",
-    ...PY_TOOLS,
-    "pipx",
-    "poetry",
-    "rustup",
-  ],
-  "install-test": ["npm"],
-  link: [...JS_TOOLS, "brew"],
-  ln: ["npm"],
-  lock: ["poetry", "uv"],
-  r: ["npm"],
-  reinstall: ["brew", "npm", "pipx"],
-  remove: [...JS_TOOLS, "brew", "cargo", "composer", "poetry", "uv"],
-  require: ["composer"],
-  rm: ["brew", "bun", "cargo", "npm", "pnpm"],
-  "self-update": ["composer"],
-  selfupdate: ["composer"],
-  sync: ["uv"],
-  tap: ["brew"],
-  un: ["npm"],
-  uninstall: [...PY_TOOLS, "brew", "gem", "npm", "pipx", "rustup"],
-  untap: ["brew"],
-  up: ["npm", "pnpm", "yarn"],
-  update: [...JS_TOOLS, "cargo", "composer", "gem", "poetry", "rustup"],
-  upgrade: [...JS_TOOLS, "brew", "cargo", "deno", "pipx", "uv"],
+const ALIASES: Record<string, string> = {
+  bundler: "bundle",
+  yarnpkg: "yarn",
 };
 
-const SEQUENCE_GROUPS: readonly [
+const FETCH_FORMS: readonly [
   string,
   readonly string[],
-  readonly string[],
+  (arg: string) => boolean,
 ][] = [
-  [
-    "brew",
-    ["services"],
-    ["start", "stop", "restart", "run", "kill", "cleanup"],
-  ],
-  ["composer", ["global"], ["remove", "require", "update"]],
-  ["go", ["mod"], ["download", "tidy"]],
-  ["poetry", ["self"], ["update"]],
-  ["python", ["-m", "pip"], ["download", "install", "uninstall"]],
-  ["python3", ["-m", "pip"], ["download", "install", "uninstall"]],
-  ["swift", ["package"], ["install", "resolve", "update"]],
-  ["uv", ["pip"], ["download", "install", "uninstall"]],
-  ["uv", ["tool"], ["install", "uninstall", "upgrade"]],
-  ["uv", ["self"], ["update"]],
-  ["yarn", ["global"], ["add", "install", "remove", "upgrade"]],
-  ["yarn", ["set"], ["version"]],
+  ["go", ["run"], (arg) => arg.includes("@")],
+  ["deno", ["run"], (arg) => /^(?:https?:|npm:|jsr:)/u.test(arg)],
 ];
 
-const MUTATIONS = new Map<string, readonly (readonly string[])[]>();
-for (const [verb, tools] of Object.entries(VERBS)) {
-  for (const tool of tools) {
-    MUTATIONS.set(tool, [...(MUTATIONS.get(tool) ?? []), [verb]]);
-  }
+function toolOf(name: string): string {
+  const raw = name.toLowerCase();
+  return baseName(ALIASES[raw] ?? raw);
 }
-for (const tool of ALWAYS_MUTATES) {
-  MUTATIONS.set(tool, [[]]);
-}
-for (const [tool, scope, actions] of SEQUENCE_GROUPS) {
-  for (const action of actions) {
-    MUTATIONS.set(tool, [...(MUTATIONS.get(tool) ?? []), [...scope, action]]);
+
+const RUNNERS = new Set<string>();
+const DENY = new Map<string, Set<string>>();
+const lines = commandList
+  .split("\n")
+  .map((line) => line.trim().toLowerCase())
+  .filter((line) => line !== "" && !line.includes("<"));
+for (const line of lines) {
+  const [name, ...pattern] = line.split(/\s+/u);
+  const tool = toolOf(name ?? "");
+  if (pattern.length === 0) {
+    RUNNERS.add(tool);
+  } else {
+    const patterns = DENY.get(tool) ?? new Set<string>();
+    patterns.add(pattern.join(" "));
+    DENY.set(tool, patterns);
   }
 }
 
-function mutates(name: string, args: string[]): boolean {
-  const prefixes = MUTATIONS.get(baseName(name.toLowerCase()));
-  if (prefixes === undefined) {
-    return false;
-  }
-  return prefixes.some(
-    (prefix) =>
-      prefix.length <= args.length &&
-      prefix.every((word, index) => word === args[index]?.toLowerCase()),
+function startsWithTokens(tokens: readonly string[], args: string[]): boolean {
+  return (
+    tokens.length <= args.length &&
+    tokens.every((token, index) => token === args[index]?.toLowerCase())
   );
 }
 
+function fetches(tool: string, args: string[]): boolean {
+  return FETCH_FORMS.some(([prefix, tokens, isFetch]) => {
+    if (prefix !== tool) {
+      return false;
+    }
+    const spec = args[tokens.length];
+    return (
+      spec !== undefined && startsWithTokens(tokens, args) && isFetch(spec)
+    );
+  });
+}
+
+function denies(name: string, args: string[]): boolean {
+  const tool = toolOf(name);
+  if (RUNNERS.has(tool)) {
+    return true;
+  }
+  const patterns = DENY.get(tool);
+  if (patterns !== undefined) {
+    for (const pattern of patterns) {
+      if (startsWithTokens(pattern.split(" "), args)) {
+        return true;
+      }
+    }
+  }
+  return fetches(tool, args);
+}
+
 export const REASON =
-  "Dependency install/update blocked: do not install, update, or remove packages (pip/uv/pipx/poetry, npm/npx/yarn/pnpm/bun/bunx, cargo/rustup, composer, gem, go get/install, swift package, brew).";
+  "Dependency install/update blocked: do not install, update, or remove packages (pip/uv/pipx/poetry, npm/npx/pnpm/pnpx/yarn, bun/bunx, cargo/rustup, composer, gem/bundler, go, swift package, brew, nix) or run one-shot package runners.";
 
 export const noDepsPolicy: Policy = {
   check(cmd) {
     for (const unit of cmd.units) {
-      if (mutates(unit.name, unit.args)) {
+      if (denies(unit.name, unit.args)) {
         return deny(REASON);
       }
     }
