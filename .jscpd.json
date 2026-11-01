@@ -2,7 +2,12 @@
   "baseline": "./.jscpd-baseline.json",
   "followSymlinks": true,
   "format": ["typescript", "tsx", "javascript", "jsx"],
-  "ignore": ["**/node_modules/**", "**/dist/**", "**/tests/fixtures/**"],
+  "ignore": [
+    "**/node_modules/**",
+    "**/dist/**",
+    "**/tests/fixtures/**",
+    "**/bench/**"
+  ],
   "ignoreCase": true,
   "ignoreIdentifiers": true,
   "ignoreLiterals": true,
