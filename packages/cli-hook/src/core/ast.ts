@@ -28,20 +28,21 @@ const VERSION_SUFFIX = /\d+(?:\.\d+)*$/u;
 const WHOLE_WORD_SUBST =
   /^(?:\$\([\s\S]*\)|`[\s\S]*`|<\([\s\S]*\)|>\([\s\S]*\))$/u;
 
-function wordValues(node: unknown): string[] {
-  if (node === null || typeof node !== "object") {
-    return [];
-  }
-  if (wordLike(node)) {
-    if (WHOLE_WORD_SUBST.test(node.value)) {
-      return [];
-    }
-    return [node.value];
-  }
-  if ("type" in node && node.type === "Redirect") {
-    return [];
-  }
-  return Object.values(node).flatMap((value) => wordValues(value));
+function isPruned(type: unknown): boolean {
+  return (
+    type === "Redirect" ||
+    type === "Assignment" ||
+    type === "ArrayValue" ||
+    type === "HereDocBody"
+  );
+}
+
+function isSubst(value: string): boolean {
+  const first = value.charCodeAt(0);
+  return (
+    (first === 36 || first === 96 || first === 60 || first === 62) &&
+    WHOLE_WORD_SUBST.test(value)
+  );
 }
 
 function redirectWord(
@@ -91,42 +92,92 @@ export interface ParsedCommand {
   words: string[];
 }
 
+interface WalkState {
+  argStack: (string[] | null)[];
+  functionDefs: string[];
+  redirects: CommandRedirect[];
+  units: CommandUnit[];
+  words: string[];
+}
+
+function walkCommand(node: SyntaxNode, state: WalkState): void {
+  const command = node as Command;
+  const { name } = command;
+  const { argStack, redirects, units } = state;
+  if (name === undefined) {
+    collectRedirects(command, redirects);
+    forEachChild(node, (child) => visit(child, state));
+    return;
+  }
+  const unit: CommandUnit = { args: [], name: name.value };
+  units.push(unit);
+  collectRedirects(command, redirects);
+  argStack.push(null);
+  for (const child of command.prefix) {
+    visit(child, state);
+  }
+  argStack.pop();
+  visit(name, state);
+  argStack.push(unit.args);
+  for (const child of command.suffix) {
+    visit(child, state);
+  }
+  argStack.pop();
+}
+
+function visit(node: SyntaxNode, state: WalkState): void {
+  const { argStack, functionDefs, words } = state;
+  const args = argStack.at(-1) ?? null;
+  if (wordLike(node)) {
+    words.push(node.value);
+    if (args !== null && !isSubst(node.value)) {
+      args.push(node.value);
+    }
+    if (args === null) {
+      forEachChild(node, (child) => visit(child, state));
+    } else {
+      argStack.push(null);
+      forEachChild(node, (child) => visit(child, state));
+      argStack.pop();
+    }
+    return;
+  }
+  const { type } = node;
+  if (type === "Command") {
+    walkCommand(node, state);
+    return;
+  }
+  if (args !== null && isPruned(type)) {
+    argStack.push(null);
+    forEachChild(node, (child) => visit(child, state));
+    argStack.pop();
+    return;
+  }
+  if (type === "Function") {
+    functionDefs.push(node.name.value);
+  }
+  forEachChild(node, (child) => visit(child, state));
+}
+
 export function parseCommand(command: string): ParsedCommand | null {
   const parsed = parseOrNull(command);
   if (parsed === null) {
     return null;
   }
-  const units: CommandUnit[] = [];
-  const words: string[] = [];
-  const redirects: CommandRedirect[] = [];
-  const functionDefs: string[] = [];
-
-  const visit = (node: SyntaxNode): void => {
-    if (wordLike(node)) {
-      words.push(node.value);
-    }
-    if (node.type === "Command") {
-      const { name } = node;
-      if (name !== undefined) {
-        units.push({
-          args: wordValues(node.suffix),
-          name: name.value,
-        });
-      }
-      collectRedirects(node, redirects);
-    }
-    if (node.type === "Function") {
-      functionDefs.push(node.name.value);
-    }
-    forEachChild(node, visit);
+  const state: WalkState = {
+    argStack: [],
+    functionDefs: [],
+    redirects: [],
+    units: [],
+    words: [],
   };
-  visit(parsed);
+  visit(parsed, state);
   return {
-    functionDefs,
+    functionDefs: state.functionDefs,
     raw: command,
-    redirects,
-    units,
-    words,
+    redirects: state.redirects,
+    units: state.units,
+    words: state.words,
   };
 }
 
