@@ -36,11 +36,7 @@ const EVAL_SUBCOMMANDS = new Set(["deno"]);
 
 const WRAPPERS = new Set([...SHARED_WRAPPERS, "find"]);
 
-function isInlineArg(lname: string, arg: string): boolean {
-  const table = INTERPRETERS.get(lname);
-  if (table === undefined) {
-    return false;
-  }
+function isInlineArg(table: InterpreterFlags, arg: string): boolean {
   if (table.longs.includes(arg)) {
     return true;
   }
@@ -53,7 +49,8 @@ function isInlineArg(lname: string, arg: string): boolean {
 const readsStdinScript = (args: readonly string[]) =>
   args.length === 0 || args.includes("-");
 
-const isAssignment = (token: string) => Object.keys(parseEnv(token)).length > 0;
+const isAssignment = (token: string) =>
+  token.includes("=") && Object.keys(parseEnv(token)).length > 0;
 
 const FED_OPERATORS = new Set(["<<", "<<-", "<<<"]);
 
@@ -90,13 +87,14 @@ function interpreterViolates(
   if (EVAL_SUBCOMMANDS.has(name)) {
     return args[0] === "eval";
   }
-  if (!INTERPRETERS.has(name)) {
+  const table = INTERPRETERS.get(name);
+  if (table === undefined) {
     return false;
   }
   if (heredocFed(args, redirects)) {
     return true;
   }
-  return args.some((arg) => isInlineArg(name, arg)) || readsStdinScript(args);
+  return args.some((arg) => isInlineArg(table, arg)) || readsStdinScript(args);
 }
 
 function wrapperViolates(lname: string, args: readonly string[]): boolean {
@@ -104,6 +102,9 @@ function wrapperViolates(lname: string, args: readonly string[]): boolean {
     return false;
   }
   return args.some((arg, index) => {
+    if (arg.startsWith("-")) {
+      return false;
+    }
     const next = args[index + 1];
     if (next === undefined) {
       return false;
@@ -115,7 +116,8 @@ function wrapperViolates(lname: string, args: readonly string[]): boolean {
     if (EVAL_SUBCOMMANDS.has(candidate)) {
       return next === "eval";
     }
-    return INTERPRETERS.has(candidate) && isInlineArg(candidate, next);
+    const table = INTERPRETERS.get(candidate);
+    return table !== undefined && isInlineArg(table, next);
   });
 }
 

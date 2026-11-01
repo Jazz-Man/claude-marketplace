@@ -5,7 +5,7 @@ status: todo
 type: task
 priority: normal
 created_at: 2026-11-01T15:50:34Z
-updated_at: 2026-11-01T16:39:59Z
+updated_at: 2026-11-01T16:44:39Z
 parent: cc-sdd-okin
 ---
 
@@ -15,4 +15,4 @@ Gradually optimize every policy in packages/cli-hook/src/policies/ with the doct
 - [x] core/ast parseCommand walk (V4 fusion + forEachChild + charCode subst gate; 2026-11-01; bench/parse.bench.ts + bench/equiv.ts as unbash-upgrade regression check)
 - [x] filesystem engine (2026-11-01: obvious pass -22%, then E1+E2+E3: check sweep 914->571us = -37%, full cycle 1952->1570us; bench/filesystem.bench.ts 30 arms + self-check; Cookie.parse kept per owner decision; tier toLowerCase fusion rejected on U+0130 semantics)
 - [ ] git-readonly
-- [ ] no-inline-scripts
+- [x] no-inline-scripts (2026-11-01 obvious pass: parseEnv gated by includes-equivalence, single INTERPRETERS lookup with table passed through, wrapperViolates flag-skip gate with proven identity; bench optional/pending)

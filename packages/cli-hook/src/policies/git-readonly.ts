@@ -143,21 +143,25 @@ function globalAdvance(arg: string): number | null {
 }
 
 function gitCall(args: readonly string[]): GitCall | null {
-  const [arg] = args;
-  if (arg === undefined) {
-    return null;
+  let index = 0;
+  while (index < args.length) {
+    const arg = args[index];
+    if (arg === undefined) {
+      return null;
+    }
+    if (!arg.startsWith("-")) {
+      return {
+        rest: args.slice(index + 1),
+        sub: arg,
+      };
+    }
+    const advance = globalAdvance(arg);
+    if (advance === null) {
+      return null;
+    }
+    index += advance;
   }
-  if (!arg.startsWith("-")) {
-    return {
-      rest: args.slice(1),
-      sub: arg,
-    };
-  }
-  const advance = globalAdvance(arg);
-  if (advance === null) {
-    return null;
-  }
-  return gitCall(args.slice(advance));
+  return null;
 }
 
 function gitUnitCall(unit: CommandUnit): GitCall | null {
@@ -187,10 +191,19 @@ function stashViolates(subs: Set<string>, args: readonly string[]): boolean {
 }
 
 function configViolates(args: readonly string[]): boolean {
-  if (args.some((arg) => CONFIG_MUTATING_FLAGS.has(arg))) {
-    return true;
+  let nonFlag = 0;
+  for (const arg of args) {
+    if (CONFIG_MUTATING_FLAGS.has(arg)) {
+      return true;
+    }
+    if (!arg.startsWith("-")) {
+      nonFlag += 1;
+      if (nonFlag >= 2) {
+        return true;
+      }
+    }
   }
-  return args.filter((arg) => !arg.startsWith("-")).length >= 2;
+  return false;
 }
 
 function subFamilyMutating(sub: string, args: readonly string[]): boolean {
@@ -248,10 +261,14 @@ export const gitReadonlyPolicy: Policy = {
   check(cmd) {
     for (const unit of cmd.units) {
       const call = gitUnitCall(unit);
-      if (call !== null && call.sub.toLowerCase() === "hook") {
+      if (call === null) {
+        continue;
+      }
+      const sub = call.sub.toLowerCase();
+      if (sub === "hook") {
         return deny(GIT_HOOK_REASON);
       }
-      if (call !== null && mutating(call.sub.toLowerCase(), call.rest)) {
+      if (mutating(sub, call.rest)) {
         return deny(GIT_READONLY_REASON);
       }
     }
