@@ -5,6 +5,7 @@ brew install
 brew link
 brew pin
 brew reinstall
+brew services
 brew tap
 brew uninstall
 brew unlink
