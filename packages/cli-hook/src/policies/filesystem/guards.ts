@@ -8,26 +8,19 @@ export const INJECTION_SUBSTRINGS = [
   "HISTSIZE=0",
 ];
 
-const isControlByte = (code: number) =>
-  (code >= 1 && code <= 8) || (code >= 14 && code <= 31) || code === 127;
-
 export const WORD_SPLIT = /\s+/u;
 
-function isNonAsciiWhitespace(code: number): boolean {
-  return (
-    code === 11 ||
-    code === 12 ||
-    code === 0xa0 ||
-    code === 0x16_80 ||
-    (code >= 0x20_00 && code <= 0x20_0a) ||
-    code === 0x20_28 ||
-    code === 0x20_29 ||
-    code === 0x20_2f ||
-    code === 0x20_5f ||
-    code === 0x30_00 ||
-    code === 0xfe_ff
-  );
-}
+// biome-ignore lint/suspicious/noControlCharactersInRegex: raw control bytes are exactly what this scan detects
+const CONTROL_CHARS = /[\x01-\x08\x0e-\x1f\x7f]/u;
+
+const WEIRD_WHITESPACE = new RegExp(
+  "[\\x0b\\x0c\\xa0" +
+    String.fromCharCode(0x16_80, 0x20_00) +
+    "-" +
+    String.fromCharCode(0x20_28, 0x20_29, 0x20_2f, 0x20_5f, 0x30_00, 0xfe_ff) +
+    "]",
+  "u",
+);
 
 function substringHit(raw: string) {
   for (const needle of INJECTION_SUBSTRINGS) {
@@ -41,21 +34,10 @@ function substringHit(raw: string) {
   return null;
 }
 
-function scanRaw(raw: string): { control: boolean; weirdWs: boolean } {
-  let weirdWs = false;
-  for (let i = 0; i < raw.length; i += 1) {
-    const code = raw.charCodeAt(i);
-    if (isControlByte(code)) {
-      return { control: true, weirdWs };
-    }
-    if (!weirdWs && isNonAsciiWhitespace(code)) {
-      weirdWs = true;
-    }
-  }
-  return { control: false, weirdWs };
-}
-
 function pathOverrideHit(raw: string) {
+  if (!raw.includes("PATH=")) {
+    return null;
+  }
   for (const word of raw.split(WORD_SPLIT)) {
     if (word.startsWith("PATH=") && !word.includes("$PATH")) {
       return "PATH override";
@@ -69,13 +51,12 @@ export const injectionHit = (raw: string) => {
   if (hit !== null) {
     return hit;
   }
-  const scan = scanRaw(raw);
-  if (scan.control) {
+  if (CONTROL_CHARS.test(raw)) {
     return "control characters";
   }
   const override = pathOverrideHit(raw);
   if (override !== null) {
     return override;
   }
-  return scan.weirdWs ? "non-ASCII whitespace" : null;
+  return WEIRD_WHITESPACE.test(raw) ? "non-ASCII whitespace" : null;
 };
