@@ -311,7 +311,7 @@ function parseCommandFused(command: string, substGate: boolean): Parsed | null {
     ? (value: string) => !isSubst(value)
     : (value: string) => !WHOLE_WORD_SUBST.test(value);
   const visit = (node: SyntaxNode): void => {
-    const args = argStack.length === 0 ? null : argStack[argStack.length - 1];
+    const args = argStack.at(-1) ?? null;
     if (wordLike(node)) {
       words.push(node.value);
       if (args !== null && keep(node.value)) {
@@ -453,7 +453,7 @@ function parseCommandCombo(
   const argStack: (string[] | null)[] = [];
   const collect = inlineRedirects ? collectRedirectsInline : collectRedirects;
   const visit = (node: SyntaxNode): void => {
-    const args = argStack.length === 0 ? null : argStack[argStack.length - 1];
+    const args = argStack.at(-1) ?? null;
     const type = node.type;
     const isWord = typeWordLike
       ? TYPE_WORD_LIKE.has(type)

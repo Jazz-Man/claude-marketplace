@@ -225,7 +225,7 @@ function parseCommandFused(command: string, substGate: boolean): Parsed {
     ? (value: string) => !isSubst(value)
     : (value: string) => !WHOLE_WORD_SUBST.test(value);
   const visit = (node: SyntaxNode): void => {
-    const args = argStack.length === 0 ? null : argStack[argStack.length - 1];
+    const args = argStack.at(-1) ?? null;
     if (wordLike(node)) {
       words.push(node.value);
       if (args !== null && keep(node.value)) {
@@ -342,7 +342,7 @@ function parseCommandCombo(
   const argStack: (string[] | null)[] = [];
   const collect = inlineRedirects ? collectRedirectsInline : collectRedirects;
   const visit = (node: SyntaxNode): void => {
-    const args = argStack.length === 0 ? null : argStack[argStack.length - 1];
+    const args = argStack.at(-1) ?? null;
     const isWord = typeWordLike
       ? TYPE_WORD_LIKE.has(node.type)
       : wordLike(node as object);
@@ -429,7 +429,7 @@ function parseCommandFusedReadOnce(command: string): Parsed {
   const functionDefs: string[] = [];
   const argStack: (string[] | null)[] = [];
   const visit = (node: SyntaxNode): void => {
-    const args = argStack.length === 0 ? null : argStack[argStack.length - 1];
+    const args = argStack.at(-1) ?? null;
     if (wordLike(node)) {
       if (args === null) {
         words.push(node.value);
