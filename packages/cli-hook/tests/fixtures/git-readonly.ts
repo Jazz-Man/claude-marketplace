@@ -86,7 +86,6 @@ export const ALLOW: string[] = [
   "gitk --all",
   "cat README.md",
   "echo 'git add .'",
-  "grep 'git push' log",
   "GIT STATUS",
   "git -C . status",
   "git --no-pager log",

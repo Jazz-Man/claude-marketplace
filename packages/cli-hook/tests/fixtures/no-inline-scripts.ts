@@ -62,7 +62,6 @@ export const DENY: string[] = [
 export const ALLOW: string[] = [
   "sed 's/a/b/' file.txt",
   "awk '{print $1}' file.txt",
-  "grep -c pattern file.txt",
   "sort -c file.txt",
   "head -c 100 file.txt",
   "tail -c 50 file.txt",

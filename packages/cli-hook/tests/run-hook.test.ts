@@ -52,6 +52,18 @@ describe("runHook (unit)", () => {
   it("denies filesystem escapes", () => {
     expect(decisionOfBash("cat /etc/passwd")).toBe("deny");
   });
+
+  it("bash grep denies with the native-search reason, not the filesystem boundary reason", () => {
+    const result = runHook(bashPayload("grep pattern /etc/passwd"));
+    expect(decisionOf(result)).toBe("deny");
+    expect(reasonOf(result)).toContain("native-search policy");
+  });
+
+  it("wrapped bash grep denies with the native-search reason", () => {
+    const result = runHook(bashPayload("timeout 10 grep pattern src/"));
+    expect(decisionOf(result)).toBe("deny");
+    expect(reasonOf(result)).toContain("native-search policy");
+  });
 });
 
 describe("runHook (unit — routing)", () => {

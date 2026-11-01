@@ -152,6 +152,80 @@ Expected: PASS — existing `grep`-bearing fixture rows in OTHER tables must be 
 
 ---
 
+### Task 1b: total ban — spec amendment (owner, 2026-11-01)
+
+The spec's Component 1 was amended after Task 1 review: the ban is TOTAL —
+banned names deny in ANY token position (unit name or argument), closing
+wrapper/xargs holes and REPLACING the xargs special case with a simpler scan.
+
+**Files:**
+- Modify: `packages/cli-hook/src/policies/native-search.ts`
+- Modify: `packages/cli-hook/tests/fixtures/native-search.ts`
+- Modify: `packages/cli-hook/tests/run-hook.test.ts` (one wrapped-form pin)
+
+- [ ] **Step 1: Add the failing rows**
+
+To `tests/fixtures/native-search.ts` DENY:
+
+```ts
+  "env grep pattern .",
+  "nice -n 5 grep pattern",
+  "nohup find . -name x",
+  "timeout 10 grep pattern src/",
+  "parallel grep pattern ::: files",
+  "sudo grep pattern /etc/passwd",
+  "xargs -I {} grep pattern",
+  "xargs -d '\\n' grep pattern",
+  "echo grep",
+```
+
+- [ ] **Step 2: Run to verify failures**
+
+Run: `bun test packages/cli-hook -t "native-search policy"`
+Expected: FAIL — the current check misses wrapper forms and spaced xargs flags (`echo grep` fails too under the old logic).
+
+- [ ] **Step 3: Simplify the policy to a total token scan**
+
+Replace the check in `src/policies/native-search.ts` (the xargs branch from Task 1 is DELETED — the token scan subsumes it):
+
+```ts
+export const nativeSearchPolicy: Policy = {
+  check(cmd) {
+    return firstUnitHit(cmd.units, (unit) => {
+      if (BANNED.has(unit.name.toLowerCase())) {
+        return deny(NATIVE_SEARCH_REASON);
+      }
+      return unit.args.some((arg) => BANNED.has(arg.toLowerCase()))
+        ? deny(NATIVE_SEARCH_REASON)
+        : null;
+    });
+  },
+  name: "native-search",
+};
+```
+
+- [ ] **Step 4: Run the full suite**
+
+Run: `bun test packages/cli-hook`
+Expected: PASS — all Task 1 rows still deny (token scan is a superset), the new wrapper/xargs/echo rows deny, `rg` rows still allow.
+
+- [ ] **Step 5: One wrapped-form reason pin in run-hook.test.ts**
+
+```ts
+it("wrapped bash grep denies with the native-search reason", () => {
+  const result = runHook(bashPayload("timeout 10 grep pattern src/"));
+  expect(decisionOf(result)).toBe("deny");
+  expect(reasonOf(result)).toContain("native-search policy");
+});
+```
+
+Run: `bun test packages/cli-hook`
+Expected: PASS.
+
+**Stop point 1b: owner reviews and commits (may fold with stop point 1).**
+
+---
+
 ### Task 2: Grep/Glob tool-channel routing
 
 **Files:**

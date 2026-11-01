@@ -191,7 +191,6 @@ export const DENY: string[] = [
 
 // Home-whole reads ask: the only ask rows
 export const ASK: string[] = [
-  "find ~ -name x", // read on home as a whole
   "ls ~",
 ];
 

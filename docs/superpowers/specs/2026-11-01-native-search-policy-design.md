@@ -31,9 +31,14 @@ for them, so no policy could see them even if routed.
 ### Component 1 — `src/policies/native-search.ts` (new)
 
 - `BANNED = new Set(["grep", "egrep", "fgrep", "find"])`.
-- `check` via `firstUnitHit`: any unit whose lowercased name is in `BANNED`
-  denies — this covers pipeline stages (`cat x | grep y`) and process
-  filtering (`ps aux | grep node`, accepted compromise: the ban is total).
+- `check`: the ban is TOTAL (owner amendment, 2026-11-01) — every unit's
+  lowercased name AND every argument token is tested against `BANNED`. This
+  covers pipeline stages (`cat x | grep y`), process filtering
+  (`ps aux | grep node`), wrapper invocations (`env/nice/nohup/timeout/
+  parallel/time/sudo grep ...`), and xargs argument positions
+  (`xargs -I {} grep ...`) with no special-case code. A literal banned token
+  as a plain argument (`echo grep`) denies too — accepted false-positive
+  cost of totality.
 - Reason (exact text):
 
   `Bash grep/find blocked (native-search policy): use the built-in Grep and Glob tools instead — they are faster and zone-checked. ripgrep (rg) stays allowed as the CLI fallback.`
@@ -76,6 +81,7 @@ for them, so no policy could see them even if routed.
 | Input | Verdict |
 | --- | --- |
 | Bash unit `grep`/`egrep`/`fgrep`/`find` (any position) | DENY, native-search reason |
+| Wrapped or chained forms (`env grep`, `timeout 10 grep`, `nohup find`, `xargs -I {} grep`) | DENY, native-search reason |
 | Bash `rg pattern src/` (in-zone path or cwd-relative) | allow |
 | Bash `rg pattern /etc/passwd` (out of zone) | deny, boundary reason (filesystemPolicy) |
 | Bash `rg pattern ~/.ssh/id_rsa` (secrets tier) | deny, tier reason (filesystemPolicy) |
