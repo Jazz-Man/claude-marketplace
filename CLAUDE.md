@@ -36,7 +36,10 @@ This file is development context for THIS repository, not user documentation.
   checkbox/git/beans duplication greps) was pinned in design docs that no
   longer exist and left no git trace — re-derive before relying on it.
 - After content changes to skills or assets, re-run the greps and
-  `claude plugin validate .` before claiming done.
+  `claude plugin validate .` before claiming done; the wider battery for
+  `hooks/`, `bin/`, and `packages/` (`plugins/sdd/helper-tests.sh`,
+  `bun check --strict --all`) is pinned in `.claude/rules/tech.md`
+  §"Verify before claiming done".
 
 ## Development workflow (this repo)
 

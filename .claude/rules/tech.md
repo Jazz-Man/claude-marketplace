@@ -42,7 +42,7 @@ Adding a second write path or broadening `sdd-promote`'s writes is a design chan
 After any content change to `skills/`, `assets/`, `hooks/`, `bin/`, or `packages/`:
 
 1. `claude plugin validate .` — must pass.
-2. The invariant grep battery and the Revision 9 twin checks — scope, exact patterns, and the paired-diff method are pinned in `CLAUDE.md` §Verification (which points into the two design docs under `docs/superpowers/specs/`). Run them from there; do not copy patterns into summaries — copies drift.
+2. The invariant grep battery's scope is pinned in `CLAUDE.md` §Verification. The Revision 9 twin checks' original pinning (design docs under `docs/superpowers/specs/`) no longer exists — re-derive before relying on them; do not copy patterns into summaries — copies drift.
 3. `plugins/sdd/helper-tests.sh` — the `bin/` helper sandbox suite (25 checks: phase gates, stale-hash + latest-wins, drafts, promote guards, tree walk, rollups, ancestor chaining, resume, finished, single-active). Self-contained mktemp store; leaves nothing behind. `shellcheck` must stay clean on any change to `bin/` or `hooks/`.
 4. `bun check --strict --all` — the TypeScript strict gate over every package; zero type errors on any change under `packages/` (editor diagnostics and `bun test` do not substitute for it — transpilation skips types).
 
