@@ -1,6 +1,7 @@
 import { describe, expect, it } from "bun:test";
 
 import { parseCommand } from "../src/core/ast.ts";
+import { ADVERSARIAL } from "./fixtures/ast-adversarial.ts";
 
 describe("parseCommand", () => {
   it("walks best-effort ASTs from malformed input (unbash never throws)", () => {
@@ -194,4 +195,47 @@ describe("parseCommand (walk pins — globs, substitutions, elif)", () => {
       },
     ]);
   });
+});
+
+describe("parseCommand (walk pins — fused-walk shapes)", () => {
+  it("pins the flat words arrays: plain words ride once, quoted content rides twice", () => {
+    expect(parseCommand("ls -la")?.words).toEqual(["ls", "-la"]);
+    expect(parseCommand('bash <<<"hi"')?.words).toEqual(["bash", "hi", "hi"]);
+    expect(parseCommand('cat "/et"c/passwd')?.words).toEqual([
+      "cat",
+      "/etc/passwd",
+      "/et",
+      "c/passwd",
+    ]);
+  });
+
+  it("assignment values land in flat words, never in the following unit's args", () => {
+    const parsed = parseCommand("FOO=bar baz qux");
+    expect(parsed?.units[0]).toEqual({ args: ["qux"], name: "baz" });
+    expect(parsed?.words).toEqual(["bar", "baz", "qux"]);
+    expect(parsed?.redirects).toEqual([]);
+  });
+
+  it("keeps append-redirect targets out of unit args but records them", () => {
+    const parsed = parseCommand("cat x >>log");
+    expect(parsed?.units[0]).toEqual({ args: ["x"], name: "cat" });
+    expect(parsed?.redirects).toEqual([{ operator: ">>", target: "log" }]);
+  });
+
+  it("here-string targets are NOT pruned: their words ride unit args", () => {
+    const parsed = parseCommand('bash <<<"hi"');
+    expect(parsed?.units[0]).toEqual({ args: ["hi"], name: "bash" });
+    expect(parsed?.redirects).toEqual([{ operator: "<<<", target: "hi" }]);
+  });
+});
+
+describe("parseCommand (adversarial regression net)", () => {
+  it.each(ADVERSARIAL.map((row) => [row.command, row.minUnits] as const))(
+    "%s",
+    (command, minUnits) => {
+      const parsed = parseCommand(command);
+      expect(parsed).not.toBeNull();
+      expect(parsed?.units.length).toBeGreaterThanOrEqual(minUnits);
+    },
+  );
 });

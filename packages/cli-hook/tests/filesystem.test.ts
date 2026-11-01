@@ -50,6 +50,30 @@ describe("filesystem policy v2 (reasons)", () => {
     ).toContain(injectionReason("/dev/tcp/"));
   });
 
+  it("the PATH override beats non-ASCII whitespace in the guard precedence", () => {
+    expect(
+      reasonOf(policyCheck(filesystemPolicy, 'cat "x\u00A0y" PATH=/evil ls')),
+    ).toBe(injectionReason("PATH override"));
+  });
+
+  it("control characters beat the PATH override in the guard precedence", () => {
+    expect(
+      reasonOf(policyCheck(filesystemPolicy, 'cat "x\u0001y" PATH=/evil ls')),
+    ).toBe(injectionReason("control characters"));
+  });
+
+  it("the scanner's numeric whitespace set denies (U+00A0, U+2028, U+3000)", () => {
+    expect(reasonOf(policyCheck(filesystemPolicy, "cat\u00A0file.txt"))).toBe(
+      injectionReason("non-ASCII whitespace"),
+    );
+    expect(reasonOf(policyCheck(filesystemPolicy, "cat\u2028file.txt"))).toBe(
+      injectionReason("non-ASCII whitespace"),
+    );
+    expect(reasonOf(policyCheck(filesystemPolicy, "cat\u3000file.txt"))).toBe(
+      injectionReason("non-ASCII whitespace"),
+    );
+  });
+
   it("the /tmp deny reason teaches ./tmp/ at the project root", () => {
     expect(reasonOf(policyCheck(filesystemPolicy, "tee /tmp/x y"))).toContain(
       "./tmp/",

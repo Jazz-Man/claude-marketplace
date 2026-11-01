@@ -76,6 +76,10 @@ export const DENY: string[] = [
   "deno run HTTPS://example.com/x.ts",
   "deno run NPM:cowsay",
   "deno run jsr:@std/path",
+  // URL/module-ref boundaries: any absolute URL scheme denies, and the
+  // versioned module-suffix form denies
+  "go run golang.org/x/y@v1.2.3",
+  "deno run data:text/javascript,alert(1)",
   "pnpm with 9",
   "uv run x.py",
   "uv python install 3.13",
@@ -118,4 +122,8 @@ export const ALLOW: string[] = [
   "deno eval 1+1",
   "pipx exec app",
   "pnpm list",
+  // fetch-form boundaries stay allowed: host "." is not a module host, and a
+  // scheme-less single word is not a URL (URL.canParse false)
+  "go run ./cmd/tool@v1",
+  "deno run main.go",
 ];

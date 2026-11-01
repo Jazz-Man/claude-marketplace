@@ -179,6 +179,14 @@ export const DENY: string[] = [
   "xargs sudo rm x",
   "time sudo rm x",
   "parallel sudo rm x",
+  // injection guard precedence: substring > control > PATH-override >
+  // weird-whitespace — conflict rows pin which signal wins
+  'cat "x\u00A0y" PATH=/evil ls',
+  'cat "x\u0001y" PATH=/evil ls',
+  // the scanner's non-ASCII whitespace set is numeric — U+00A0, U+2028, U+3000
+  "cat\u00A0file.txt",
+  "cat\u2028file.txt",
+  "cat\u3000file.txt",
 ];
 
 // Home-whole reads ask: the only ask rows
@@ -225,4 +233,6 @@ export const ALLOW: string[] = [
   "cat x | tee build/y",
   // legit PATH merge keeps $PATH
   "PATH=$PATH:/usr/local/bin ls",
+  // ASCII whitespace (tab) inside a quoted arg never trips the injection guard
+  'cat "x\ty"',
 ];
