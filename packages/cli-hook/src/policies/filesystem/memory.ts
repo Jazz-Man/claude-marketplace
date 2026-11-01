@@ -1,12 +1,24 @@
 import { parse, relative } from "node:path";
 import { HOME } from "./resolve.ts";
 
+/**
+ * @deprecated
+ */
 export const PROJECTS_ROOT = `${HOME}/.claude/projects`;
 
+/**
+ * @deprecated
+ */
 const PROJECTS_PREFIX = `${PROJECTS_ROOT}/`;
 
+/**
+ * @deprecated
+ */
 export type MemoryTarget = "dir" | "md" | "other";
 
+/**
+ * @deprecated
+ */
 export function memoryTargetOf(abs: string): MemoryTarget | null {
   if (HOME === "" || !abs.startsWith(PROJECTS_PREFIX)) {
     return null;
