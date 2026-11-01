@@ -1,0 +1,232 @@
+brew autoremove
+brew bundle
+brew fetch
+brew install
+brew link
+brew pin
+brew reinstall
+brew tap
+brew uninstall
+brew unlink
+brew unpin
+brew untap
+brew update
+brew upgrade
+bun add
+bun create
+bun i
+bun init
+bun install
+bun link
+bun remove
+bun rm
+bun un
+bun unlink
+bun up
+bun update
+bun x
+bundle add
+bundle cache
+bundle install
+bundle lock
+bundle package
+bundle remove
+bundle update
+bunx
+cargo add
+cargo binstall
+cargo fetch
+cargo generate-lockfile
+cargo install
+cargo remove
+cargo rm
+cargo uninstall
+cargo update
+cargo vendor
+composer create-project
+composer global
+composer install
+composer reinstall
+composer remove
+composer require
+composer self-update
+composer selfupdate
+composer update
+deno add
+deno bundle
+deno cache
+deno ci
+deno compile
+deno create
+deno install
+deno link
+deno remove
+deno run <url>
+deno uninstall
+deno update
+deno upgrade
+deno x
+gem cleanup
+gem install
+gem uninstall
+gem update
+go get
+go install
+go mod download
+go mod tidy
+go mod vendor
+go run <pkg>@<version>
+go work sync
+nix build
+nix bundle
+nix develop
+nix profile install
+nix profile remove
+nix profile upgrade
+nix run
+nix shell
+nix upgrade-nix
+npm add
+npm cache
+npm ci
+npm create
+npm ddp
+npm dedupe
+npm dist-tag
+npm exec
+npm i
+npm init
+npm install
+npm install-ci-test
+npm install-scripts
+npm install-test
+npm link
+npm ln
+npm rebuild
+npm remove
+npm rm
+npm un
+npm uninstall
+npm up
+npm update
+npx
+pip download
+pip install
+pip lock
+pip uninstall
+pip wheel
+pip3 download
+pip3 install
+pip3 lock
+pip3 uninstall
+pip3 wheel
+pipx inject
+pipx install
+pipx install-all
+pipx reinstall
+pipx reinstall-all
+pipx reset
+pipx run
+pipx runpip
+pipx uninject
+pipx uninstall
+pipx uninstall-all
+pipx upgrade
+pipx upgrade-all
+pipx upgrade-shared
+pnpm add
+pnpm approve-builds
+pnpm ci
+pnpm create
+pnpm deploy
+pnpm dislink
+pnpm dlx
+pnpm env
+pnpm exec
+pnpm fetch
+pnpm i
+pnpm ic
+pnpm import
+pnpm install
+pnpm link
+pnpm ln
+pnpm patch
+pnpm remove
+pnpm rm
+pnpm runtime
+pnpm self-update
+pnpm store add
+pnpm un
+pnpm uni
+pnpm uninstall
+pnpm unlink
+pnpm up
+pnpm update
+pnpm upgrade
+pnpm with
+pnpx
+poetry add
+poetry install
+poetry lock
+poetry python install
+poetry remove
+poetry self add
+poetry self install
+poetry self lock
+poetry self remove
+poetry self sync
+poetry self update
+poetry source add
+poetry sync
+poetry update
+python3 -m pip download
+python3 -m pip install
+python3 -m pip lock
+python3 -m pip uninstall
+python3 -m pip wheel
+rustup component add
+rustup install
+rustup self update
+rustup target add
+rustup toolchain install
+rustup toolchain uninstall
+rustup uninstall
+rustup update
+swift package add-dependency
+swift package experimental-install
+swift package experimental-uninstall
+swift package install
+swift package resolve
+swift package update
+uv add
+uv lock
+uv pip download
+uv pip install
+uv pip uninstall
+uv pip wheel
+uv python install
+uv remove
+uv run
+uv self update
+uv sync
+uv tool install
+uv tool run
+uv tool uninstall
+uv tool upgrade
+uvx
+yarn add
+yarn create
+yarn global
+yarn i
+yarn import
+yarn install
+yarn link
+yarn remove
+yarn rm
+yarn un
+yarn uninstall
+yarn unlink
+yarn up
+yarn update
+yarn upgrade
+yarn upgrade-interactive
