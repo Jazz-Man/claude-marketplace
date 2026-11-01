@@ -401,9 +401,8 @@ function wordValuesFCCGated(node: unknown, out: string[]): void {
     return;
   }
   if (wordLike(node)) {
-    const value = node.value;
-    if (!isSubst(value)) {
-      out.push(value);
+    if (!isSubst(node.value)) {
+      out.push(node.value);
     }
     return;
   }

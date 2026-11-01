@@ -251,8 +251,7 @@ function parseCommandFused(command: string, substGate: boolean): Parsed {
       }
       return;
     }
-    const type = node.type;
-    if (type === "Command") {
+    if (node.type === "Command") {
       const { name } = node;
       if (name === undefined) {
         collectRedirects(node, redirects);
@@ -275,13 +274,13 @@ function parseCommandFused(command: string, substGate: boolean): Parsed {
       }
       return;
     }
-    if (args !== null && isPruned(type)) {
+    if (args !== null && isPruned(node.type)) {
       argStack.push(null);
       forEachChild(node, visit);
       argStack.pop();
       return;
     }
-    if (type === "Function") {
+    if (node.type === "Function") {
       functionDefs.push(node.name.value);
     }
     forEachChild(node, visit);
@@ -355,9 +354,8 @@ function parseCommandCombo(
   const collect = inlineRedirects ? collectRedirectsInline : collectRedirects;
   const visit = (node: SyntaxNode): void => {
     const args = argStack.length === 0 ? null : argStack[argStack.length - 1];
-    const type = node.type;
     const isWord = typeWordLike
-      ? TYPE_WORD_LIKE.has(type)
+      ? TYPE_WORD_LIKE.has(node.type)
       : wordLike(node as object);
     if (isWord) {
       if (lazyKeep) {
@@ -393,7 +391,7 @@ function parseCommandCombo(
       }
       return;
     }
-    if (type === "Command") {
+    if (node.type === "Command") {
       const { name } = node;
       if (name === undefined) {
         collect(node, redirects);
@@ -416,13 +414,13 @@ function parseCommandCombo(
       }
       return;
     }
-    if (args !== null && isPruned(type)) {
+    if (args !== null && isPruned(node.type)) {
       argStack.push(null);
       forEachChild(node, visit);
       argStack.pop();
       return;
     }
-    if (type === "Function") {
+    if (node.type === "Function") {
       functionDefs.push(node.name.value);
     }
     forEachChild(node, visit);
@@ -447,10 +445,9 @@ function parseCommandFusedReadOnce(command: string): Parsed {
       if (args === null) {
         words.push(node.value);
       } else {
-        const value = node.value;
-        words.push(value);
-        if (!isSubst(value)) {
-          args.push(value);
+        words.push(node.value);
+        if (!isSubst(node.value)) {
+          args.push(node.value);
         }
       }
       if (args === null) {
@@ -462,8 +459,7 @@ function parseCommandFusedReadOnce(command: string): Parsed {
       }
       return;
     }
-    const type = node.type;
-    if (type === "Command") {
+    if (node.type === "Command") {
       const { name } = node;
       if (name === undefined) {
         collectRedirects(node, redirects);
@@ -486,13 +482,13 @@ function parseCommandFusedReadOnce(command: string): Parsed {
       }
       return;
     }
-    if (args !== null && isPruned(type)) {
+    if (args !== null && isPruned(node.type)) {
       argStack.push(null);
       forEachChild(node, visit);
       argStack.pop();
       return;
     }
-    if (type === "Function") {
+    if (node.type === "Function") {
       functionDefs.push(node.name.value);
     }
     forEachChild(node, visit);
@@ -523,9 +519,8 @@ function wordValuesFCCGated(node: unknown, out: string[]): void {
     return;
   }
   if (wordLike(node)) {
-    const value = node.value;
-    if (!isSubst(value)) {
-      out.push(value);
+    if (!isSubst(node.value)) {
+      out.push(node.value);
     }
     return;
   }
