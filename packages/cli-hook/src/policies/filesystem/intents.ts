@@ -4,7 +4,7 @@ import * as ast from "../../core/ast.ts";
 import { SHARED_WRAPPERS } from "../../core/wrappers.ts";
 
 function isAssignment(token: string): boolean {
-  return Object.keys(parseEnv(token)).length > 0;
+  return token.includes("=") && Object.keys(parseEnv(token)).length > 0;
 }
 
 const INTENT_GROUPS: Readonly<Record<Intent, readonly string[]>> = {
@@ -79,17 +79,18 @@ function resolveToken(
   intent: Intent | null;
   network: string | null;
 } {
-  const known = INTENTS.get(ast.baseName(token));
+  const base = ast.baseName(token);
+  const known = INTENTS.get(base);
   if (known !== undefined) {
     return {
       intent: known,
       network,
     };
   }
-  if (network === null && NETWORK_TOOLS.has(ast.baseName(token))) {
+  if (network === null && NETWORK_TOOLS.has(base)) {
     return {
       intent: null,
-      network: ast.baseName(token),
+      network: base,
     };
   }
   return {
@@ -138,11 +139,6 @@ interface Unwrapped {
 
 export type Intent = "read" | "write" | "delete";
 
-type RedirectTargetsType = Array<{
-  intent: Intent;
-  token: string;
-}>;
-
 const IN_PLACE_CLUSTER = /^-[A-Za-z]*i[A-Za-z]*$/u;
 
 function adjustForFlags(
@@ -179,22 +175,4 @@ export function intentOf(name: string, args: string[]): Unwrapped {
     };
   }
   return unwrapScan(args, sudo, network);
-}
-
-export function redirectTargets(cmd: ast.ParsedCommand) {
-  const out: RedirectTargetsType = [];
-  for (const redirect of cmd.redirects) {
-    if (redirect.operator === "<") {
-      out.push({
-        intent: "read",
-        token: redirect.target,
-      });
-    } else {
-      out.push({
-        intent: "write",
-        token: redirect.target,
-      });
-    }
-  }
-  return out;
 }

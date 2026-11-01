@@ -11,9 +11,23 @@ const INJECTION_SUBSTRINGS = [
 const isControlByte = (code: number) =>
   (code >= 1 && code <= 8) || (code >= 14 && code <= 31) || code === 127;
 
-const ASCII_WHITESPACE = " \t\n\r";
-const ANY_WHITESPACE = /\s/u;
 const WORD_SPLIT = /\s+/u;
+
+function isNonAsciiWhitespace(code: number): boolean {
+  return (
+    code === 11 ||
+    code === 12 ||
+    code === 0xa0 ||
+    code === 0x16_80 ||
+    (code >= 0x20_00 && code <= 0x20_0a) ||
+    code === 0x20_28 ||
+    code === 0x20_29 ||
+    code === 0x20_2f ||
+    code === 0x20_5f ||
+    code === 0x30_00 ||
+    code === 0xfe_ff
+  );
+}
 
 function substringHit(raw: string) {
   for (const needle of INJECTION_SUBSTRINGS) {
@@ -27,13 +41,18 @@ function substringHit(raw: string) {
   return null;
 }
 
-function controlHit(raw: string) {
-  for (const char of raw) {
-    if (isControlByte(char.codePointAt(0) ?? 0)) {
-      return "control characters";
+function scanRaw(raw: string): { control: boolean; weirdWs: boolean } {
+  let weirdWs = false;
+  for (let i = 0; i < raw.length; i += 1) {
+    const code = raw.charCodeAt(i);
+    if (isControlByte(code)) {
+      return { control: true, weirdWs };
+    }
+    if (!weirdWs && isNonAsciiWhitespace(code)) {
+      weirdWs = true;
     }
   }
-  return null;
+  return { control: false, weirdWs };
 }
 
 function pathOverrideHit(raw: string) {
@@ -45,17 +64,18 @@ function pathOverrideHit(raw: string) {
   return null;
 }
 
-function whitespaceHit(raw: string) {
-  for (const char of raw) {
-    if (ANY_WHITESPACE.test(char) && !ASCII_WHITESPACE.includes(char)) {
-      return "non-ASCII whitespace";
-    }
+export const injectionHit = (raw: string) => {
+  const hit = substringHit(raw);
+  if (hit !== null) {
+    return hit;
   }
-  return null;
-}
-
-export const injectionHit = (raw: string) =>
-  substringHit(raw) ??
-  controlHit(raw) ??
-  pathOverrideHit(raw) ??
-  whitespaceHit(raw);
+  const scan = scanRaw(raw);
+  if (scan.control) {
+    return "control characters";
+  }
+  const override = pathOverrideHit(raw);
+  if (override !== null) {
+    return override;
+  }
+  return scan.weirdWs ? "non-ASCII whitespace" : null;
+};

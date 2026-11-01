@@ -144,21 +144,14 @@ function argDecision(
   if (arg.includes("://")) {
     return null;
   }
-  return severityUnion(
-    argCandidates(arg).map((candidate) =>
-      candidateDecision({
-        arg,
-        candidate,
-        context,
-        intent,
-      }),
-    ),
-  );
-}
-
-function severityUnion(hits: PolicyCheckResult[]): PolicyCheckResult {
   let askHit: PolicyCheckResult = null;
-  for (const hit of hits) {
+  for (const candidate of argCandidates(arg)) {
+    const hit = candidateDecision({
+      arg,
+      candidate,
+      context,
+      intent,
+    });
     if (permissionOf(hit) === "deny") {
       return hit;
     }
@@ -196,7 +189,15 @@ function unitDecision(
   if (network !== null) {
     return deny(networkReason(network));
   }
-  return severityUnion(rest.map((arg) => argDecision(arg, intent, context)));
+  let askHit: PolicyCheckResult = null;
+  for (const arg of rest) {
+    const hit = argDecision(arg, intent, context);
+    if (permissionOf(hit) === "deny") {
+      return hit;
+    }
+    askHit ??= hit;
+  }
+  return askHit;
 }
 
 export function checkFilePath(
@@ -228,16 +229,27 @@ export const filesystemPolicy: Policy = {
     if (injection !== null) {
       return deny(injectionReason(injection));
     }
-    const unitHits = cmd.units.map((unit) => unitDecision(unit, context));
-    const redirectHits = intents.redirectTargets(cmd).map((redirect) =>
-      candidateDecision({
-        arg: redirect.token,
-        candidate: redirect.token,
+    let askHit: PolicyCheckResult = null;
+    for (const unit of cmd.units) {
+      const hit = unitDecision(unit, context);
+      if (permissionOf(hit) === "deny") {
+        return hit;
+      }
+      askHit ??= hit;
+    }
+    for (const redirect of cmd.redirects) {
+      const hit = candidateDecision({
+        arg: redirect.target,
+        candidate: redirect.target,
         context,
-        intent: redirect.intent,
-      }),
-    );
-    return severityUnion([...unitHits, ...redirectHits]);
+        intent: redirect.operator === "<" ? "read" : "write",
+      });
+      if (permissionOf(hit) === "deny") {
+        return hit;
+      }
+      askHit ??= hit;
+    }
+    return askHit;
   },
   name: "filesystem",
 };

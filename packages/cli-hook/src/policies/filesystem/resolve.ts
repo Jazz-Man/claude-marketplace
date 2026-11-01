@@ -3,16 +3,32 @@ import { isAbsolute, join, normalize } from "node:path";
 
 import type { PolicyContext } from "../../core/policy.ts";
 
+export const HOME = homedir();
+
+const HOME_PREFIX = HOME === "" ? "" : `${HOME}/`;
+
+const HOME_NORM = HOME === "" ? null : normalize(HOME);
+
+const homeExpandCache = new Map<string, string>();
+
+const zoneRootCache = new WeakMap<PolicyContext, string>();
+
 const HOME_HEAD = /^\$HOME(?![A-Za-z0-9_])/u;
 
 function expandHomeToken(token: string): string | null {
-  if (HOME === "") {
+  if (HOME_NORM === null) {
     return null;
   }
   if (token === "~") {
-    return normalize(HOME);
+    return HOME_NORM;
   }
-  return normalize(join(HOME, token.slice(2)));
+  const cached = homeExpandCache.get(token);
+  if (cached !== undefined) {
+    return cached;
+  }
+  const expanded = normalize(join(HOME, token.slice(2)));
+  homeExpandCache.set(token, expanded);
+  return expanded;
 }
 
 interface NameValue {
@@ -141,7 +157,7 @@ export function pathCandidates(arg: string): string[] {
 }
 
 export function inHome(absPath: string): boolean {
-  return HOME !== "" && (absPath === HOME || absPath.startsWith(`${HOME}/`));
+  return HOME !== "" && (absPath === HOME || absPath.startsWith(HOME_PREFIX));
 }
 
 export function inAllowedZone(
@@ -154,8 +170,17 @@ export function inAllowedZone(
   if (inHome(absPath)) {
     return true;
   }
-  const root = normalize(context.projectRoot);
-  return absPath === root || absPath.startsWith(`${root}/`);
+  let root = zoneRootCache.get(context);
+  if (root === undefined) {
+    root = normalize(context.projectRoot);
+    zoneRootCache.set(context, root);
+  }
+  return (
+    absPath === root ||
+    (absPath.length > root.length &&
+      absPath.charCodeAt(root.length) === 47 &&
+      absPath.startsWith(root))
+  );
 }
 
 export function isTmpPath(absPath: string): boolean {
@@ -182,5 +207,3 @@ export function expandToken(
   }
   return normalize(join(context.cwd, anchored));
 }
-
-export const HOME = homedir();
