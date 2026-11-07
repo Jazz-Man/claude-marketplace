@@ -19,6 +19,7 @@
   },
   "private": true,
   "scripts": {
+    "cl:settings": "bun run packages/cli-hook/src/settings.ts",
     "lsp:diagnostics": "effect-tsgo diagnostics --project=tsconfig.json",
     "lsp:prepare": "effect-tsgo patch"
   },

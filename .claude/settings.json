@@ -375,7 +375,9 @@
       ]
     },
     "enabled": true,
-    "enabledPlatforms": ["macos"],
+    "enabledPlatforms": [
+      "macos"
+    ],
     "enableWeakerNetworkIsolation": true,
     "failIfUnavailable": true,
     "filesystem": {

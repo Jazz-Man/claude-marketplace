@@ -1,4 +1,5 @@
 import process from "node:process";
+import { debug } from "./debug";
 
 const envVars = [
   "GITHUB_TOKEN",
@@ -144,7 +145,9 @@ try {
     JSON.stringify(newConfig, null, 2),
   );
 
-  console.log(newConfig);
+  debug(newConfig, {
+    depth: 10,
+  });
 } catch (error) {
   console.error(error);
   process.exit(1);
