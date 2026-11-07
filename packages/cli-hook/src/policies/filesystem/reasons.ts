@@ -11,7 +11,7 @@ export function boundaryReason(token: string, absPath: string): string {
 
 export const TIER_REASONS: Record<Tier, (token: string) => string> = {
   "git-config": (token) =>
-    `Filesystem policy: writing "${token}" is blocked — git configuration changes belong to the user (git-readonly owns the CLI path too).`,
+    `Filesystem policy: writing "${token}" is blocked — git configuration changes belong to the user.`,
   "git-hooks": (token) =>
     `Filesystem policy: "${token}" lives under .git/hooks — reading, writing, or running hook files is blocked (hooks execute as the user, outside the guard).`,
   "macos-library": (token) =>

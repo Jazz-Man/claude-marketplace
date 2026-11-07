@@ -1,23 +1,9 @@
 import { afterEach, beforeEach, describe, expect, it } from "bun:test";
 import process from "node:process";
 
-import { permissionOf } from "../src/core/decision.ts";
 import { runHook } from "../src/run-hook.ts";
 import { decisionOf, reasonOf } from "./helpers/policy.ts";
 import { bashPayload, filePayload, spawnHook } from "./helpers/utils.ts";
-
-function hookDecision(raw: string) {
-  const parsed: unknown = JSON.parse(raw);
-  const result = parsed as ReturnType<typeof runHook>;
-  const permission = permissionOf(result);
-  if (permission === null) {
-    return null;
-  }
-  return {
-    permissionDecision: permission,
-    permissionDecisionReason: reasonOf(result) ?? "",
-  };
-}
 
 function isolateProjectDir() {
   let savedProjectDir: string | undefined;
@@ -39,8 +25,8 @@ function decisionOfBash(command: string) {
 }
 
 describe("runHook (unit)", () => {
-  it("denies git writes through the router", () => {
-    expect(decisionOfBash("git push")).toBe("deny");
+  it("lets git writes pass — git-readonly moved to the settings layer", () => {
+    expect(runHook(bashPayload("git push"))).toBeNull();
   });
 
   it("returns the FIRST policy's reason on dual violations", () => {
@@ -53,16 +39,14 @@ describe("runHook (unit)", () => {
     expect(decisionOfBash("cat /etc/passwd")).toBe("deny");
   });
 
-  it("bash grep denies with the native-search reason, not the filesystem boundary reason", () => {
-    const result = runHook(bashPayload("grep pattern /etc/passwd"));
-    expect(decisionOf(result)).toBe("deny");
-    expect(reasonOf(result)).toContain("native-search policy");
+  it("lets in-zone bash grep pass — native-search moved to the settings layer", () => {
+    expect(runHook(bashPayload("timeout 10 grep pattern src/"))).toBeNull();
   });
 
-  it("wrapped bash grep denies with the native-search reason", () => {
-    const result = runHook(bashPayload("timeout 10 grep pattern src/"));
+  it("out-of-zone bash grep still denies, via the filesystem policy", () => {
+    const result = runHook(bashPayload("grep pattern /etc/passwd"));
     expect(decisionOf(result)).toBe("deny");
-    expect(reasonOf(result)).toContain("native-search policy");
+    expect(reasonOf(result)).toContain("outside the allowed zone");
   });
 });
 
@@ -232,13 +216,11 @@ describe("runHook (e2e via spawned main.ts)", () => {
     expect(stdout).toBe("");
   });
 
-  it("emits the deny JSON for a git write", async () => {
+  it("emits no decision for a git write (settings layer owns it)", async () => {
     const { code, stdout } = await spawnHook(
       JSON.stringify(bashPayload("git push")),
     );
     expect(code).toBe(0);
-    const output = hookDecision(stdout);
-    expect(output?.permissionDecision).toBe("deny");
-    expect(output?.permissionDecisionReason).toContain("read-only policy");
+    expect(stdout).toBe("");
   });
 });

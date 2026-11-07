@@ -9,16 +9,12 @@ import {
   checkFilePath,
   filesystemPolicy,
 } from "./policies/filesystem/policy.ts";
-import { gitReadonlyPolicy } from "./policies/git-readonly.ts";
-import { nativeSearchPolicy } from "./policies/native-search.ts";
 import { noDepsPolicy } from "./policies/no-deps.ts";
 import { noInlineScriptsPolicy } from "./policies/no-inline-scripts.ts";
 
 const POLICIES: Policy[] = [
   noDepsPolicy,
-  gitReadonlyPolicy,
   noInlineScriptsPolicy,
-  nativeSearchPolicy,
   filesystemPolicy,
 ];
 

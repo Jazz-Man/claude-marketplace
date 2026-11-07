@@ -1,5 +1,5 @@
 {
-  "description": "Routes Bash, file-tool, and search-tool (Grep/Glob) calls through the claude-code-cli-hook policy binary (filesystem deny/ask engine, no-deps, git-readonly, no-inline-scripts, native-search; fail-open).",
+  "description": "Routes Bash, file-tool, and search-tool (Grep/Glob) calls through the claude-code-cli-hook policy binary (filesystem deny/ask engine, no-deps, no-inline-scripts; fail-open).",
   "hooks": {
     "PreToolUse": [
       {

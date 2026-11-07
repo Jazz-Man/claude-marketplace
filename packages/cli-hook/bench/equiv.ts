@@ -23,10 +23,6 @@ import {
   DENY as FS_DENY,
 } from "../tests/fixtures/filesystem.ts";
 import {
-  ALLOW as GIT_ALLOW,
-  DENY as GIT_DENY,
-} from "../tests/fixtures/git-readonly.ts";
-import {
   ALLOW as ND_ALLOW,
   DENY as ND_DENY,
 } from "../tests/fixtures/no-deps.ts";
@@ -82,8 +78,6 @@ const corpus: string[] = [
   ...FS_ALLOW,
   ...FS_ASK,
   ...FS_DENY,
-  ...GIT_ALLOW,
-  ...GIT_DENY,
   ...ND_ALLOW,
   ...ND_DENY,
   ...NIS_ALLOW,
