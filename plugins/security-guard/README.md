@@ -3,23 +3,16 @@
 Mechanical guard for Claude Code. One `PreToolUse` hook (matcher
 `^(Bash|Read|Edit|Write|NotebookEdit)$`) pipes the hook payload into the
 `claude-code-cli-hook` policy binary (`packages/cli-hook` in this repo).
-Bash commands are parsed into an AST and run through three policies in a
+Bash commands are parsed into an AST and run through two policies in a
 fixed order — first decision wins; file-tool calls route through the same
 binary and check their literal `file_path` against the filesystem policy
 alone (git-readonly and native-search moved to the sandbox/permissions
-settings layer — see `packages/cli-hook/src/settings.ts`):
+settings layer, no-inline-scripts retired — the OS sandbox covers
+interpreter escapes; see `packages/cli-hook/src/settings.ts`):
 
 1. **no-deps** — dependency installs/updates/removals (pip/uv, npm/pnpm/yarn,
    bun, cargo, brew, gem, go, swift, composer, …)
-2. **no-inline-scripts** — inline code execution: interpreter
-   `-e`/`-c`/`--eval` (`python -c`, `node -e`, `php -r`, `osascript -e`,
-   `deno eval`, clustered flags like `python -uc`), `sh/bash/zsh -c`,
-   `eval`, stdin-fed scripts (pipe, heredoc, bare `-`), inline function
-   definitions of every form (also covering every fork-bomb signature),
-   wrapper-carried (`xargs sh -c`, `find -exec bash -c`, `env`, …); the
-   deny reason directs the agent to write the script under `./tmp/` and
-   run the file. `sed`/`awk` stay allowed (everyday text processing)
-3. **filesystem** (v2) — deny/ask path policy. The allowed zone is
+2. **filesystem** (v2) — deny/ask path policy. The allowed zone is
    `$HOME ∪ projectRoot`: ordinary reads AND writes inside it pass, outside
    it both deny (`..`-chains resolve lexically; the `/dev/null` family is
    exempt). Sensitive-path tiers deny regardless of zone: secrets

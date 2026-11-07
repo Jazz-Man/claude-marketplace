@@ -228,7 +228,7 @@ export const ALLOW: string[] = [
   // glob payloads are not path candidates
   "ls **",
   'ls "*"',
-  // pipe-to-exec is no-inline-scripts' row — filesystem stays null here
+  // pipe-to-exec is unowned since no-inline-scripts retired — filesystem stays null here
   "cat x | tee build/y",
   // legit PATH merge keeps $PATH
   "PATH=$PATH:/usr/local/bin ls",

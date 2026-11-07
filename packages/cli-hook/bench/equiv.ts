@@ -26,11 +26,6 @@ import {
   ALLOW as ND_ALLOW,
   DENY as ND_DENY,
 } from "../tests/fixtures/no-deps.ts";
-import {
-  ALLOW as NIS_ALLOW,
-  DENY as NIS_DENY,
-  FUNCTIONS as NIS_FN,
-} from "../tests/fixtures/no-inline-scripts.ts";
 import { commands as arsenal } from "./corpus.ts";
 
 const ADVERSARIAL: string[] = [
@@ -80,9 +75,6 @@ const corpus: string[] = [
   ...FS_DENY,
   ...ND_ALLOW,
   ...ND_DENY,
-  ...NIS_ALLOW,
-  ...NIS_DENY,
-  ...NIS_FN,
   ...ADVERSARIAL,
 ];
 

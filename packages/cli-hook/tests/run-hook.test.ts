@@ -91,10 +91,10 @@ describe("router v2", () => {
     expect(decisionOfBash("npm install /tmp/x")).toBe("deny");
   });
 
-  it("no-inline fires before the filesystem injection guard on bash -c /dev/tcp", () => {
+  it("bash -c /dev/tcp denies via the filesystem injection guard", () => {
     const result = runHook(bashPayload("bash -c 'echo x > /dev/tcp/host/80'"));
     expect(decisionOf(result)).toBe("deny");
-    expect(reasonOf(result)).toContain("Inline scripts are blocked");
+    expect(reasonOf(result)).toContain("obfuscation/injection pattern");
   });
 });
 

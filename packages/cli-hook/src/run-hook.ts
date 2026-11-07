@@ -10,13 +10,8 @@ import {
   filesystemPolicy,
 } from "./policies/filesystem/policy.ts";
 import { noDepsPolicy } from "./policies/no-deps.ts";
-import { noInlineScriptsPolicy } from "./policies/no-inline-scripts.ts";
 
-const POLICIES: Policy[] = [
-  noDepsPolicy,
-  noInlineScriptsPolicy,
-  filesystemPolicy,
-];
+const POLICIES: Policy[] = [noDepsPolicy, filesystemPolicy];
 
 const READ_TOOLS = new Set(["Read"]);
 const WRITE_TOOLS = new Set(["Edit", "Write", "NotebookEdit"]);
