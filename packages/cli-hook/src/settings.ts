@@ -89,7 +89,12 @@ const gitWriteCommands = [
   "git clone*",
 ];
 
-const nativeSearchCommands = [
+const disableCommands = [
+  "nix*",
+  "bunx*",
+  "npx*",
+  "pnpx*",
+  "uvx*",
   "grep*",
   "egrep*",
   "fgrep*",
@@ -106,7 +111,7 @@ const config = {
       ...protectedFiles.map((file) => `Write(${file})`),
       ...gitHistoryDenyRules,
       ...gitWriteCommands.map((command) => `Bash(${command})`),
-      ...nativeSearchCommands.map((command) => `Bash(${command})`),
+      ...disableCommands.map((command) => `Bash(${command})`),
     ],
   },
   sandbox: {

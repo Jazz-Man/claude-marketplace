@@ -33,7 +33,6 @@ bundle lock
 bundle package
 bundle remove
 bundle update
-bunx
 cargo add
 cargo binstall
 cargo fetch
@@ -78,15 +77,6 @@ go mod tidy
 go mod vendor
 go run <pkg>@<version>
 go work sync
-nix build
-nix bundle
-nix develop
-nix profile install
-nix profile remove
-nix profile upgrade
-nix run
-nix shell
-nix upgrade-nix
 npm add
 npm cache
 npm ci
@@ -110,7 +100,6 @@ npm un
 npm uninstall
 npm up
 npm update
-npx
 pip download
 pip install
 pip lock
@@ -214,7 +203,6 @@ uv tool install
 uv tool run
 uv tool uninstall
 uv tool upgrade
-uvx
 yarn add
 yarn create
 yarn global
