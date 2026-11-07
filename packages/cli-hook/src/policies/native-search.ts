@@ -6,6 +6,9 @@ const BANNED = new Set(["grep", "egrep", "fgrep", "find"]);
 export const NATIVE_SEARCH_REASON =
   "Bash grep/find blocked (native-search policy): use the built-in Grep and Glob tools instead — they are faster and zone-checked. ripgrep (rg) stays allowed as the CLI fallback.";
 
+/**
+ * @deprecated
+ */
 export const nativeSearchPolicy: Policy = {
   check(cmd) {
     return firstUnitHit(cmd.units, (unit) => {
