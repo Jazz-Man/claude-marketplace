@@ -154,62 +154,224 @@
     "autoAllowBashIfSandboxed": true,
     "credentials": {
       "envVars": [
-        { "mode": "deny", "name": "GITHUB_TOKEN" },
-        { "mode": "deny", "name": "GITHUB_AUTH_TOKEN" },
-        { "mode": "deny", "name": "GITHUB_PERSONAL_ACCESS_TOKEN" },
-        { "mode": "deny", "name": "GITHUB_PUBLICK_EMAIL" },
-        { "mode": "deny", "name": "HUGGINGFACE_TOKEN" },
-        { "mode": "deny", "name": "ANTHROPIC_API_KEY" },
-        { "mode": "deny", "name": "GOOGLE_AI_API_KEY" },
-        { "mode": "deny", "name": "GEMINI_API_KEY" },
-        { "mode": "deny", "name": "OLLAMA_API_KEY" },
-        { "mode": "deny", "name": "CONTEXT7_API_KEY" },
-        { "mode": "deny", "name": "QWEN_CODER_API" },
-        { "mode": "deny", "name": "INTELEPHENSE_LICENSE_KEY" },
-        { "mode": "deny", "name": "Z_AI_API_KEY" },
-        { "mode": "deny", "name": "ANTHROPIC_AUTH_TOKEN" },
-        { "mode": "deny", "name": "ANTHROPIC_BASE_URL" },
-        { "mode": "deny", "name": "NPM_CONFIG_TOKEN" },
-        { "mode": "deny", "name": "NPM_CONFIG_TOKEN_TEST" }
+        {
+          "mode": "deny",
+          "name": "GITHUB_TOKEN"
+        },
+        {
+          "mode": "deny",
+          "name": "GITHUB_AUTH_TOKEN"
+        },
+        {
+          "mode": "deny",
+          "name": "GITHUB_PERSONAL_ACCESS_TOKEN"
+        },
+        {
+          "mode": "deny",
+          "name": "GITHUB_PUBLICK_EMAIL"
+        },
+        {
+          "mode": "deny",
+          "name": "HUGGINGFACE_TOKEN"
+        },
+        {
+          "mode": "deny",
+          "name": "ANTHROPIC_API_KEY"
+        },
+        {
+          "mode": "deny",
+          "name": "GOOGLE_AI_API_KEY"
+        },
+        {
+          "mode": "deny",
+          "name": "GEMINI_API_KEY"
+        },
+        {
+          "mode": "deny",
+          "name": "OLLAMA_API_KEY"
+        },
+        {
+          "mode": "deny",
+          "name": "CONTEXT7_API_KEY"
+        },
+        {
+          "mode": "deny",
+          "name": "QWEN_CODER_API"
+        },
+        {
+          "mode": "deny",
+          "name": "INTELEPHENSE_LICENSE_KEY"
+        },
+        {
+          "mode": "deny",
+          "name": "Z_AI_API_KEY"
+        },
+        {
+          "mode": "deny",
+          "name": "ANTHROPIC_AUTH_TOKEN"
+        },
+        {
+          "mode": "deny",
+          "name": "ANTHROPIC_BASE_URL"
+        },
+        {
+          "mode": "deny",
+          "name": "NPM_CONFIG_TOKEN"
+        },
+        {
+          "mode": "deny",
+          "name": "NPM_CONFIG_TOKEN_TEST"
+        }
       ],
       "files": [
-        { "mode": "deny", "path": "**/.DS_Store*" },
-        { "mode": "deny", "path": "**/.env" },
-        { "mode": "deny", "path": "**/.env.*" },
-        { "mode": "deny", "path": "~/.ssh" },
-        { "mode": "deny", "path": "~/.aws" },
-        { "mode": "deny", "path": "~/.gnupg" },
-        { "mode": "deny", "path": "~/.gcloud" },
-        { "mode": "deny", "path": "~/.config" },
-        { "mode": "deny", "path": "~/.docker" },
-        { "mode": "deny", "path": "~/.kube" },
-        { "mode": "deny", "path": "~/.htpasswd*" },
-        { "mode": "deny", "path": "~/.zshenv*" },
-        { "mode": "deny", "path": "~/.*rc*" },
-        { "mode": "deny", "path": "~/.v8flags*" },
-        { "mode": "deny", "path": "~/.mutagen*" },
-        { "mode": "deny", "path": "~/.*login*" },
-        { "mode": "deny", "path": "~/.*logout*" },
-        { "mode": "deny", "path": "~/.*history*" },
-        { "mode": "deny", "path": "~/.zcompdump*" },
-        { "mode": "deny", "path": "~/.zsh_sessions*" },
-        { "mode": "deny", "path": "~/.*profile*" },
-        { "mode": "deny", "path": "~/.wget-hsts*" },
-        { "mode": "deny", "path": "~/.viminfo*" },
-        { "mode": "deny", "path": "~/.tmux*" },
-        { "mode": "deny", "path": "~/.git-credentials*" },
-        { "mode": "deny", "path": "**/Brewfile*" },
-        { "mode": "deny", "path": "~/Brewfile*" },
-        { "mode": "deny", "path": "~/Library" },
-        { "mode": "deny", "path": "~/Documents" },
-        { "mode": "deny", "path": "~/Downloads" },
-        { "mode": "deny", "path": "~/Movies" },
-        { "mode": "deny", "path": "~/Music" },
-        { "mode": "deny", "path": "~/Pictures" },
-        { "mode": "deny", "path": "~/Public" },
-        { "mode": "deny", "path": "~/Applications" },
-        { "mode": "deny", "path": "~/Sites" },
-        { "mode": "deny", "path": "~/Desktop" }
+        {
+          "mode": "deny",
+          "path": "**/.DS_Store*"
+        },
+        {
+          "mode": "deny",
+          "path": "**/.env"
+        },
+        {
+          "mode": "deny",
+          "path": "**/.env.*"
+        },
+        {
+          "mode": "deny",
+          "path": "~/.ssh"
+        },
+        {
+          "mode": "deny",
+          "path": "~/.aws"
+        },
+        {
+          "mode": "deny",
+          "path": "~/.gnupg"
+        },
+        {
+          "mode": "deny",
+          "path": "~/.gcloud"
+        },
+        {
+          "mode": "deny",
+          "path": "~/.config"
+        },
+        {
+          "mode": "deny",
+          "path": "~/.docker"
+        },
+        {
+          "mode": "deny",
+          "path": "~/.kube"
+        },
+        {
+          "mode": "deny",
+          "path": "~/.htpasswd*"
+        },
+        {
+          "mode": "deny",
+          "path": "~/.zshenv*"
+        },
+        {
+          "mode": "deny",
+          "path": "~/.*rc*"
+        },
+        {
+          "mode": "deny",
+          "path": "~/.v8flags*"
+        },
+        {
+          "mode": "deny",
+          "path": "~/.mutagen*"
+        },
+        {
+          "mode": "deny",
+          "path": "~/.*login*"
+        },
+        {
+          "mode": "deny",
+          "path": "~/.*logout*"
+        },
+        {
+          "mode": "deny",
+          "path": "~/.*history*"
+        },
+        {
+          "mode": "deny",
+          "path": "~/.zcompdump*"
+        },
+        {
+          "mode": "deny",
+          "path": "~/.zsh_sessions*"
+        },
+        {
+          "mode": "deny",
+          "path": "~/.*profile*"
+        },
+        {
+          "mode": "deny",
+          "path": "~/.wget-hsts*"
+        },
+        {
+          "mode": "deny",
+          "path": "~/.viminfo*"
+        },
+        {
+          "mode": "deny",
+          "path": "~/.tmux*"
+        },
+        {
+          "mode": "deny",
+          "path": "~/.git-credentials*"
+        },
+        {
+          "mode": "deny",
+          "path": "**/Brewfile*"
+        },
+        {
+          "mode": "deny",
+          "path": "~/Brewfile*"
+        },
+        {
+          "mode": "deny",
+          "path": "~/Library"
+        },
+        {
+          "mode": "deny",
+          "path": "~/Documents"
+        },
+        {
+          "mode": "deny",
+          "path": "~/Downloads"
+        },
+        {
+          "mode": "deny",
+          "path": "~/Movies"
+        },
+        {
+          "mode": "deny",
+          "path": "~/Music"
+        },
+        {
+          "mode": "deny",
+          "path": "~/Pictures"
+        },
+        {
+          "mode": "deny",
+          "path": "~/Public"
+        },
+        {
+          "mode": "deny",
+          "path": "~/Applications"
+        },
+        {
+          "mode": "deny",
+          "path": "~/Sites"
+        },
+        {
+          "mode": "deny",
+          "path": "~/Desktop"
+        }
       ]
     },
     "enabled": true,
@@ -297,6 +459,9 @@
         "/**/.git"
       ]
     },
-    "network": { "allowAllUnixSockets": true, "allowLocalBinding": true }
+    "network": {
+      "allowAllUnixSockets": true,
+      "allowLocalBinding": true
+    }
   }
 }

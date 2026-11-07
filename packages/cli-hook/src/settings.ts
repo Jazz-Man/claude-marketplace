@@ -1,3 +1,5 @@
+import process from "node:process";
+
 const envVars = [
   "GITHUB_TOKEN",
   "GITHUB_AUTH_TOKEN",
@@ -126,4 +128,24 @@ const config = {
   },
 };
 
-console.log(JSON.stringify(config));
+try {
+  const settingsPath = Bun.file(".claude/settings.json");
+
+  const currentConfig = await settingsPath.json();
+
+  const newConfig = {
+    ...currentConfig,
+    permissions: config.permissions,
+
+    sandbox: config.sandbox,
+  };
+
+  await Bun.file(".claude/settings.json").write(
+    JSON.stringify(newConfig, null, 2),
+  );
+
+  console.log(newConfig);
+} catch (error) {
+  console.error(error);
+  process.exit(1);
+}
