@@ -58,19 +58,10 @@ const protectedFiles = [
   "~/Desktop",
 ];
 
-// never add "~/.gitconfig*" back: git reads it even for status, so any deny
-// on it kills git outright — and matching stays segment-aware, so a ".git"
-// entry never touches ".github"
-
-// git history: reads stay open, writes denied anywhere on disk
-// ("/**/.git" is absolute-rooted in sandbox paths, covering tmp and every repo)
 const gitHistoryWriteOnly = ["/**/.git"];
 
-// the same protection as permission rules for the file tools (project-anchored)
 const gitHistoryDenyRules = ["Edit(**/.git/*)", "Write(**/.git)"];
 
-// flat text approximation of the semantic policy in policies/git-readonly.ts —
-// Bash patterns cannot express its flag/subcommand logic, so the two lists live apart
 const gitWriteCommands = [
   "git add*",
   "git commit*",
@@ -95,11 +86,6 @@ const gitWriteCommands = [
   "git clone*",
 ];
 
-// mirror of the native-search policy in policies/native-search.ts: grep/egrep/
-// fgrep/find banned as commands AND in argument position (xargs forms) — the
-// built-in Grep and Glob tools replace them, rg stays the CLI fallback;
-// text patterns cannot see the plugin's arg analysis, so absolute-path and
-// `command grep` spellings stay open (same approximation class as the git list)
 const nativeSearchCommands = [
   "grep*",
   "egrep*",
@@ -141,4 +127,3 @@ const config = {
 };
 
 console.log(JSON.stringify(config));
-// console.log(JSON.stringify(config, null, 2));
