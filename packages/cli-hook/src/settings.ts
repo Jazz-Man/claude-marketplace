@@ -95,6 +95,20 @@ const gitWriteCommands = [
   "git clone*",
 ];
 
+// mirror of the native-search policy in policies/native-search.ts: grep/egrep/
+// fgrep/find banned as commands AND in argument position (xargs forms) — the
+// built-in Grep and Glob tools replace them, rg stays the CLI fallback;
+// text patterns cannot see the plugin's arg analysis, so absolute-path and
+// `command grep` spellings stay open (same approximation class as the git list)
+const nativeSearchCommands = [
+  "grep*",
+  "egrep*",
+  "fgrep*",
+  "find*",
+  "xargs grep*",
+  "xargs find*",
+];
+
 const config = {
   permissions: {
     deny: [
@@ -103,6 +117,7 @@ const config = {
       ...protectedFiles.map((file) => `Write(${file})`),
       ...gitHistoryDenyRules,
       ...gitWriteCommands.map((command) => `Bash(${command})`),
+      ...nativeSearchCommands.map((command) => `Bash(${command})`),
     ],
   },
   sandbox: {
