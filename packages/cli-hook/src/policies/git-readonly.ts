@@ -257,6 +257,9 @@ export const GIT_READONLY_REASON =
 export const GIT_HOOK_REASON =
   "Git hook access blocked (read-only policy): the `git hook` subcommand reads and runs .git/hooks entries — name-based execution the filesystem policy cannot see.";
 
+/**
+ * @deprecated
+ */
 export const gitReadonlyPolicy: Policy = {
   check(cmd) {
     return firstUnitHit(cmd.units, (unit) => {
