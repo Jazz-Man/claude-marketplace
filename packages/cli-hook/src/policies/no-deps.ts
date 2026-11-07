@@ -106,6 +106,9 @@ function denies(name: string, args: string[]): boolean {
 export const REASON =
   "Dependency install/update blocked: do not install, update, or remove packages (pip/uv/pipx/poetry, npm/npx/pnpm/pnpx/yarn, bun/bunx, cargo/rustup, composer, gem/bundler, go, swift package, brew, nix) or run one-shot package runners.";
 
+/**
+ * @deprecated
+ */
 export const noDepsPolicy: Policy = {
   check(cmd) {
     return firstUnitHit(cmd.units, (unit) =>

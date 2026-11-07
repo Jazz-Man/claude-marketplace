@@ -137,6 +137,9 @@ export const REASON =
 export const FUNCTION_REASON =
   "Inline function definitions are blocked: shell code belongs in a file — write the script under ./tmp/ at the project root and run that file. This also covers every fork-bomb signature (a function that spawns itself or another defined function).";
 
+/**
+ * @deprecated
+ */
 export const noInlineScriptsPolicy: Policy = {
   check(cmd) {
     if (cmd.functionDefs.length > 0) {
