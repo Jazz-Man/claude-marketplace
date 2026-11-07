@@ -24,21 +24,31 @@
         { "mode": "deny", "name": "Z_AI_API_KEY" },
         { "mode": "deny", "name": "ANTHROPIC_AUTH_TOKEN" },
         { "mode": "deny", "name": "ANTHROPIC_BASE_URL" },
-        { "mode": "deny", "name": "NPM_CONFIG_TOKEN" }
+        { "mode": "deny", "name": "NPM_CONFIG_TOKEN" },
+        { "mode": "deny", "name": "NPM_CONFIG_TOKEN_TEST" }
       ],
       "files": [
+        { "mode": "deny", "path": "~/.zshenv" },
+        { "mode": "deny", "path": "~/.zprofile" },
+        { "mode": "deny", "path": "~/.zprofile.local" },
+        { "mode": "deny", "path": "~/.zshrc" },
+        { "mode": "deny", "path": "~/.profile" },
+        { "mode": "deny", "path": "~/.bash_profile" },
+        { "mode": "deny", "path": "~/.bashrc" },
         { "mode": "deny", "path": "~/.ssh" },
         { "mode": "deny", "path": "~/.aws" },
         { "mode": "deny", "path": "~/.gnupg" },
         { "mode": "deny", "path": "~/.kube" },
         { "mode": "deny", "path": "~/.config/gcloud" },
-        { "mode": "deny", "path": "~/.npmrc" }
+        { "mode": "deny", "path": "~/.npmrc" },
+        { "mode": "deny", "path": "~/.config/zsh" }
       ]
     },
     "enabled": true,
     "enabledPlatforms": ["macos"],
     "enableWeakerNetworkIsolation": true,
     "failIfUnavailable": true,
+    "filesystem": {},
     "network": { "allowAllUnixSockets": true, "allowLocalBinding": true }
   }
 }
