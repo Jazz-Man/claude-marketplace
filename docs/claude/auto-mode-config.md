@@ -1,21 +1,17 @@
-> ## Documentation Index
-> Fetch the complete documentation index at: https://code.claude.com/docs/llms.txt
-> Use this file to discover all available pages before exploring further.
-
 # Configure auto mode
 
 > Tell the auto mode classifier which repos, buckets, and domains your organization trusts. Set environment context, override the default block and allow rules, and inspect your effective config with the auto-mode CLI subcommands.
 
-[Auto mode](https://code.claude.com/docs/en/permission-modes.md#eliminate-prompts-with-auto-mode) lets Claude Code run without routine permission prompts by routing tool calls through a classifier that blocks anything irreversible, destructive, or aimed outside your environment. Deny and explicit ask rules are evaluated before the classifier and still block or prompt. Use the `autoMode` settings block to tell that classifier which repos, buckets, and domains your organization trusts, so it stops blocking routine internal operations.
+[Auto mode](permission-modes.md#eliminate-prompts-with-auto-mode) lets Claude Code run without routine permission prompts by routing tool calls through a classifier that blocks anything irreversible, destructive, or aimed outside your environment. Deny and explicit ask rules are evaluated before the classifier and still block or prompt. Use the `autoMode` settings block to tell that classifier which repos, buckets, and domains your organization trusts, so it stops blocking routine internal operations.
 
 > [!NOTE]
 >
 > This page is the configuration reference. Turning auto mode on and off is covered on the Permission modes page:
 >
-> * **Switch to auto mode mid-session, or back out of it**: see [Switch permission modes](https://code.claude.com/docs/en/permission-modes.md#switch-permission-modes)
-> * **Start a session in auto mode**: see [Start in a different permission mode](https://code.claude.com/docs/en/permission-modes.md#start-in-a-different-mode)
+> * **Switch to auto mode mid-session, or back out of it**: see [Switch permission modes](permission-modes.md#switch-permission-modes)
+> * **Start a session in auto mode**: see [Start in a different permission mode](permission-modes.md#start-in-a-different-mode)
 
-Auto mode is available to all users on every provider, including the Anthropic API, [Claude Platform on AWS](https://code.claude.com/docs/en/claude-platform-on-aws.md), Amazon Bedrock, Google Cloud's Agent Platform, Microsoft Foundry, and signed-in [Claude apps gateway](https://code.claude.com/docs/en/claude-apps-gateway) sessions. If Claude Code reports auto mode as unavailable for your account, check the [full requirements](https://code.claude.com/docs/en/permission-modes.md#eliminate-prompts-with-auto-mode), which also cover the supported models and the organization-level control on Team and Enterprise plans.
+Auto mode is available to all users on every provider, including the Anthropic API, [Claude Platform on AWS](https://code.claude.com/docs/en/claude-platform-on-aws.md), Amazon Bedrock, Google Cloud's Agent Platform, Microsoft Foundry, and signed-in [Claude apps gateway](https://code.claude.com/docs/en/claude-apps-gateway) sessions. If Claude Code reports auto mode as unavailable for your account, check the [full requirements](permission-modes.md#eliminate-prompts-with-auto-mode), which also cover the supported models and the organization-level control on Team and Enterprise plans.
 
 By default, the classifier trusts only the working directory and the current repo's configured remotes. Actions like pushing to your company's source-control org or writing to a team cloud bucket are blocked until you add them to `autoMode.environment`.
 
@@ -34,7 +30,7 @@ If you want a human checkpoint before Claude's push and pull request commands, a
 
 ### Add a human checkpoint
 
-The most direct mechanism is [`permissions.ask`](https://code.claude.com/docs/en/permissions#permission-rule-syntax). Content-scoped ask rules like the ones below are evaluated before the classifier and always force a permission prompt, even in auto mode, because an explicit ask rule is your stated intent to be prompted for that action. Add the rules in your [settings](https://code.claude.com/docs/en/settings.md#where-settings-live):
+The most direct mechanism is [`permissions.ask`](permissions.md#permission-rule-syntax). Content-scoped ask rules like the ones below are evaluated before the classifier and always force a permission prompt, even in auto mode, because an explicit ask rule is your stated intent to be prompted for that action. Add the rules in your [settings](settings.md#where-settings-live):
 
 ```json theme={null}
 {
@@ -47,7 +43,7 @@ The most direct mechanism is [`permissions.ask`](https://code.claude.com/docs/en
 }
 ```
 
-These rules match commands that begin with `git push` or `gh pr create`. A push Claude writes another way, such as `git -C <dir> push` or `git -c <key>=<value> push`, [doesn't match the rule](https://code.claude.com/docs/en/permissions.md#bash-rule-limits), so it isn't checkpointed. For a checkpoint that inspects the full command text, add a [PreToolUse hook](https://code.claude.com/docs/en/hooks.md#pretooluse).
+These rules match commands that begin with `git push` or `gh pr create`. A push Claude writes another way, such as `git -C <dir> push` or `git -c <key>=<value> push`, [doesn't match the rule](permissions.md#bash-rule-limits), so it isn't checkpointed. For a checkpoint that inspects the full command text, add a [PreToolUse hook](hooks.md#pretooluse).
 
 Pick the mechanism that matches how firm the boundary needs to be:
 
@@ -75,7 +71,7 @@ Entries from each scope are combined. A developer can extend `environment`, `all
 
 > [!NOTE]
 >
-> The classifier is a second gate that runs after the [permissions system](https://code.claude.com/docs/en/permissions.md). For actions that must never run regardless of user intent or classifier configuration, use `permissions.deny` in managed settings, which blocks the action before the classifier is consulted and can't be overridden.
+> The classifier is a second gate that runs after the [permissions system](permissions.md). For actions that must never run regardless of user intent or classifier configuration, use `permissions.deny` in managed settings, which blocks the action before the classifier is consulted and can't be overridden.
 
 ## Define trusted infrastructure
 
@@ -95,7 +91,7 @@ For most organizations, `autoMode.environment` is the only field you need to set
   * **Secrets management**
   * **CI/CD deploy targets**
   * **Network posture**
-  * **Host containment**: defaults to an ordinary developer machine or CI runner with open internet. If Claude Code runs in a container, VM, or pod with an egress allow-list or neighbors it must not touch, name the allowed hosts, whether the cloud metadata endpoint should be reachable, and which cloud project, cluster, or registry the task uses and under what identity. Until this entry names that identity, the classifier [blocks](https://code.claude.com/docs/en/permission-modes.md#what-the-classifier-blocks-by-default) requests for the host's own credentials. Requires Claude Code v2.1.257 or later
+  * **Host containment**: defaults to an ordinary developer machine or CI runner with open internet. If Claude Code runs in a container, VM, or pod with an egress allow-list or neighbors it must not touch, name the allowed hosts, whether the cloud metadata endpoint should be reachable, and which cloud project, cluster, or registry the task uses and under what identity. Until this entry names that identity, the classifier [blocks](permission-modes.md#what-the-classifier-blocks-by-default) requests for the host's own credentials. Requires Claude Code v2.1.257 or later
   * **Protected deployment namespaces / environments**: falls back to the Sensitive remote targets heuristic until you name them
   * **Data retention / declassification**
 * **Trust slots**: name what the classifier treats as inside your boundary. The slots are Trusted repo, Source control, Trusted internal domains, Trusted cloud buckets, Key internal services, and Internal package registry. The repo and source-control entries default to the working repository and its configured remotes. Every other trust slot defaults to `None configured`, so nothing else is trusted until you add it. A repository's visibility scopes only confidential material: a private repository is an acceptable destination for confidential material, but making a repository private never clears secrets or personal or entrusted data into it, and the classifier treats content ported, repointed, or first read from outside the working repository as not that repository's own work.
@@ -190,7 +186,7 @@ Then run `claude auto-mode config` to [see the effective result](#inspect-the-de
 
 Once auto mode has blocked several actions and you still have no `autoMode.environment` entries, Claude Code shows a dialog titled "Teach auto mode about your environment?" at the end of a turn and offers to run `/auto-mode-setup` for you. To stop the offer but keep the command, select **Don't show again** in that dialog.
 
-To turn off both the command and the offer, add this [`skillOverrides`](https://code.claude.com/docs/en/skills#override-skill-visibility-from-settings) entry to `~/.claude/settings.json`:
+To turn off both the command and the offer, add this [`skillOverrides`](skills.md#override-skill-visibility-from-settings) entry to `~/.claude/settings.json`:
 
 ```json theme={null}
 {
@@ -200,15 +196,15 @@ To turn off both the command and the offer, add this [`skillOverrides`](https://
 }
 ```
 
-`/auto-mode-setup` is a built-in command rather than a [bundled skill](https://code.claude.com/docs/en/skills.md#bundled-skills), so this `skillOverrides` entry still applies to it, but [`disableBundledSkills`](https://code.claude.com/docs/en/settings-reference#disablebundledskills) doesn't turn it off.
+`/auto-mode-setup` is a built-in command rather than a [bundled skill](skills.md#bundled-skills), so this `skillOverrides` entry still applies to it, but [`disableBundledSkills`](settings-reference.md#disablebundledskills) doesn't turn it off.
 
 ### `/auto-mode-setup` returns "Unknown command"
 
 If typing `/auto-mode-setup` at the Claude Code prompt prints `Unknown command: /auto-mode-setup`, check for these causes:
 
-* **First session after an install or upgrade**: start a new session. If the command is still missing there, see the [setups where later sessions also start without it](https://code.claude.com/docs/en/env-vars.md#first-session-after-an-install-or-upgrade).
+* **First session after an install or upgrade**: start a new session. If the command is still missing there, see the [setups where later sessions also start without it](env-vars.md#first-session-after-an-install-or-upgrade).
 * **Outdated version**: run `claude --version` in your shell. If the version is below [the minimum for your plan](#generate-environment-entries), [update Claude Code](https://code.claude.com/docs/en/setup.md#update-claude-code).
-* **Telemetry off, third-party provider, or Claude apps gateway**: before v2.1.304, the command isn't available in [sessions where feature-flag fetching is off](https://code.claude.com/docs/en/env-vars.md#features-that-need-feature-flag-fetching). If your session is one of them, [update Claude Code](https://code.claude.com/docs/en/setup.md#update-claude-code) to v2.1.304 or later.
+* **Telemetry off, third-party provider, or Claude apps gateway**: before v2.1.304, the command isn't available in [sessions where feature-flag fetching is off](env-vars.md#features-that-need-feature-flag-fetching). If your session is one of them, [update Claude Code](https://code.claude.com/docs/en/setup.md#update-claude-code) to v2.1.304 or later.
 
 In a [cloud session](https://code.claude.com/docs/en/claude-code-on-the-web.md), the command prints `/auto-mode-setup isn't available in this environment.` instead. Run it in an interactive session in your terminal.
 
@@ -220,7 +216,7 @@ Three additional fields let you replace the classifier's built-in rule lists:
 * `autoMode.soft_deny`: destructive actions that user intent can clear
 * `autoMode.allow`: exceptions to soft block rules
 
-Each is an array of prose descriptions, read as natural-language rules. For tool-pattern-based hard blocks that run before the classifier, use [`permissions.deny`](https://code.claude.com/docs/en/permissions).
+Each is an array of prose descriptions, read as natural-language rules. For tool-pattern-based hard blocks that run before the classifier, use [`permissions.deny`](permissions.md).
 
 Inside the classifier, precedence works in four tiers:
 
@@ -275,15 +271,15 @@ Only omit `"$defaults"` when you intend to take full ownership of the list. To d
 
 ## Edit rules from `/permissions`
 
-To view and edit classifier rules and `environment` entries without opening a settings file, run [`/permissions`](https://code.claude.com/docs/en/permissions#manage-permissions) and select the **Auto mode** tab. The tab requires Claude Code v2.1.246 or later, and it appears only when [auto mode is available](https://code.claude.com/docs/en/permission-modes.md#eliminate-prompts-with-auto-mode) to your session.
+To view and edit classifier rules and `environment` entries without opening a settings file, run [`/permissions`](permissions.md#manage-permissions) and select the **Auto mode** tab. The tab requires Claude Code v2.1.246 or later, and it appears only when [auto mode is available](permission-modes.md#eliminate-prompts-with-auto-mode) to your session.
 
 Claude Code shows entries from [managed settings](https://code.claude.com/docs/en/server-managed-settings.md) or the `--settings` flag as read-only, and saves every change you make on the tab to `~/.claude/settings.json`.
 
 ## Route all shell commands through the classifier
 
-By default, narrow Bash and PowerShell allow rules such as `Bash(npm test)` stay in effect in auto mode. Claude Code resolves them before the classifier runs, unless the command carries [per-command allowed domains](https://code.claude.com/docs/en/sandboxing.md#per-command-allowed-domains-in-auto-mode). Claude Code suspends only the broad rules that grant arbitrary code execution, such as `Bash(*)` or wildcarded interpreters, together with every rule that names [`Monitor`](https://code.claude.com/docs/en/tools-reference#monitor-tool), because Monitor commands run through the shell. This means a narrow rule can still let a destructive argument through without the classifier seeing it, for example a script path or flag the rule's prefix didn't anticipate.
+By default, narrow Bash and PowerShell allow rules such as `Bash(npm test)` stay in effect in auto mode. Claude Code resolves them before the classifier runs, unless the command carries [per-command allowed domains](sandboxing.md#per-command-allowed-domains-in-auto-mode). Claude Code suspends only the broad rules that grant arbitrary code execution, such as `Bash(*)` or wildcarded interpreters, together with every rule that names [`Monitor`](tools-reference.md#monitor-tool), because Monitor commands run through the shell. This means a narrow rule can still let a destructive argument through without the classifier seeing it, for example a script path or flag the rule's prefix didn't anticipate.
 
-Set `autoMode.classifyAllShell` to `true` to suspend every Bash and PowerShell allow rule while auto mode is active, so the classifier evaluates every shell command regardless of your allow list, except [critical-path removals](https://code.claude.com/docs/en/permission-modes.md#critical-paths).
+Set `autoMode.classifyAllShell` to `true` to suspend every Bash and PowerShell allow rule while auto mode is active, so the classifier evaluates every shell command regardless of your allow list, except [critical-path removals](permission-modes.md#critical-paths).
 
 ```json theme={null}
 {
@@ -371,7 +367,7 @@ Press `r` to approve the action and let Claude retry it.
 
 **4. Close the dialog**
 
-Press `Esc` to close the dialog and apply your approval. If Claude was working when you opened `/permissions`, send a message once Claude finishes to let Claude retry the action. Otherwise, you don't need to send anything: Claude continues now and may retry it. If it doesn't, name the action in your next message, as [Approvals you state in conversation](https://code.claude.com/docs/en/permission-modes.md#approvals-you-state-in-conversation) describes.
+Press `Esc` to close the dialog and apply your approval. If Claude was working when you opened `/permissions`, send a message once Claude finishes to let Claude retry the action. Otherwise, you don't need to send anything: Claude continues now and may retry it. If it doesn't, name the action in your next message, as [Approvals you state in conversation](permission-modes.md#approvals-you-state-in-conversation) describes.
 
 Approving an action doesn't add a permission rule. In auto mode, a retried action goes through the check again, so it can be blocked again. To let a command through from now on, [add an `allow` rule](#fix-a-denial-with-an-allow-rule-an-environment-entry-or-a-retry).
 
@@ -391,7 +387,7 @@ You can't approve an action from the tab when its row can't show all of its comm
 Notices read like `bash blocked by auto mode · /permissions · Auto mode: [Data Exfiltration]`. To read the command or URL behind one, use the **Recently blocked** tab, a hook, or the conversation:
 
 * **Recently blocked tab**: highlight the action's row. In [screen reader mode](https://code.claude.com/docs/en/accessibility.md), every command and input appears before the list.
-* **Hook**: to capture the exact input of denials programmatically, add a [`PermissionDenied` hook](https://code.claude.com/docs/en/hooks#permissiondenied), which receives it as `tool_input`. If your hook reads `reason`, expect no `Auto mode:` prefix, and text such as `Blocked by classifier` instead of `No reason provided`.
+* **Hook**: to capture the exact input of denials programmatically, add a [`PermissionDenied` hook](hooks.md#permissiondenied), which receives it as `tool_input`. If your hook reads `reason`, expect no `Auto mode:` prefix, and text such as `Blocked by classifier` instead of `No reason provided`.
 * **Conversation**: find the tool call. If the call appears shortened or folded into a summary line such as `Ran 3 shell commands`, press `Ctrl+O` to open the [transcript viewer](https://code.claude.com/docs/en/interactive-mode.md#transcript-viewer), which expands it.
 
 The text beneath the call tells you whether there is anything to fix. A dim `Not run · auto mode's check had no usable answer` row, or text that reports a problem with the classifier itself, such as `Auto mode could not evaluate this action`, means Claude Code blocked the call without a verdict from the classifier. For a `Not run` row, press `Ctrl+O` to read the full message, then see [Auto mode cannot determine the safety of an action](https://code.claude.com/docs/en/errors.md#auto-mode-cannot-determine-the-safety-of-an-action) or [The server returned no safety verdict](https://code.claude.com/docs/en/errors.md#the-server-returned-no-safety-verdict) for what to do.
@@ -412,7 +408,7 @@ Repeated denials for the same destination usually mean the classifier is missing
 
 ## See also
 
-* [Permission modes](https://code.claude.com/docs/en/permission-modes.md#eliminate-prompts-with-auto-mode): what auto mode is, what it blocks by default, and which sessions start in it
+* [Permission modes](permission-modes.md#eliminate-prompts-with-auto-mode): what auto mode is, what it blocks by default, and which sessions start in it
 * [Managed settings](https://code.claude.com/docs/en/server-managed-settings.md): deploy `autoMode` configuration across your organization
-* [Permissions](https://code.claude.com/docs/en/permissions.md): allow, ask, and deny rules that apply before the classifier runs
-* [All settings](https://code.claude.com/docs/en/settings-reference.md#automode): every settings key, including `autoMode`
+* [Permissions](permissions.md): allow, ask, and deny rules that apply before the classifier runs
+* [All settings](settings-reference.md#automode): every settings key, including `autoMode`
