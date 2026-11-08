@@ -1,5 +1,5 @@
 import process from "node:process";
-import { debug } from "./debug";
+import { debug } from "./debug.ts";
 
 const envVars = [
   "GITHUB_TOKEN",
@@ -68,6 +68,12 @@ const memoryPaths = [
   ".claude/agent-memory-local",
 ];
 
+const dependencyMemoryFiles = [
+  "**/node_modules/**/CLAUDE.md",
+  "**/node_modules/**/AGENTS.md",
+  "**/node_modules/**/.claude/**",
+];
+
 const gitHistoryWriteOnly = ["/**/.git"];
 
 const gitHistoryDenyRules = ["Edit(**/.git/*)", "Write(**/.git)"];
@@ -111,6 +117,7 @@ const disableCommands = [
 ];
 
 const config = {
+  claudeMdExcludes: dependencyMemoryFiles,
   permissions: {
     deny: [
       ...protectedFiles.map((file) => `Read(${file})`),
@@ -119,6 +126,7 @@ const config = {
       ...memoryPaths.map((file) => `Read(${file})`),
       ...memoryPaths.map((file) => `Edit(${file})`),
       ...memoryPaths.map((file) => `Write(${file})`),
+      ...dependencyMemoryFiles.map((file) => `Read(${file})`),
       ...gitHistoryDenyRules,
       ...gitWriteCommands.map((command) => `Bash(${command})`),
       ...disableCommands.map((command) => `Bash(${command})`),
@@ -137,7 +145,7 @@ const config = {
     enableWeakerNetworkIsolation: true,
     failIfUnavailable: true,
     filesystem: {
-      denyRead: [...protectedFiles, ...memoryPaths],
+      denyRead: [...protectedFiles, ...memoryPaths, ...dependencyMemoryFiles],
       denyWrite: [...protectedFiles, ...gitHistoryWriteOnly, ...memoryPaths],
     },
     network: { allowAllUnixSockets: true, allowLocalBinding: true },
@@ -151,8 +159,8 @@ try {
 
   const newConfig = {
     ...currentConfig,
+    claudeMdExcludes: config.claudeMdExcludes,
     permissions: config.permissions,
-
     sandbox: config.sandbox,
   };
 

@@ -1,5 +1,10 @@
 {
   "$schema": "../claude-code-settings-schema.json",
+  "claudeMdExcludes": [
+    "**/node_modules/**/CLAUDE.md",
+    "**/node_modules/**/AGENTS.md",
+    "**/node_modules/**/.claude/**"
+  ],
   "enabledPlugins": {
     "plugin-dev@claude-plugins-official": true,
     "security-guard@sdd-local": false
@@ -129,6 +134,9 @@
       "Write(~/.claude/agent-memory)",
       "Write(.claude/agent-memory)",
       "Write(.claude/agent-memory-local)",
+      "Read(**/node_modules/**/CLAUDE.md)",
+      "Read(**/node_modules/**/AGENTS.md)",
+      "Read(**/node_modules/**/.claude/**)",
       "Edit(**/.git/*)",
       "Write(**/.git)",
       "Bash(git add*)",
@@ -392,9 +400,7 @@
       ]
     },
     "enabled": true,
-    "enabledPlatforms": [
-      "macos"
-    ],
+    "enabledPlatforms": ["macos"],
     "enableWeakerNetworkIsolation": true,
     "failIfUnavailable": true,
     "filesystem": {
@@ -439,7 +445,10 @@
         "~/.claude/projects/**/memory",
         "~/.claude/agent-memory",
         ".claude/agent-memory",
-        ".claude/agent-memory-local"
+        ".claude/agent-memory-local",
+        "**/node_modules/**/CLAUDE.md",
+        "**/node_modules/**/AGENTS.md",
+        "**/node_modules/**/.claude/**"
       ],
       "denyWrite": [
         "**/.DS_Store*",
