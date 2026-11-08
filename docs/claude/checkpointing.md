@@ -1,7 +1,3 @@
-> ## Documentation Index
-> Fetch the complete documentation index at: https://code.claude.com/docs/llms.txt
-> Use this file to discover all available pages before exploring further.
-
 # Checkpointing
 
 > Track, rewind, and summarize Claude's edits and conversation to manage session state.
@@ -19,7 +15,7 @@ Claude Code tracks all changes made by its file editing tools:
 * Every prompt you send that starts a turn creates a new checkpoint
 * Claude Code keeps file snapshots for the 100 most recent checkpoints in a session. Discarding an older checkpoint deletes the snapshot files that no remaining checkpoint references, except each file's first snapshot, which the VS Code extension uses as the baseline for its session diffs.
 * Claude Code saves checkpoints with the conversation, so you can still run `/rewind` after you resume a session
-* Claude Code deletes a session's file snapshots in the [retention sweep](https://code.claude.com/docs/en/claude-directory.md#cleaned-up-automatically), by default about 30 days after the session last saved one. Rewinding to a checkpoint whose snapshots are gone can fail with [`No files were restored`](https://code.claude.com/docs/en/errors#no-files-were-restored). To keep snapshots longer, set [`cleanupPeriodDays`](https://code.claude.com/docs/en/settings-reference#cleanupperioddays).
+* Claude Code deletes a session's file snapshots in the [retention sweep](https://code.claude.com/docs/en/claude-directory.md#cleaned-up-automatically), by default about 30 days after the session last saved one. Rewinding to a checkpoint whose snapshots are gone can fail with [`No files were restored`](https://code.claude.com/docs/en/errors#no-files-were-restored). To keep snapshots longer, set [`cleanupPeriodDays`](settings-reference.md#cleanupperioddays).
 
 ### Rewind and summarize
 
@@ -79,9 +75,9 @@ Under each prompt, the rewind menu counts changes to files Claude had already ed
 
 ### Subagent edits not restored
 
-A [subagent](https://code.claude.com/docs/en/sub-agents.md) makes edits with Claude's file editing tools, but Claude Code usually doesn't capture those edits in your session's checkpoints. Whether rewinding restores them depends on how the subagent runs:
+A [subagent](sub-agents.md) makes edits with Claude's file editing tools, but Claude Code usually doesn't capture those edits in your session's checkpoints. Whether rewinding restores them depends on how the subagent runs:
 
-* **Foreground forked skill**: a [skill with `context: fork`](https://code.claude.com/docs/en/skills#run-skills-in-a-subagent) that runs in the foreground edits your working tree during your own turn, so rewinding restores its edits as usual. Set `background: false` to run a fork in the foreground; a few situations, [listed on the skills page](https://code.claude.com/docs/en/skills.md#run-skills-in-a-subagent), run it there regardless of the setting.
+* **Foreground forked skill**: a [skill with `context: fork`](skills.md#run-skills-in-a-subagent) that runs in the foreground edits your working tree during your own turn, so rewinding restores its edits as usual. Set `background: false` to run a fork in the foreground; a few situations, [listed on the skills page](skills.md#run-skills-in-a-subagent), run it there regardless of the setting.
 * **Any other subagent**: rewinding restores only the files Claude had already edited in your conversation. The subagent's edits to other files stay, so use version control, such as Git, to revert them. This includes a forked skill that runs in the background, the default, and a background [`/code-review --fix`](https://code.claude.com/docs/en/code-review-local) run.
 
 ### External changes not tracked
@@ -107,5 +103,5 @@ Checkpoints are designed for quick, session-level recovery. For permanent versio
 ## See also
 
 * [Interactive mode](https://code.claude.com/docs/en/interactive-mode.md) - Keyboard shortcuts and session controls
-* [Commands](https://code.claude.com/docs/en/commands.md) - Accessing checkpoints using `/rewind`
-* [CLI reference](https://code.claude.com/docs/en/cli-reference.md) - Command-line options
+* [Commands](commands.md) - Accessing checkpoints using `/rewind`
+* [CLI reference](cli-reference.md) - Command-line options
