@@ -1,7 +1,3 @@
-> ## Documentation Index
-> Fetch the complete documentation index at: https://code.claude.com/docs/llms.txt
-> Use this file to discover all available pages before exploring further.
-
 # Output styles
 
 > Change Claude Code's role, tone, and response format with a built-in output style such as Concise or Explanatory, or write a custom style.
@@ -18,7 +14,7 @@ Use an output style to change the way Claude responds and works with you for a w
 > An output style gives Claude instructions to follow. It doesn't guarantee that something always happens or never happens. Some needs fit a different feature:
 >
 > * For what Claude should know about your project, use [CLAUDE.md](https://code.claude.com/docs/en/memory.md).
-> * For something that has to happen every time, such as formatting after each edit or blocking a command, use a [hook](https://code.claude.com/docs/en/hooks-guide.md).
+> * For something that has to happen every time, such as formatting after each edit or blocking a command, use a [hook](hooks-guide.md).
 > * For skills, subagents, and the other options, see [Choose between an output style and other features](#choose-between-an-output-style-and-other-features).
 
 ## Built-in output styles
@@ -46,7 +42,7 @@ In the Proactive style, Claude starts implementing as soon as you send a task. I
 
 The style's instructions also tell Claude to check with you in the conversation before an action that deletes data or changes a shared or production system. That check is an instruction Claude follows and is separate from permission prompts.
 
-Switching to the Proactive style doesn't change your [permission mode](https://code.claude.com/docs/en/permission-modes.md). Your permission mode still decides which tool calls run without asking you, so permission prompts appear the same way they did before you switched.
+Switching to the Proactive style doesn't change your [permission mode](permission-modes.md). Your permission mode still decides which tool calls run without asking you, so permission prompts appear the same way they did before you switched.
 
 ### Concise
 
@@ -90,7 +86,7 @@ Claude then stops and waits. Write your code at the `TODO(human)` comment and te
 
 ## Change your output style
 
-Pick a style with the command, a menu, or a settings file. The command and both menus save your choice to `.claude/settings.local.json` at the [local project level](https://code.claude.com/docs/en/settings.md).
+Pick a style with the command, a menu, or a settings file. The command and both menus save your choice to `.claude/settings.local.json` at the [local project level](settings.md).
 
 * **`/output-style` command**: run `/output-style <style>` to switch, for example `/output-style concise`. With no argument, the command lists the styles you can pick and marks the current one.
 
@@ -109,7 +105,7 @@ To set a style without the menu, edit the `outputStyle` field directly in a sett
 
 The value is case-sensitive, so write the built-in names as `Proactive`, `Concise`, `Explanatory`, and `Learning`. A value that doesn't match a style name exactly, such as `explanatory`, gives you the Default style. The `/output-style` command ignores case.
 
-To make a style your default across projects, set `outputStyle` in `~/.claude/settings.json`. A project's own settings files [take precedence](https://code.claude.com/docs/en/settings.md#settings-precedence) over that value.
+To make a style your default across projects, set `outputStyle` in `~/.claude/settings.json`. A project's own settings files [take precedence](settings.md#settings-precedence) over that value.
 
 When you switch styles mid-session, Claude uses the new style starting with your next message. For what that first message costs in prompt caching, see [Changing output style](https://code.claude.com/docs/en/prompt-caching.md#changing-output-style). Before v2.1.251, the new style applied only after you ran `/clear` or started a new session.
 
@@ -176,10 +172,10 @@ This table matches what you want to the feature that does it:
 | :- | :- | :- |
 | Every response in a certain voice, length, or format, or Claude in a different role | An output style | It applies to the whole session, and you switch styles with one command |
 | Claude to know your project's conventions, commands, and structure | [CLAUDE.md](https://code.claude.com/docs/en/memory.md) | It holds what Claude should know about the codebase, and it stays loaded whichever style you pick |
-| Instructions for one kind of task, such as a release checklist or a review procedure | A [skill](https://code.claude.com/docs/en/skills.md) | Claude loads it only when you invoke it or the task matches, so it doesn't shape unrelated responses |
-| Something to happen every time without exception, such as formatting after each edit or blocking a command | A [hook](https://code.claude.com/docs/en/hooks-guide.md) | Claude Code runs a hook itself at a lifecycle event, so it doesn't depend on Claude following an instruction |
-| A helper with its own instructions, model, and tools for a focused task | A [subagent](https://code.claude.com/docs/en/sub-agents.md) | It runs in a separate context with its own system prompt and returns a summary to your conversation |
-| An addition to Claude's instructions that you pass when you start Claude Code | [`--append-system-prompt`](https://code.claude.com/docs/en/cli-reference#system-prompt-flags) | It appends to the system prompt without removing anything |
+| Instructions for one kind of task, such as a release checklist or a review procedure | A [skill](skills.md) | Claude loads it only when you invoke it or the task matches, so it doesn't shape unrelated responses |
+| Something to happen every time without exception, such as formatting after each edit or blocking a command | A [hook](hooks-guide.md) | Claude Code runs a hook itself at a lifecycle event, so it doesn't depend on Claude following an instruction |
+| A helper with its own instructions, model, and tools for a focused task | A [subagent](sub-agents.md) | It runs in a separate context with its own system prompt and returns a summary to your conversation |
+| An addition to Claude's instructions that you pass when you start Claude Code | [`--append-system-prompt`](cli-reference.md#system-prompt-flags) | It appends to the system prompt without removing anything |
 
 These features combine. For example, you can use CLAUDE.md for what Claude should know, an output style for how it responds, and a hook for anything that has to be guaranteed. [Extend Claude Code](https://code.claude.com/docs/en/features-overview.md) compares the rest of the extension features.
 
@@ -188,9 +184,9 @@ These features combine. For example, you can use CLAUDE.md for what Claude shoul
 An output style changes the instructions Claude Code gives Claude.
 
 * Claude Code sends the active style's instructions with every request.
-* On the full system prompt, custom output styles leave out Claude Code's section of built-in software engineering instructions, such as how to scope changes, write comments, and verify work, unless `keep-coding-instructions` is set to `true`. The shorter system prompt doesn't include that section, so the field has no effect there. To rely on the field, set [`CLAUDE_CODE_SIMPLE_SYSTEM_PROMPT`](https://code.claude.com/docs/en/env-vars#variables) to `0`, which selects the full prompt on any model.
+* On the full system prompt, custom output styles leave out Claude Code's section of built-in software engineering instructions, such as how to scope changes, write comments, and verify work, unless `keep-coding-instructions` is set to `true`. The shorter system prompt doesn't include that section, so the field has no effect there. To rely on the field, set [`CLAUDE_CODE_SIMPLE_SYSTEM_PROMPT`](env-vars.md#variables) to `0`, which selects the full prompt on any model.
 
-Output styles apply to the main conversation and to a [fork](https://code.claude.com/docs/en/sub-agents.md#fork-the-current-conversation), which inherits the parent's whole conversation and system prompt. Other [subagents run their own system prompt](https://code.claude.com/docs/en/sub-agents.md#what-loads-at-startup), so styles don't change how they respond.
+Output styles apply to the main conversation and to a [fork](sub-agents.md#fork-the-current-conversation), which inherits the parent's whole conversation and system prompt. Other [subagents run their own system prompt](sub-agents.md#what-loads-at-startup), so styles don't change how they respond.
 
 Token usage depends on the style. A style's instructions add input tokens, though prompt caching reduces this cost after the first request in a session.
 
@@ -198,7 +194,7 @@ The built-in Explanatory and Learning styles produce longer responses than Defau
 
 ## Related resources
 
-* [Settings](https://code.claude.com/docs/en/settings.md): where the `outputStyle` field lives and how settings precedence works
-* [Permission modes](https://code.claude.com/docs/en/permission-modes.md): how the Proactive style compares to auto mode
+* [Settings](settings.md): where the `outputStyle` field lives and how settings precedence works
+* [Permission modes](permission-modes.md): how the Proactive style compares to auto mode
 * [Plugins](https://code.claude.com/docs/en/plugins/overview.md): package and distribute output styles alongside skills, hooks, and agents
 * [Debug your configuration](https://code.claude.com/docs/en/debug-your-config.md): diagnose why an output style isn't taking effect
