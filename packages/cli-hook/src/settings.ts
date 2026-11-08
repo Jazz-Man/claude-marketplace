@@ -153,6 +153,8 @@ const gitHistoryWriteOnly = ["/**/.git"];
 
 const gitHistoryDenyRules = ["Edit(**/.git/*)", "Write(**/.git)"];
 
+const configWriteOnly = ["~/**/.gitmodules", "~/**/.mcp.json", "~/**/.lsp.json"];
+
 const gitWriteCommands = [
   "git add*",
   "git commit*",
@@ -204,6 +206,8 @@ const config = {
       ...memoryPaths.map((file) => `Edit(${file})`),
       ...memoryPaths.map((file) => `Write(${file})`),
       ...dependencyMemoryFiles.map((file) => `Read(${file})`),
+      ...configWriteOnly.map((file) => `Edit(${file})`),
+      ...configWriteOnly.map((file) => `Write(${file})`),
       ...gitHistoryDenyRules,
       ...gitWriteCommands.map((command) => `Bash(${command})`),
       ...disableCommands.map((command) => `Bash(${command})`),
@@ -226,7 +230,12 @@ const config = {
     failIfUnavailable: true,
     filesystem: {
       denyRead: [...protectedFiles, ...memoryPaths, ...dependencyMemoryFiles],
-      denyWrite: [...protectedFiles, ...gitHistoryWriteOnly, ...memoryPaths],
+      denyWrite: [
+        ...protectedFiles,
+        ...gitHistoryWriteOnly,
+        ...configWriteOnly,
+        ...memoryPaths,
+      ],
     },
     network: { allowAllUnixSockets: true, allowLocalBinding: true },
   },
