@@ -1,18 +1,97 @@
 {
   "$schema": "../claude-code-settings-schema.json",
   "claudeMdExcludes": [
-    "**/node_modules/**/CLAUDE.md",
-    "**/node_modules/**/AGENTS.md",
-    "**/node_modules/**/QWEN.md",
-    "**/node_modules/**/GEMINI.md",
-    "**/node_modules/**/COPILOT.md",
-    "**/node_modules/**/CONVENTIONAL.md",
-    "**/node_modules/**/copilot-instructions.md",
-    "**/node_modules/**/.cursorrules",
-    "**/node_modules/**/.clinerules",
-    "**/node_modules/**/.windsurfrules",
-    "**/node_modules/**/.claude/**",
-    "**/node_modules/**/.cursor/**"
+    "~/**/node_modules/**/CLAUDE.md",
+    "~/**/node_modules/**/AGENTS.md",
+    "~/**/node_modules/**/QWEN.md",
+    "~/**/node_modules/**/GEMINI.md",
+    "~/**/node_modules/**/COPILOT.md",
+    "~/**/node_modules/**/CONVENTIONAL.md",
+    "~/**/node_modules/**/copilot-instructions.md",
+    "~/**/node_modules/**/.cursorrules",
+    "~/**/node_modules/**/.clinerules",
+    "~/**/node_modules/**/.windsurfrules",
+    "~/**/node_modules/**/.claude/**",
+    "~/**/node_modules/**/.cursor/**",
+    "~/**/node_modules/**/.qwen/**",
+    "~/**/vendor/**/CLAUDE.md",
+    "~/**/vendor/**/AGENTS.md",
+    "~/**/vendor/**/QWEN.md",
+    "~/**/vendor/**/GEMINI.md",
+    "~/**/vendor/**/COPILOT.md",
+    "~/**/vendor/**/CONVENTIONAL.md",
+    "~/**/vendor/**/copilot-instructions.md",
+    "~/**/vendor/**/.cursorrules",
+    "~/**/vendor/**/.clinerules",
+    "~/**/vendor/**/.windsurfrules",
+    "~/**/vendor/**/.claude/**",
+    "~/**/vendor/**/.cursor/**",
+    "~/**/vendor/**/.qwen/**",
+    "~/**/Pods/**/CLAUDE.md",
+    "~/**/Pods/**/AGENTS.md",
+    "~/**/Pods/**/QWEN.md",
+    "~/**/Pods/**/GEMINI.md",
+    "~/**/Pods/**/COPILOT.md",
+    "~/**/Pods/**/CONVENTIONAL.md",
+    "~/**/Pods/**/copilot-instructions.md",
+    "~/**/Pods/**/.cursorrules",
+    "~/**/Pods/**/.clinerules",
+    "~/**/Pods/**/.windsurfrules",
+    "~/**/Pods/**/.claude/**",
+    "~/**/Pods/**/.cursor/**",
+    "~/**/Pods/**/.qwen/**",
+    "~/**/.venv/**/CLAUDE.md",
+    "~/**/.venv/**/AGENTS.md",
+    "~/**/.venv/**/QWEN.md",
+    "~/**/.venv/**/GEMINI.md",
+    "~/**/.venv/**/COPILOT.md",
+    "~/**/.venv/**/CONVENTIONAL.md",
+    "~/**/.venv/**/copilot-instructions.md",
+    "~/**/.venv/**/.cursorrules",
+    "~/**/.venv/**/.clinerules",
+    "~/**/.venv/**/.windsurfrules",
+    "~/**/.venv/**/.claude/**",
+    "~/**/.venv/**/.cursor/**",
+    "~/**/.venv/**/.qwen/**",
+    "~/**/venv/**/CLAUDE.md",
+    "~/**/venv/**/AGENTS.md",
+    "~/**/venv/**/QWEN.md",
+    "~/**/venv/**/GEMINI.md",
+    "~/**/venv/**/COPILOT.md",
+    "~/**/venv/**/CONVENTIONAL.md",
+    "~/**/venv/**/copilot-instructions.md",
+    "~/**/venv/**/.cursorrules",
+    "~/**/venv/**/.clinerules",
+    "~/**/venv/**/.windsurfrules",
+    "~/**/venv/**/.claude/**",
+    "~/**/venv/**/.cursor/**",
+    "~/**/venv/**/.qwen/**",
+    "~/.cargo/registry/src/**/CLAUDE.md",
+    "~/.cargo/registry/src/**/AGENTS.md",
+    "~/.cargo/registry/src/**/QWEN.md",
+    "~/.cargo/registry/src/**/GEMINI.md",
+    "~/.cargo/registry/src/**/COPILOT.md",
+    "~/.cargo/registry/src/**/CONVENTIONAL.md",
+    "~/.cargo/registry/src/**/copilot-instructions.md",
+    "~/.cargo/registry/src/**/.cursorrules",
+    "~/.cargo/registry/src/**/.clinerules",
+    "~/.cargo/registry/src/**/.windsurfrules",
+    "~/.cargo/registry/src/**/.claude/**",
+    "~/.cargo/registry/src/**/.cursor/**",
+    "~/.cargo/registry/src/**/.qwen/**",
+    "~/go/pkg/mod/**/CLAUDE.md",
+    "~/go/pkg/mod/**/AGENTS.md",
+    "~/go/pkg/mod/**/QWEN.md",
+    "~/go/pkg/mod/**/GEMINI.md",
+    "~/go/pkg/mod/**/COPILOT.md",
+    "~/go/pkg/mod/**/CONVENTIONAL.md",
+    "~/go/pkg/mod/**/copilot-instructions.md",
+    "~/go/pkg/mod/**/.cursorrules",
+    "~/go/pkg/mod/**/.clinerules",
+    "~/go/pkg/mod/**/.windsurfrules",
+    "~/go/pkg/mod/**/.claude/**",
+    "~/go/pkg/mod/**/.cursor/**",
+    "~/go/pkg/mod/**/.qwen/**"
   ],
   "enabledPlugins": {
     "plugin-dev@claude-plugins-official": true,
@@ -143,18 +222,97 @@
       "Write(~/.claude/agent-memory)",
       "Write(.claude/agent-memory)",
       "Write(.claude/agent-memory-local)",
-      "Read(**/node_modules/**/CLAUDE.md)",
-      "Read(**/node_modules/**/AGENTS.md)",
-      "Read(**/node_modules/**/QWEN.md)",
-      "Read(**/node_modules/**/GEMINI.md)",
-      "Read(**/node_modules/**/COPILOT.md)",
-      "Read(**/node_modules/**/CONVENTIONAL.md)",
-      "Read(**/node_modules/**/copilot-instructions.md)",
-      "Read(**/node_modules/**/.cursorrules)",
-      "Read(**/node_modules/**/.clinerules)",
-      "Read(**/node_modules/**/.windsurfrules)",
-      "Read(**/node_modules/**/.claude/**)",
-      "Read(**/node_modules/**/.cursor/**)",
+      "Read(~/**/node_modules/**/CLAUDE.md)",
+      "Read(~/**/node_modules/**/AGENTS.md)",
+      "Read(~/**/node_modules/**/QWEN.md)",
+      "Read(~/**/node_modules/**/GEMINI.md)",
+      "Read(~/**/node_modules/**/COPILOT.md)",
+      "Read(~/**/node_modules/**/CONVENTIONAL.md)",
+      "Read(~/**/node_modules/**/copilot-instructions.md)",
+      "Read(~/**/node_modules/**/.cursorrules)",
+      "Read(~/**/node_modules/**/.clinerules)",
+      "Read(~/**/node_modules/**/.windsurfrules)",
+      "Read(~/**/node_modules/**/.claude/**)",
+      "Read(~/**/node_modules/**/.cursor/**)",
+      "Read(~/**/node_modules/**/.qwen/**)",
+      "Read(~/**/vendor/**/CLAUDE.md)",
+      "Read(~/**/vendor/**/AGENTS.md)",
+      "Read(~/**/vendor/**/QWEN.md)",
+      "Read(~/**/vendor/**/GEMINI.md)",
+      "Read(~/**/vendor/**/COPILOT.md)",
+      "Read(~/**/vendor/**/CONVENTIONAL.md)",
+      "Read(~/**/vendor/**/copilot-instructions.md)",
+      "Read(~/**/vendor/**/.cursorrules)",
+      "Read(~/**/vendor/**/.clinerules)",
+      "Read(~/**/vendor/**/.windsurfrules)",
+      "Read(~/**/vendor/**/.claude/**)",
+      "Read(~/**/vendor/**/.cursor/**)",
+      "Read(~/**/vendor/**/.qwen/**)",
+      "Read(~/**/Pods/**/CLAUDE.md)",
+      "Read(~/**/Pods/**/AGENTS.md)",
+      "Read(~/**/Pods/**/QWEN.md)",
+      "Read(~/**/Pods/**/GEMINI.md)",
+      "Read(~/**/Pods/**/COPILOT.md)",
+      "Read(~/**/Pods/**/CONVENTIONAL.md)",
+      "Read(~/**/Pods/**/copilot-instructions.md)",
+      "Read(~/**/Pods/**/.cursorrules)",
+      "Read(~/**/Pods/**/.clinerules)",
+      "Read(~/**/Pods/**/.windsurfrules)",
+      "Read(~/**/Pods/**/.claude/**)",
+      "Read(~/**/Pods/**/.cursor/**)",
+      "Read(~/**/Pods/**/.qwen/**)",
+      "Read(~/**/.venv/**/CLAUDE.md)",
+      "Read(~/**/.venv/**/AGENTS.md)",
+      "Read(~/**/.venv/**/QWEN.md)",
+      "Read(~/**/.venv/**/GEMINI.md)",
+      "Read(~/**/.venv/**/COPILOT.md)",
+      "Read(~/**/.venv/**/CONVENTIONAL.md)",
+      "Read(~/**/.venv/**/copilot-instructions.md)",
+      "Read(~/**/.venv/**/.cursorrules)",
+      "Read(~/**/.venv/**/.clinerules)",
+      "Read(~/**/.venv/**/.windsurfrules)",
+      "Read(~/**/.venv/**/.claude/**)",
+      "Read(~/**/.venv/**/.cursor/**)",
+      "Read(~/**/.venv/**/.qwen/**)",
+      "Read(~/**/venv/**/CLAUDE.md)",
+      "Read(~/**/venv/**/AGENTS.md)",
+      "Read(~/**/venv/**/QWEN.md)",
+      "Read(~/**/venv/**/GEMINI.md)",
+      "Read(~/**/venv/**/COPILOT.md)",
+      "Read(~/**/venv/**/CONVENTIONAL.md)",
+      "Read(~/**/venv/**/copilot-instructions.md)",
+      "Read(~/**/venv/**/.cursorrules)",
+      "Read(~/**/venv/**/.clinerules)",
+      "Read(~/**/venv/**/.windsurfrules)",
+      "Read(~/**/venv/**/.claude/**)",
+      "Read(~/**/venv/**/.cursor/**)",
+      "Read(~/**/venv/**/.qwen/**)",
+      "Read(~/.cargo/registry/src/**/CLAUDE.md)",
+      "Read(~/.cargo/registry/src/**/AGENTS.md)",
+      "Read(~/.cargo/registry/src/**/QWEN.md)",
+      "Read(~/.cargo/registry/src/**/GEMINI.md)",
+      "Read(~/.cargo/registry/src/**/COPILOT.md)",
+      "Read(~/.cargo/registry/src/**/CONVENTIONAL.md)",
+      "Read(~/.cargo/registry/src/**/copilot-instructions.md)",
+      "Read(~/.cargo/registry/src/**/.cursorrules)",
+      "Read(~/.cargo/registry/src/**/.clinerules)",
+      "Read(~/.cargo/registry/src/**/.windsurfrules)",
+      "Read(~/.cargo/registry/src/**/.claude/**)",
+      "Read(~/.cargo/registry/src/**/.cursor/**)",
+      "Read(~/.cargo/registry/src/**/.qwen/**)",
+      "Read(~/go/pkg/mod/**/CLAUDE.md)",
+      "Read(~/go/pkg/mod/**/AGENTS.md)",
+      "Read(~/go/pkg/mod/**/QWEN.md)",
+      "Read(~/go/pkg/mod/**/GEMINI.md)",
+      "Read(~/go/pkg/mod/**/COPILOT.md)",
+      "Read(~/go/pkg/mod/**/CONVENTIONAL.md)",
+      "Read(~/go/pkg/mod/**/copilot-instructions.md)",
+      "Read(~/go/pkg/mod/**/.cursorrules)",
+      "Read(~/go/pkg/mod/**/.clinerules)",
+      "Read(~/go/pkg/mod/**/.windsurfrules)",
+      "Read(~/go/pkg/mod/**/.claude/**)",
+      "Read(~/go/pkg/mod/**/.cursor/**)",
+      "Read(~/go/pkg/mod/**/.qwen/**)",
       "Edit(**/.git/*)",
       "Write(**/.git)",
       "Bash(git add*)",
@@ -414,6 +572,370 @@
         {
           "mode": "deny",
           "path": "~/Desktop"
+        },
+        {
+          "mode": "deny",
+          "path": "~/**/node_modules/**/CLAUDE.md"
+        },
+        {
+          "mode": "deny",
+          "path": "~/**/node_modules/**/AGENTS.md"
+        },
+        {
+          "mode": "deny",
+          "path": "~/**/node_modules/**/QWEN.md"
+        },
+        {
+          "mode": "deny",
+          "path": "~/**/node_modules/**/GEMINI.md"
+        },
+        {
+          "mode": "deny",
+          "path": "~/**/node_modules/**/COPILOT.md"
+        },
+        {
+          "mode": "deny",
+          "path": "~/**/node_modules/**/CONVENTIONAL.md"
+        },
+        {
+          "mode": "deny",
+          "path": "~/**/node_modules/**/copilot-instructions.md"
+        },
+        {
+          "mode": "deny",
+          "path": "~/**/node_modules/**/.cursorrules"
+        },
+        {
+          "mode": "deny",
+          "path": "~/**/node_modules/**/.clinerules"
+        },
+        {
+          "mode": "deny",
+          "path": "~/**/node_modules/**/.windsurfrules"
+        },
+        {
+          "mode": "deny",
+          "path": "~/**/node_modules/**/.claude/**"
+        },
+        {
+          "mode": "deny",
+          "path": "~/**/node_modules/**/.cursor/**"
+        },
+        {
+          "mode": "deny",
+          "path": "~/**/node_modules/**/.qwen/**"
+        },
+        {
+          "mode": "deny",
+          "path": "~/**/vendor/**/CLAUDE.md"
+        },
+        {
+          "mode": "deny",
+          "path": "~/**/vendor/**/AGENTS.md"
+        },
+        {
+          "mode": "deny",
+          "path": "~/**/vendor/**/QWEN.md"
+        },
+        {
+          "mode": "deny",
+          "path": "~/**/vendor/**/GEMINI.md"
+        },
+        {
+          "mode": "deny",
+          "path": "~/**/vendor/**/COPILOT.md"
+        },
+        {
+          "mode": "deny",
+          "path": "~/**/vendor/**/CONVENTIONAL.md"
+        },
+        {
+          "mode": "deny",
+          "path": "~/**/vendor/**/copilot-instructions.md"
+        },
+        {
+          "mode": "deny",
+          "path": "~/**/vendor/**/.cursorrules"
+        },
+        {
+          "mode": "deny",
+          "path": "~/**/vendor/**/.clinerules"
+        },
+        {
+          "mode": "deny",
+          "path": "~/**/vendor/**/.windsurfrules"
+        },
+        {
+          "mode": "deny",
+          "path": "~/**/vendor/**/.claude/**"
+        },
+        {
+          "mode": "deny",
+          "path": "~/**/vendor/**/.cursor/**"
+        },
+        {
+          "mode": "deny",
+          "path": "~/**/vendor/**/.qwen/**"
+        },
+        {
+          "mode": "deny",
+          "path": "~/**/Pods/**/CLAUDE.md"
+        },
+        {
+          "mode": "deny",
+          "path": "~/**/Pods/**/AGENTS.md"
+        },
+        {
+          "mode": "deny",
+          "path": "~/**/Pods/**/QWEN.md"
+        },
+        {
+          "mode": "deny",
+          "path": "~/**/Pods/**/GEMINI.md"
+        },
+        {
+          "mode": "deny",
+          "path": "~/**/Pods/**/COPILOT.md"
+        },
+        {
+          "mode": "deny",
+          "path": "~/**/Pods/**/CONVENTIONAL.md"
+        },
+        {
+          "mode": "deny",
+          "path": "~/**/Pods/**/copilot-instructions.md"
+        },
+        {
+          "mode": "deny",
+          "path": "~/**/Pods/**/.cursorrules"
+        },
+        {
+          "mode": "deny",
+          "path": "~/**/Pods/**/.clinerules"
+        },
+        {
+          "mode": "deny",
+          "path": "~/**/Pods/**/.windsurfrules"
+        },
+        {
+          "mode": "deny",
+          "path": "~/**/Pods/**/.claude/**"
+        },
+        {
+          "mode": "deny",
+          "path": "~/**/Pods/**/.cursor/**"
+        },
+        {
+          "mode": "deny",
+          "path": "~/**/Pods/**/.qwen/**"
+        },
+        {
+          "mode": "deny",
+          "path": "~/**/.venv/**/CLAUDE.md"
+        },
+        {
+          "mode": "deny",
+          "path": "~/**/.venv/**/AGENTS.md"
+        },
+        {
+          "mode": "deny",
+          "path": "~/**/.venv/**/QWEN.md"
+        },
+        {
+          "mode": "deny",
+          "path": "~/**/.venv/**/GEMINI.md"
+        },
+        {
+          "mode": "deny",
+          "path": "~/**/.venv/**/COPILOT.md"
+        },
+        {
+          "mode": "deny",
+          "path": "~/**/.venv/**/CONVENTIONAL.md"
+        },
+        {
+          "mode": "deny",
+          "path": "~/**/.venv/**/copilot-instructions.md"
+        },
+        {
+          "mode": "deny",
+          "path": "~/**/.venv/**/.cursorrules"
+        },
+        {
+          "mode": "deny",
+          "path": "~/**/.venv/**/.clinerules"
+        },
+        {
+          "mode": "deny",
+          "path": "~/**/.venv/**/.windsurfrules"
+        },
+        {
+          "mode": "deny",
+          "path": "~/**/.venv/**/.claude/**"
+        },
+        {
+          "mode": "deny",
+          "path": "~/**/.venv/**/.cursor/**"
+        },
+        {
+          "mode": "deny",
+          "path": "~/**/.venv/**/.qwen/**"
+        },
+        {
+          "mode": "deny",
+          "path": "~/**/venv/**/CLAUDE.md"
+        },
+        {
+          "mode": "deny",
+          "path": "~/**/venv/**/AGENTS.md"
+        },
+        {
+          "mode": "deny",
+          "path": "~/**/venv/**/QWEN.md"
+        },
+        {
+          "mode": "deny",
+          "path": "~/**/venv/**/GEMINI.md"
+        },
+        {
+          "mode": "deny",
+          "path": "~/**/venv/**/COPILOT.md"
+        },
+        {
+          "mode": "deny",
+          "path": "~/**/venv/**/CONVENTIONAL.md"
+        },
+        {
+          "mode": "deny",
+          "path": "~/**/venv/**/copilot-instructions.md"
+        },
+        {
+          "mode": "deny",
+          "path": "~/**/venv/**/.cursorrules"
+        },
+        {
+          "mode": "deny",
+          "path": "~/**/venv/**/.clinerules"
+        },
+        {
+          "mode": "deny",
+          "path": "~/**/venv/**/.windsurfrules"
+        },
+        {
+          "mode": "deny",
+          "path": "~/**/venv/**/.claude/**"
+        },
+        {
+          "mode": "deny",
+          "path": "~/**/venv/**/.cursor/**"
+        },
+        {
+          "mode": "deny",
+          "path": "~/**/venv/**/.qwen/**"
+        },
+        {
+          "mode": "deny",
+          "path": "~/.cargo/registry/src/**/CLAUDE.md"
+        },
+        {
+          "mode": "deny",
+          "path": "~/.cargo/registry/src/**/AGENTS.md"
+        },
+        {
+          "mode": "deny",
+          "path": "~/.cargo/registry/src/**/QWEN.md"
+        },
+        {
+          "mode": "deny",
+          "path": "~/.cargo/registry/src/**/GEMINI.md"
+        },
+        {
+          "mode": "deny",
+          "path": "~/.cargo/registry/src/**/COPILOT.md"
+        },
+        {
+          "mode": "deny",
+          "path": "~/.cargo/registry/src/**/CONVENTIONAL.md"
+        },
+        {
+          "mode": "deny",
+          "path": "~/.cargo/registry/src/**/copilot-instructions.md"
+        },
+        {
+          "mode": "deny",
+          "path": "~/.cargo/registry/src/**/.cursorrules"
+        },
+        {
+          "mode": "deny",
+          "path": "~/.cargo/registry/src/**/.clinerules"
+        },
+        {
+          "mode": "deny",
+          "path": "~/.cargo/registry/src/**/.windsurfrules"
+        },
+        {
+          "mode": "deny",
+          "path": "~/.cargo/registry/src/**/.claude/**"
+        },
+        {
+          "mode": "deny",
+          "path": "~/.cargo/registry/src/**/.cursor/**"
+        },
+        {
+          "mode": "deny",
+          "path": "~/.cargo/registry/src/**/.qwen/**"
+        },
+        {
+          "mode": "deny",
+          "path": "~/go/pkg/mod/**/CLAUDE.md"
+        },
+        {
+          "mode": "deny",
+          "path": "~/go/pkg/mod/**/AGENTS.md"
+        },
+        {
+          "mode": "deny",
+          "path": "~/go/pkg/mod/**/QWEN.md"
+        },
+        {
+          "mode": "deny",
+          "path": "~/go/pkg/mod/**/GEMINI.md"
+        },
+        {
+          "mode": "deny",
+          "path": "~/go/pkg/mod/**/COPILOT.md"
+        },
+        {
+          "mode": "deny",
+          "path": "~/go/pkg/mod/**/CONVENTIONAL.md"
+        },
+        {
+          "mode": "deny",
+          "path": "~/go/pkg/mod/**/copilot-instructions.md"
+        },
+        {
+          "mode": "deny",
+          "path": "~/go/pkg/mod/**/.cursorrules"
+        },
+        {
+          "mode": "deny",
+          "path": "~/go/pkg/mod/**/.clinerules"
+        },
+        {
+          "mode": "deny",
+          "path": "~/go/pkg/mod/**/.windsurfrules"
+        },
+        {
+          "mode": "deny",
+          "path": "~/go/pkg/mod/**/.claude/**"
+        },
+        {
+          "mode": "deny",
+          "path": "~/go/pkg/mod/**/.cursor/**"
+        },
+        {
+          "mode": "deny",
+          "path": "~/go/pkg/mod/**/.qwen/**"
         }
       ]
     },
@@ -466,18 +988,97 @@
         "~/.claude/agent-memory",
         ".claude/agent-memory",
         ".claude/agent-memory-local",
-        "**/node_modules/**/CLAUDE.md",
-        "**/node_modules/**/AGENTS.md",
-        "**/node_modules/**/QWEN.md",
-        "**/node_modules/**/GEMINI.md",
-        "**/node_modules/**/COPILOT.md",
-        "**/node_modules/**/CONVENTIONAL.md",
-        "**/node_modules/**/copilot-instructions.md",
-        "**/node_modules/**/.cursorrules",
-        "**/node_modules/**/.clinerules",
-        "**/node_modules/**/.windsurfrules",
-        "**/node_modules/**/.claude/**",
-        "**/node_modules/**/.cursor/**"
+        "~/**/node_modules/**/CLAUDE.md",
+        "~/**/node_modules/**/AGENTS.md",
+        "~/**/node_modules/**/QWEN.md",
+        "~/**/node_modules/**/GEMINI.md",
+        "~/**/node_modules/**/COPILOT.md",
+        "~/**/node_modules/**/CONVENTIONAL.md",
+        "~/**/node_modules/**/copilot-instructions.md",
+        "~/**/node_modules/**/.cursorrules",
+        "~/**/node_modules/**/.clinerules",
+        "~/**/node_modules/**/.windsurfrules",
+        "~/**/node_modules/**/.claude/**",
+        "~/**/node_modules/**/.cursor/**",
+        "~/**/node_modules/**/.qwen/**",
+        "~/**/vendor/**/CLAUDE.md",
+        "~/**/vendor/**/AGENTS.md",
+        "~/**/vendor/**/QWEN.md",
+        "~/**/vendor/**/GEMINI.md",
+        "~/**/vendor/**/COPILOT.md",
+        "~/**/vendor/**/CONVENTIONAL.md",
+        "~/**/vendor/**/copilot-instructions.md",
+        "~/**/vendor/**/.cursorrules",
+        "~/**/vendor/**/.clinerules",
+        "~/**/vendor/**/.windsurfrules",
+        "~/**/vendor/**/.claude/**",
+        "~/**/vendor/**/.cursor/**",
+        "~/**/vendor/**/.qwen/**",
+        "~/**/Pods/**/CLAUDE.md",
+        "~/**/Pods/**/AGENTS.md",
+        "~/**/Pods/**/QWEN.md",
+        "~/**/Pods/**/GEMINI.md",
+        "~/**/Pods/**/COPILOT.md",
+        "~/**/Pods/**/CONVENTIONAL.md",
+        "~/**/Pods/**/copilot-instructions.md",
+        "~/**/Pods/**/.cursorrules",
+        "~/**/Pods/**/.clinerules",
+        "~/**/Pods/**/.windsurfrules",
+        "~/**/Pods/**/.claude/**",
+        "~/**/Pods/**/.cursor/**",
+        "~/**/Pods/**/.qwen/**",
+        "~/**/.venv/**/CLAUDE.md",
+        "~/**/.venv/**/AGENTS.md",
+        "~/**/.venv/**/QWEN.md",
+        "~/**/.venv/**/GEMINI.md",
+        "~/**/.venv/**/COPILOT.md",
+        "~/**/.venv/**/CONVENTIONAL.md",
+        "~/**/.venv/**/copilot-instructions.md",
+        "~/**/.venv/**/.cursorrules",
+        "~/**/.venv/**/.clinerules",
+        "~/**/.venv/**/.windsurfrules",
+        "~/**/.venv/**/.claude/**",
+        "~/**/.venv/**/.cursor/**",
+        "~/**/.venv/**/.qwen/**",
+        "~/**/venv/**/CLAUDE.md",
+        "~/**/venv/**/AGENTS.md",
+        "~/**/venv/**/QWEN.md",
+        "~/**/venv/**/GEMINI.md",
+        "~/**/venv/**/COPILOT.md",
+        "~/**/venv/**/CONVENTIONAL.md",
+        "~/**/venv/**/copilot-instructions.md",
+        "~/**/venv/**/.cursorrules",
+        "~/**/venv/**/.clinerules",
+        "~/**/venv/**/.windsurfrules",
+        "~/**/venv/**/.claude/**",
+        "~/**/venv/**/.cursor/**",
+        "~/**/venv/**/.qwen/**",
+        "~/.cargo/registry/src/**/CLAUDE.md",
+        "~/.cargo/registry/src/**/AGENTS.md",
+        "~/.cargo/registry/src/**/QWEN.md",
+        "~/.cargo/registry/src/**/GEMINI.md",
+        "~/.cargo/registry/src/**/COPILOT.md",
+        "~/.cargo/registry/src/**/CONVENTIONAL.md",
+        "~/.cargo/registry/src/**/copilot-instructions.md",
+        "~/.cargo/registry/src/**/.cursorrules",
+        "~/.cargo/registry/src/**/.clinerules",
+        "~/.cargo/registry/src/**/.windsurfrules",
+        "~/.cargo/registry/src/**/.claude/**",
+        "~/.cargo/registry/src/**/.cursor/**",
+        "~/.cargo/registry/src/**/.qwen/**",
+        "~/go/pkg/mod/**/CLAUDE.md",
+        "~/go/pkg/mod/**/AGENTS.md",
+        "~/go/pkg/mod/**/QWEN.md",
+        "~/go/pkg/mod/**/GEMINI.md",
+        "~/go/pkg/mod/**/COPILOT.md",
+        "~/go/pkg/mod/**/CONVENTIONAL.md",
+        "~/go/pkg/mod/**/copilot-instructions.md",
+        "~/go/pkg/mod/**/.cursorrules",
+        "~/go/pkg/mod/**/.clinerules",
+        "~/go/pkg/mod/**/.windsurfrules",
+        "~/go/pkg/mod/**/.claude/**",
+        "~/go/pkg/mod/**/.cursor/**",
+        "~/go/pkg/mod/**/.qwen/**"
       ],
       "denyWrite": [
         "**/.DS_Store*",
