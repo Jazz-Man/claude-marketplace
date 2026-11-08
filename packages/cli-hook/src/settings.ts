@@ -178,6 +178,8 @@ const gitWriteCommands = [
 ];
 
 const disableCommands = [
+  "sudo*",
+  "brew*",
   "nix*",
   "bunx*",
   "npx*",

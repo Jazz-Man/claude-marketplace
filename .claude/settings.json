@@ -336,6 +336,8 @@
       "Bash(git hook*)",
       "Bash(git init*)",
       "Bash(git clone*)",
+      "Bash(sudo*)",
+      "Bash(brew*)",
       "Bash(nix*)",
       "Bash(bunx*)",
       "Bash(npx*)",
