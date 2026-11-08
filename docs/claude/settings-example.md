@@ -1,7 +1,3 @@
-> ## Documentation Index
-> Fetch the complete documentation index at: https://code.claude.com/docs/llms.txt
-> Use this file to discover all available pages before exploring further.
-
 # Example settings files
 
 > Realistic settings.json files for a developer, a team, and an organization: copy one, keep the keys you want, and change the values.
@@ -12,7 +8,7 @@ This page holds three example `settings.json` files, one for each place you save
 * A team's `.claude/settings.json`, committed to the repository
 * An organization's `managed-settings.json`
 
-Each one is a plausible file for that reader, so you can see the shape and copy the parts you want. None of them is a recommended baseline. Every value comes from the key's entry on the [settings reference](https://code.claude.com/docs/en/settings-reference.md), which has its type, default, and where it can be set.
+Each one is a plausible file for that reader, so you can see the shape and copy the parts you want. None of them is a recommended baseline. Every value comes from the key's entry on the [settings reference](settings-reference.md), which has its type, default, and where it can be set.
 
 Each example has two tabs. **Copyable settings file** is the file as you'd save it. **What each key does** is the same file with a comment above each key; Claude Code doesn't accept comments in a settings file, so copy from the first tab.
 
@@ -94,11 +90,11 @@ One developer's personal settings. It picks a model and effort, adjusts the term
 
 One team's shared settings, committed to the repository so everyone who clones it gets the same permissions, hooks, and plugin marketplace. Save a file like this at `.claude/settings.json` at the top of the repository. What to know before you commit one:
 
-* **Cloud sessions outside a [project](https://code.claude.com/docs/en/claude-projects.md#what-threads-pick-up-from-your-repositories)'s threads read it too.** A [cloud session](https://code.claude.com/docs/en/settings.md#settings-in-cloud-sessions) with one repository starts inside the clone, so the committed file applies there as well.
-* **Telemetry goes in managed or personal settings.** Claude Code ignores the [OpenTelemetry exporter variables](https://code.claude.com/docs/en/settings-reference.md#variables-claude-code-ignores-in-env) in a repository's settings files, apart from some values that turn telemetry off. Set them in [managed settings](https://code.claude.com/docs/en/monitoring-usage.md#administrator-configuration) for your organization, or in each person's `~/.claude/settings.json`.
-* **Allow rules wait for trust.** Allow rules and `extraKnownMarketplaces` entries take effect after each person [trusts this folder itself](https://code.claude.com/docs/en/permissions.md#project-allow-rules-and-workspace-trust), not only a parent folder; deny and ask rules apply in every session, trusted or not.
-* **The hook is a script in the repo.** This file's hook runs `.claude/hooks/block-rm.sh`; [How a hook resolves](https://code.claude.com/docs/en/hooks.md#how-a-hook-resolves) walks through writing it.
-* **Rules match the command and path as written.** `Bash(git push *)` doesn't match [`git -C . push`](https://code.claude.com/docs/en/permissions#bash-rule-limits). `Read(./.env)` on its own stops the file tools and commands that name the file, such as `cat .env`, but not [`grep -r` run over the directory](https://code.claude.com/docs/en/permissions#read-and-edit); the `sandbox` block in this file closes that gap, because the sandbox [adds your `Read` deny paths](https://code.claude.com/docs/en/settings-reference#sandbox-filesystem-denyread) to what every sandboxed command can't read.
+* **Cloud sessions outside a [project](https://code.claude.com/docs/en/claude-projects.md#what-threads-pick-up-from-your-repositories)'s threads read it too.** A [cloud session](settings.md#settings-in-cloud-sessions) with one repository starts inside the clone, so the committed file applies there as well.
+* **Telemetry goes in managed or personal settings.** Claude Code ignores the [OpenTelemetry exporter variables](settings-reference.md#variables-claude-code-ignores-in-env) in a repository's settings files, apart from some values that turn telemetry off. Set them in [managed settings](https://code.claude.com/docs/en/monitoring-usage.md#administrator-configuration) for your organization, or in each person's `~/.claude/settings.json`.
+* **Allow rules wait for trust.** Allow rules and `extraKnownMarketplaces` entries take effect after each person [trusts this folder itself](permissions.md#project-allow-rules-and-workspace-trust), not only a parent folder; deny and ask rules apply in every session, trusted or not.
+* **The hook is a script in the repo.** This file's hook runs `.claude/hooks/block-rm.sh`; [How a hook resolves](hooks.md#how-a-hook-resolves) walks through writing it.
+* **Rules match the command and path as written.** `Bash(git push *)` doesn't match [`git -C . push`](permissions.md#bash-rule-limits). `Read(./.env)` on its own stops the file tools and commands that name the file, such as `cat .env`, but not [`grep -r` run over the directory](permissions.md#read-and-edit); the `sandbox` block in this file closes that gap, because the sandbox [adds your `Read` deny paths](settings-reference.md#sandbox-filesystem-denyread) to what every sandboxed command can't read.
 
 > [tab] Copyable settings file
 >
@@ -236,11 +232,11 @@ A `managed-settings.json` file that shows the shape of the managed keys, with on
 
 * `forceLoginMethod` and `forceLoginOrgUUID` pin the login method and organization
 * `availableModels` and `enforceAvailableModels` restrict which models sessions can use
-* `permissions.deny` denies two file reads and `curl` commands [as Claude writes them](https://code.claude.com/docs/en/permissions.md#bash-rule-limits), and `disableBypassPermissionsMode` removes the bypass permission mode
-* [`allowManagedPermissionRulesOnly`](https://code.claude.com/docs/en/settings-reference#allowmanagedpermissionrulesonly) and [`allowManagedMcpServersOnly`](https://code.claude.com/docs/en/settings-reference#allowmanagedmcpserversonly) make the managed permission and MCP allowlists the only ones that apply
+* `permissions.deny` denies two file reads and `curl` commands [as Claude writes them](permissions.md#bash-rule-limits), and `disableBypassPermissionsMode` removes the bypass permission mode
+* [`allowManagedPermissionRulesOnly`](settings-reference.md#allowmanagedpermissionrulesonly) and [`allowManagedMcpServersOnly`](settings-reference.md#allowmanagedmcpserversonly) make the managed permission and MCP allowlists the only ones that apply
 * `allowedMcpServers` pins the MCP server by URL
 * `strictKnownMarketplaces` allows one plugin marketplace
-* `sandbox` sandboxes commands with a fixed network allowlist and no unsandboxed retry. Its `failIfUnavailable` key [stops Claude Code from starting where the sandbox can't run](https://code.claude.com/docs/en/sandboxing.md#enforce-sandboxing-with-managed-settings)
+* `sandbox` sandboxes commands with a fixed network allowlist and no unsandboxed retry. Its `failIfUnavailable` key [stops Claude Code from starting where the sandbox can't run](sandboxing.md#enforce-sandboxing-with-managed-settings)
 * `requiredMinimumVersion` sets a minimum Claude Code version
 * `cleanupPeriodDays` shortens retention of session transcripts and other local data to seven days
 * `companyAnnouncements` shows a message at startup
