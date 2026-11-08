@@ -1,7 +1,3 @@
-> ## Documentation Index
-> Fetch the complete documentation index at: https://code.claude.com/docs/llms.txt
-> Use this file to discover all available pages before exploring further.
-
 # Connect to MCP servers
 
 > Add an MCP server to Claude Code, verify the connection, and find the configuration on disk.
@@ -14,7 +10,7 @@ This guide walks you through connecting one MCP server end to end with the Claud
 >
 > You can also add MCP servers from other surfaces, including the desktop app, VS Code, and the web. See [Connect from other surfaces](#connect-from-other-surfaces).
 
-For every way to connect and configure MCP servers in Claude Code, see the [MCP reference](https://code.claude.com/docs/en/mcp.md).
+For every way to connect and configure MCP servers in Claude Code, see the [MCP reference](mcp.md).
 
 ## Before you begin
 
@@ -27,7 +23,7 @@ Make sure you have:
 
 The example below connects to the [Claude Code documentation MCP server](https://code.claude.com/docs/mcp), a hosted server with full-text search over the Claude Code docs. It doesn't require authentication or any special configuration, so it works well as a first server to test the setup flow with.
 
-The steps are the same for any server: add it, check the connection status, then use it in a session, with an optional cleanup step at the end. Some servers add a step, like a browser sign-in, shown in [Additional MCP server examples](#additional-mcp-server-examples). For more servers to connect, browse the [Anthropic Directory](https://code.claude.com/docs/en/mcp.md#find-and-build-mcp-servers).
+The steps are the same for any server: add it, check the connection status, then use it in a session, with an optional cleanup step at the end. Some servers add a step, like a browser sign-in, shown in [Additional MCP server examples](#additional-mcp-server-examples). For more servers to connect, browse the [Anthropic Directory](mcp.md#find-and-build-mcp-servers).
 
 **1. Add the MCP server**
 
@@ -64,8 +60,8 @@ The server appears with a status indicator:
 | `✘ Failed to connect` | Server didn't respond. See [Troubleshooting](#troubleshooting) |
 | `✘ Connection error` | The connection attempt threw an error. See [Troubleshooting](#troubleshooting) |
 | ``⏸ Pending approval (run `claude` to approve)`` | A project-scoped server you haven't approved yet. See [Edit .mcp.json directly](#edit-mcp-json-directly) |
-| `⊘ Disabled for this project (re-enable via /mcp)` | A server turned off for this project by the project's `disabledMcpServers` list. See [Disable a server without removing it](https://code.claude.com/docs/en/mcp.md#disable-a-server-without-removing-it) |
-| `✘ Blocked by enterprise managed policy` | One of your organization's policies blocks this server, so Claude Code won't connect. Ask your administrator which policy. See [Server status](https://code.claude.com/docs/en/mcp.md#server-status) |
+| `⊘ Disabled for this project (re-enable via /mcp)` | A server turned off for this project by the project's `disabledMcpServers` list. See [Disable a server without removing it](mcp.md#disable-a-server-without-removing-it) |
+| `✘ Blocked by enterprise managed policy` | One of your organization's policies blocks this server, so Claude Code won't connect. Ask your administrator which policy. See [Server status](mcp.md#server-status) |
 
 Some legacy Windows consoles, such as the default console on Windows 10, don't support these Unicode glyphs and show `√` and `×` in place of `✔` and `✘`.
 
@@ -125,9 +121,9 @@ The `claude mcp add` command writes the server to one of three scopes, stored ac
 | `project` | `.mcp.json` in your project root | Everyone who clones the project |
 | `user` | `~/.claude.json`, under the top-level `mcpServers` key | Only you, all projects |
 
-On Windows, `~/.claude.json` resolves to `%USERPROFILE%\.claude.json`, typically `C:\Users\YourName\.claude.json`. If you've set [`CLAUDE_CONFIG_DIR`](https://code.claude.com/docs/en/env-vars), Claude Code reads `.claude.json` from inside that directory instead.
+On Windows, `~/.claude.json` resolves to `%USERPROFILE%\.claude.json`, typically `C:\Users\YourName\.claude.json`. If you've set [`CLAUDE_CONFIG_DIR`](env-vars.md), Claude Code reads `.claude.json` from inside that directory instead.
 
-Run `claude mcp get claude-code-docs` to see which scope holds a server's definition. For how the scopes interact when the same server is defined in more than one, see [MCP installation scopes](https://code.claude.com/docs/en/mcp.md#mcp-installation-scopes).
+Run `claude mcp get claude-code-docs` to see which scope holds a server's definition. For how the scopes interact when the same server is defined in more than one, see [MCP installation scopes](mcp.md#mcp-installation-scopes).
 
 ## Change server scope
 
@@ -209,7 +205,7 @@ Try pointing it at your local dev server to check that a page still renders afte
 
 Hosted services like Sentry, Linear, and Notion run their MCP servers behind OAuth: you add the server's URL, then sign in through your browser.
 
-The steps below use Sentry as the example. To connect a different service, substitute its URL, which you can find in the [Anthropic Directory](https://code.claude.com/docs/en/mcp.md#find-and-build-mcp-servers) or the service's documentation.
+The steps below use Sentry as the example. To connect a different service, substitute its URL, which you can find in the [Anthropic Directory](mcp.md#find-and-build-mcp-servers) or the service's documentation.
 
 **1. Add the server**
 
@@ -237,7 +233,7 @@ Back in Claude Code, the server's status changes to connected. If sign-in fails 
 
 Ask Claude something that needs the service, like `What Sentry projects do I have access to?`, and look for tool calls labeled with the `sentry` server name in its output.
 
-Servers that authenticate with a static token instead of OAuth take the token at add time with `--header "Authorization: Bearer <token>"`. See the [GitHub example](https://code.claude.com/docs/en/mcp.md#example-connect-to-github-for-code-reviews) for a worked version.
+Servers that authenticate with a static token instead of OAuth take the token at add time with `--header "Authorization: Bearer <token>"`. See the [GitHub example](mcp.md#example-connect-to-github-for-code-reviews) for a worked version.
 
 ## Edit .mcp.json directly
 
@@ -280,7 +276,7 @@ This guide uses the `claude mcp` CLI commands, but every Claude Code surface can
 * **Claude Desktop chat app**: a separate app from Claude Code. To copy servers from its `claude_desktop_config.json` into the CLI, run `claude mcp add-from-claude-desktop` on macOS or WSL.
 * **VS Code**: see [Connect to external tools with MCP](https://code.claude.com/docs/en/vs-code.md#connect-to-external-tools-with-mcp).
 * **Cloud sessions**: outside a [project](https://code.claude.com/docs/en/claude-projects.md#what-threads-pick-up-from-your-repositories)'s threads, commit a `.mcp.json` to your repository; a session with one repository loads it. Cloud threads in a project use your claude.ai connectors instead. See [Edit .mcp.json directly](#edit-mcp-json-directly) and [What carries over from your setup](https://code.claude.com/docs/en/cloud-environments.md#what-carries-over-from-your-setup).
-* **Claude.ai**: connectors you add at [claude.ai/customize/connectors](https://claude.ai/customize/connectors) load automatically in the CLI when you sign in with that account. See [Use MCP servers from Claude.ai](https://code.claude.com/docs/en/mcp.md#use-mcp-servers-from-claude-ai).
+* **Claude.ai**: connectors you add at [claude.ai/customize/connectors](https://claude.ai/customize/connectors) load automatically in the CLI when you sign in with that account. See [Use MCP servers from Claude.ai](mcp.md#use-mcp-servers-from-claude-ai).
 
 ## Troubleshooting
 
@@ -336,7 +332,7 @@ If a server doesn't connect, check its status with `/mcp` inside a session or `c
 
 > [accordion] Connection timed out at startup
 >
-> The server took longer than the default 30-second startup timeout. A stdio server's first run can be slow while `npx` downloads the package. Increase the limit with the [`MCP_TIMEOUT`](https://code.claude.com/docs/en/env-vars) environment variable, in milliseconds:
+> The server took longer than the default 30-second startup timeout. A stdio server's first run can be slow while `npx` downloads the package. Increase the limit with the [`MCP_TIMEOUT`](env-vars.md) environment variable, in milliseconds:
 >
 > ```bash theme={null}
 > MCP_TIMEOUT=60000 claude
@@ -366,7 +362,7 @@ If a server doesn't connect, check its status with `/mcp` inside a session or `c
 >
 > Pass the variable with `--env KEY=value` on `claude mcp add`, or in the `env` field of the server's `.mcp.json` entry. The server's documentation lists the variables it needs.
 >
-> Before v2.1.302, `/mcp` showed the status `tools fetch failed` for a server using [protocol revision 2026-07-28](https://code.claude.com/docs/en/mcp.md#mcp-client-runtimes) that left `resultType`, `ttlMs`, or `cacheScope` out of its replies. If you use one of those versions and a server shows that status, [update Claude Code](https://code.claude.com/docs/en/setup.md#update-claude-code).
+> Before v2.1.302, `/mcp` showed the status `tools fetch failed` for a server using [protocol revision 2026-07-28](mcp.md#mcp-client-runtimes) that left `resultType`, `ttlMs`, or `cacheScope` out of its replies. If you use one of those versions and a server shows that status, [update Claude Code](https://code.claude.com/docs/en/setup.md#update-claude-code).
 
 > [accordion] Changes to .mcp.json don't take effect
 >
@@ -382,15 +378,15 @@ If a server doesn't connect, check its status with `/mcp` inside a session or `c
 
 > [accordion] OAuth sign-in fails or browser doesn't open
 >
-> Run `/mcp`, select the server, and choose `Authenticate` again. If the browser doesn't open automatically, copy the URL shown in the terminal and open it manually. See [Authenticate with remote MCP servers](https://code.claude.com/docs/en/mcp.md#authenticate-with-remote-mcp-servers) for fixed callback ports and pre-configured credentials.
+> Run `/mcp`, select the server, and choose `Authenticate` again. If the browser doesn't open automatically, copy the URL shown in the terminal and open it manually. See [Authenticate with remote MCP servers](mcp.md#authenticate-with-remote-mcp-servers) for fixed callback ports and pre-configured credentials.
 
 ## Next steps
 
 With one server connected, explore the rest of what MCP enables:
 
-* [Find more MCP servers](https://code.claude.com/docs/en/mcp.md#find-and-build-mcp-servers) in the Anthropic Directory
-* [Share servers with your team](https://code.claude.com/docs/en/mcp.md#mcp-installation-scopes) using installation scopes
+* [Find more MCP servers](mcp.md#find-and-build-mcp-servers) in the Anthropic Directory
+* [Share servers with your team](mcp.md#mcp-installation-scopes) using installation scopes
 * [Manage MCP access for an organization](https://code.claude.com/docs/en/managed-mcp.md) with managed settings and policy controls
-* [Reference MCP resources](https://code.claude.com/docs/en/mcp.md#use-mcp-resources) in prompts with @ mentions
-* [Run MCP prompts as commands](https://code.claude.com/docs/en/mcp.md#use-mcp-prompts-as-commands) from the `/` menu
+* [Reference MCP resources](mcp.md#use-mcp-resources) in prompts with @ mentions
+* [Run MCP prompts as commands](mcp.md#use-mcp-prompts-as-commands) from the `/` menu
 * [Build your own server](https://modelcontextprotocol.io/quickstart/server) with the MCP SDK
