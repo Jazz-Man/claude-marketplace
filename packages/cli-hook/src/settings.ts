@@ -1,3 +1,4 @@
+/** biome-ignore-all lint/style/noExcessiveLinesPerFile: literal deny lists are data, not logic */
 import process from "node:process";
 import { debug } from "./debug.ts";
 
@@ -169,7 +170,37 @@ const gitHistoryWriteOnly = ["/**/.git"];
 
 const gitHistoryDenyRules = ["Edit(**/.git/*)", "Write(**/.git)"];
 
-const configWriteOnly = ["~/**/.gitmodules", "~/**/.mcp.json", "~/**/.lsp.json"];
+const configWriteOnly = [
+  "~/**/.gitmodules",
+  "~/**/.mcp.json",
+  "~/**/.lsp.json",
+];
+
+const dependencyWriteOnly = [
+  ...dependencyFolders.flatMap((folder) => [`**/${folder}`, `**/${folder}/**`]),
+  "**/package.json",
+  "**/bun.lock",
+  "**/bun.lockb",
+];
+
+const managerStateDirs = [
+  "~/.bun",
+  "~/.npm",
+  "~/.pnpm-store",
+  "~/.local/share/pnpm",
+  "~/.yarn",
+  "~/.local/share/yarn",
+  "~/.cache",
+  "~/.cargo",
+  "~/.rustup",
+  "~/go",
+  "~/.deno",
+  "~/.pip",
+  "~/.local/pipx",
+  "~/.composer",
+  "~/.gem",
+  "~/.bundle",
+];
 
 const gitWriteCommands = [
   "git add*",
@@ -211,22 +242,32 @@ const disableCommands = [
   "xargs find*",
 ];
 
+const readDenyPaths = [
+  ...protectedFiles,
+  ...memoryPaths,
+  ...dependencyMemoryFiles,
+];
+
+const writeDenyPaths = [
+  ...protectedFiles,
+  ...configWriteOnly,
+  ...dependencyWriteOnly,
+  ...managerStateDirs,
+  ...memoryPaths,
+];
+
+const pathsToRules = (paths: readonly string[], ...tools: string[]) =>
+  tools.flatMap((tool) => paths.map((path) => `${tool}(${path})`));
+
 const config = {
   claudeMdExcludes: dependencyMemoryFiles,
   permissions: {
     deny: [
-      ...protectedFiles.map((file) => `Read(${file})`),
-      ...protectedFiles.map((file) => `Edit(${file})`),
-      ...protectedFiles.map((file) => `Write(${file})`),
-      ...memoryPaths.map((file) => `Read(${file})`),
-      ...memoryPaths.map((file) => `Edit(${file})`),
-      ...memoryPaths.map((file) => `Write(${file})`),
-      ...dependencyMemoryFiles.map((file) => `Read(${file})`),
-      ...configWriteOnly.map((file) => `Edit(${file})`),
-      ...configWriteOnly.map((file) => `Write(${file})`),
+      ...pathsToRules(readDenyPaths, "Read"),
+      ...pathsToRules(writeDenyPaths, "Edit", "Write"),
       ...gitHistoryDenyRules,
-      ...gitWriteCommands.map((command) => `Bash(${command})`),
-      ...disableCommands.map((command) => `Bash(${command})`),
+      ...pathsToRules(gitWriteCommands, "Bash"),
+      ...pathsToRules(disableCommands, "Bash"),
     ],
   },
   sandbox: {
@@ -245,13 +286,8 @@ const config = {
     enableWeakerNetworkIsolation: true,
     failIfUnavailable: true,
     filesystem: {
-      denyRead: [...protectedFiles, ...memoryPaths, ...dependencyMemoryFiles],
-      denyWrite: [
-        ...protectedFiles,
-        ...gitHistoryWriteOnly,
-        ...configWriteOnly,
-        ...memoryPaths,
-      ],
+      denyRead: readDenyPaths,
+      denyWrite: [...writeDenyPaths, ...gitHistoryWriteOnly],
     },
     network: { allowAllUnixSockets: true, allowLocalBinding: true },
   },
