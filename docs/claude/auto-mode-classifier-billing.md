@@ -1,12 +1,8 @@
-> ## Documentation Index
-> Fetch the complete documentation index at: https://code.claude.com/docs/llms.txt
-> Use this file to discover all available pages before exploring further.
-
 # Auto mode classifier request charges
 
 > Resolve the Claude Code notice saying this session isn't eligible for auto mode's no-charge classifier requests: what it means, why it appears, and what to do.
 
-In [auto mode](https://code.claude.com/docs/en/permission-modes.md#eliminate-prompts-with-auto-mode), a classifier checks actions such as shell commands and network requests before they run. Wherever [server-side checks are on](https://code.claude.com/docs/en/permission-modes.md#server-side-classifier-review), the server performs those checks as part of the session's own model requests, at no charge. This notice means the server's checks aren't reaching your session, so Claude Code is making its own classifier requests instead, and on your account those requests count toward your token usage:
+In [auto mode](permission-modes.md#eliminate-prompts-with-auto-mode), a classifier checks actions such as shell commands and network requests before they run. Wherever [server-side checks are on](permission-modes.md#server-side-classifier-review), the server performs those checks as part of the session's own model requests, at no charge. This notice means the server's checks aren't reaching your session, so Claude Code is making its own classifier requests instead, and on your account those requests count toward your token usage:
 
 ```text theme={null}
 We're changing auto mode to no longer charge for classifier requests in Claude Code. However, this session isn't eligible.
@@ -36,7 +32,7 @@ If a gateway keeps auto mode's server-side checks from reaching your sessions an
 
 A gateway that passes traffic through this way keeps working with this feature and with future ones. New sessions then use the server's checks again.
 
-If you already know that your gateway can't provide the server's checks, tell Claude Code not to ask for them there by setting `CLAUDE_CODE_AUTO_MODE_SERVER` to `0` before you start the session, in your shell or in the [`env` settings key](https://code.claude.com/docs/en/settings-reference#env):
+If you already know that your gateway can't provide the server's checks, tell Claude Code not to ask for them there by setting `CLAUDE_CODE_AUTO_MODE_SERVER` to `0` before you start the session, in your shell or in the [`env` settings key](settings-reference.md#env):
 
 ```bash theme={null}
 export CLAUDE_CODE_AUTO_MODE_SERVER=0
@@ -48,19 +44,19 @@ Classifier requests are then always Claude Code's own, billed the same way, and 
 
 ## Why the notice appears
 
-On a Pro, Max, Ultra, or Team plan, you never see the notice. To find out which sessions ask the server for the classifier checks, see [Server-side classifier review](https://code.claude.com/docs/en/permission-modes.md#server-side-classifier-review). If you see the notice, check for these usual causes:
+On a Pro, Max, Ultra, or Team plan, you never see the notice. To find out which sessions ask the server for the classifier checks, see [Server-side classifier review](permission-modes.md#server-side-classifier-review). If you see the notice, check for these usual causes:
 
 * **An LLM gateway or proxy is in the path**: one that strips or rewrites request headers, drops request fields it doesn't recognize, or edits responses. The server then never receives the request for checks, or Claude Code never receives the results. When your configuration or the responses identify the gateway, the notice names it.
 * **Server-side checks haven't reached your platform, region, or credential yet**: whether a platform or region performs them depends on that platform's rollout. If you see the notice with no gateway or proxy in the path and it keeps appearing, this is the likely cause. To confirm, contact support or your company's admin, or report it with `/feedback`.
 
 To check a session that's in auto mode, run `/status` at the Claude Code prompt: its **Auto mode server** row reads `Enabled` while the server's checks decide the session's actions and `Disabled` once the session has fallen back.
 
-When a gateway cuts responses short or rewrites the results into a form Claude Code can't read, you get denials with no verdict in place of this notice; see [Server-side classifier review](https://code.claude.com/docs/en/permission-modes.md#server-side-classifier-review).
+When a gateway cuts responses short or rewrites the results into a form Claude Code can't read, you get denials with no verdict in place of this notice; see [Server-side classifier review](permission-modes.md#server-side-classifier-review).
 
 ## Related resources
 
-* [Auto mode](https://code.claude.com/docs/en/permission-modes.md#eliminate-prompts-with-auto-mode): what auto mode is and what it blocks by default
-* [Server-side classifier review](https://code.claude.com/docs/en/permission-modes.md#server-side-classifier-review): which sessions ask the server to check actions, and the Claude Code version each one requires
+* [Auto mode](permission-modes.md#eliminate-prompts-with-auto-mode): what auto mode is and what it blocks by default
+* [Server-side classifier review](permission-modes.md#server-side-classifier-review): which sessions ask the server to check actions, and the Claude Code version each one requires
 * [Gateway compatibility guide](https://code.claude.com/docs/en/llm-gateway-protocol.md#feature-pass-through): what breaks when a gateway strips headers or body fields
 * [The server returned no safety verdict](https://code.claude.com/docs/en/errors.md#the-server-returned-no-safety-verdict): the denial you see when the server gives no verdict for an action
 * [Manage costs effectively](https://code.claude.com/docs/en/costs.md): track token usage and reduce Claude Code costs
