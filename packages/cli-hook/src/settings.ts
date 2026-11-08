@@ -68,29 +68,85 @@ const memoryPaths = [
   ".claude/agent-memory-local",
 ];
 
-const dependencyFolders = ["node_modules"];
+const dependencyFolders = ["node_modules", "vendor", "Pods", ".venv", "venv"];
 
-const list: string[] = [];
+const dependencyMemoryNames = [
+  "CLAUDE.md",
+  "AGENTS.md",
+  "QWEN.md",
+  "GEMINI.md",
+  "COPILOT.md",
+  "CONVENTIONAL.md",
+  "copilot-instructions.md",
+  ".cursorrules",
+  ".clinerules",
+  ".windsurfrules",
+];
 
-dependencyFolders.forEach((folder) => {
-  list.push(`**/${folder}/**/CLAUDE.md`);
-});
+const dependencyMemoryDirs = [
+  ".claude",
+  ".cursor",
+  // ".aider-desk",
+  // ".agents",
+  // ".autohand",
+  // ".augment",
+  // ".bob",
+  // ".codeartsdoer",
+  // ".codebuddy",
+  // ".codemaker",
+  // ".codestudio",
+  // ".commandcode",
+  // ".continue",
+  // ".cortex",
+  // ".crush",
+  // ".devin",
+  // ".forge",
+  // ".goose",
+  // ".grok",
+  // ".hermes",
+  // ".iflow",
+  // ".inferencesh",
+  // ".jazz",
+  // ".junie",
+  // ".kiro",
+  // ".kode",
+  // ".lingma",
+  // ".mcpjam",
+  // ".minimax",
+  // ".moxby",
+  // ".mux",
+  // ".neovate",
+  // ".ona",
+  // ".openhands",
+  // ".pochi",
+  // ".posit/assistant",
+  // ".qoder",
+  ".qwen",
+  // ".reasonix",
+  // ".roo",
+  // ".rovodev",
+  // ".tabnine/agent",
+  // ".terramind",
+  // ".tinycloud",
+  // ".trae",
+  // ".windsurf",
+  // ".zcode",
+  // ".zencoder",
+  // ".adal",
+  // "skills",
+];
 
-console.log(list);
+const dependencyCacheRoots = ["~/.cargo/registry/src", "~/go/pkg/mod"];
 
 const dependencyMemoryFiles = [
-  "**/node_modules/**/CLAUDE.md",
-  "**/node_modules/**/AGENTS.md",
-  "**/node_modules/**/QWEN.md",
-  "**/node_modules/**/GEMINI.md",
-  "**/node_modules/**/COPILOT.md",
-  "**/node_modules/**/CONVENTIONAL.md",
-  "**/node_modules/**/copilot-instructions.md",
-  "**/node_modules/**/.cursorrules",
-  "**/node_modules/**/.clinerules",
-  "**/node_modules/**/.windsurfrules",
-  "**/node_modules/**/.claude/**",
-  "**/node_modules/**/.cursor/**",
+  ...dependencyFolders.flatMap((folder) => [
+    ...dependencyMemoryNames.map((name) => `~/**/${folder}/**/${name}`),
+    ...dependencyMemoryDirs.map((dir) => `~/**/${folder}/**/${dir}/**`),
+  ]),
+  ...dependencyCacheRoots.flatMap((root) => [
+    ...dependencyMemoryNames.map((name) => `${root}/**/${name}`),
+    ...dependencyMemoryDirs.map((dir) => `${root}/**/${dir}/**`),
+  ]),
 ];
 
 const gitHistoryWriteOnly = ["/**/.git"];
@@ -157,7 +213,10 @@ const config = {
     autoAllowBashIfSandboxed: true,
     credentials: {
       envVars: envVars.map((env) => ({ mode: "deny", name: env })),
-      files: protectedFiles.map((file) => ({ mode: "deny", path: file })),
+      files: [...protectedFiles, ...dependencyMemoryFiles].map((file) => ({
+        mode: "deny",
+        path: file,
+      })),
     },
     enabled: true,
     enabledPlatforms: ["macos"],
@@ -187,9 +246,9 @@ try {
     JSON.stringify(newConfig, null, 2),
   );
 
-  // debug(newConfig, {
-  //   depth: 10,
-  // });
+  debug(newConfig, {
+    depth: 10,
+  });
 } catch (error) {
   console.error(error);
   process.exit(1);
