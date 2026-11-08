@@ -61,6 +61,13 @@ const protectedFiles = [
   "~/Desktop",
 ];
 
+const memoryPaths = [
+  "~/.claude/projects/**/memory",
+  "~/.claude/agent-memory",
+  ".claude/agent-memory",
+  ".claude/agent-memory-local",
+];
+
 const gitHistoryWriteOnly = ["/**/.git"];
 
 const gitHistoryDenyRules = ["Edit(**/.git/*)", "Write(**/.git)"];
@@ -109,6 +116,9 @@ const config = {
       ...protectedFiles.map((file) => `Read(${file})`),
       ...protectedFiles.map((file) => `Edit(${file})`),
       ...protectedFiles.map((file) => `Write(${file})`),
+      ...memoryPaths.map((file) => `Read(${file})`),
+      ...memoryPaths.map((file) => `Edit(${file})`),
+      ...memoryPaths.map((file) => `Write(${file})`),
       ...gitHistoryDenyRules,
       ...gitWriteCommands.map((command) => `Bash(${command})`),
       ...disableCommands.map((command) => `Bash(${command})`),
@@ -127,8 +137,8 @@ const config = {
     enableWeakerNetworkIsolation: true,
     failIfUnavailable: true,
     filesystem: {
-      denyRead: protectedFiles,
-      denyWrite: [...protectedFiles, ...gitHistoryWriteOnly],
+      denyRead: [...protectedFiles, ...memoryPaths],
+      denyWrite: [...protectedFiles, ...gitHistoryWriteOnly, ...memoryPaths],
     },
     network: { allowAllUnixSockets: true, allowLocalBinding: true },
   },
