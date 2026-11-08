@@ -61,6 +61,13 @@ The distinction between `"..."` and `#"..."` is the single most common authoring
 (allow file-read* (regex #"^/usr/lib/.*"))  ; right
 ```
 
+`#"..."` is not standard Scheme — it is Apple's own addition. Blazakis found it by hitting
+`Error: undefined sharp expression` when running Apple's SBPL scripts through a stock TinyScheme
+1.38, and needed a 21-line patch to the reader to support it (**sourced**:
+[legacy/BlackHat_DC_2011_Blazakis_Apple_Sandbox-wp.md](legacy/BlackHat_DC_2011_Blazakis_Apple_Sandbox-wp.md#4-implementation-userspace),
+§4). Practical consequence: you cannot prototype SBPL logic in a normal Scheme REPL without that
+patch.
+
 When the pattern has to be computed, build it with `string-append` and escape the interpolated part
 with `regex-quote`:
 

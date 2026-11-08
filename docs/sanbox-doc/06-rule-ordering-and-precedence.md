@@ -203,6 +203,53 @@ cd tmp/apple-sandbox
 
 ---
 
+## Why the model looks like this
+
+Blazakis's reverse-engineering recovered the SBPL stub that `libsandbox` loads before evaluating
+your profile, and it documents the shape of the compiled rule table (**sourced**:
+[legacy/BlackHat_DC_2011_Blazakis_Apple_Sandbox-wp.md](legacy/BlackHat_DC_2011_Blazakis_Apple_Sandbox-wp.md#4-implementation-userspace),
+§4):
+
+```scheme
+;;; These modules build a *rules* table that maps operation codes to lists of rules of the form
+;;; RULE -> TEST | JUMP
+;;; TEST -> (filter action . modifiers)
+;;; JUMP -> (#f . operation)
+;;; The result of an operation is decided by the first test with a filter that
+;;; matches. Filter can be #t, in which case the test always matches. A jump
+;;; causes evaluation to continue with the rules for another operation.
+;;; The last rule in the list must either be a test that always matches or a jump.
+```
+
+Read that against the measurements and the three dimensions fall out:
+
+* **The kernel does first-match — over the compiled per-operation list, not over your source text.**
+  Each operation code indexes its own list of `TEST`/`JUMP` entries, and *"the first test with a
+  filter that matches"* decides. So "first match wins" is literally true at the kernel level, and
+  simultaneously useless for authoring: what matters is the order the **compiler** emitted, which is
+  not the order you wrote.
+* **`JUMP` is why specificity beats position.** A `JUMP` entry redirects evaluation to another
+  operation's list. Blazakis's worked example is `file-read-data` (operation code 5 on 10.6.4) whose
+  sixth entry is `(#f . 0)` — a jump to operation code 0, `default`. Wildcard operations are the same
+  mechanism: `file-write-mode`'s list falls through to `file-write*`'s list, which falls through to
+  `file*`'s, which falls through to `default`. Those jump targets are wired up by the compiler from
+  the *naming hierarchy*, not from where you placed the rules. That is exactly what P1/P6 measured:
+  a named operation always resolves before the wildcard it belongs to, in either source order.
+* **A filter is part of the `TEST`, so having one changes what the test matches** — which is what the
+  filtered-vs-unfiltered dimension (B1/B2/E1) is observing. An unfiltered rule compiles to a test
+  whose filter is `#t` ("always matches"), and the stub's last line requires such an always-matching
+  test — or a jump — to terminate every list.
+* **`(#t deny)` as the first entry** is what a bare `(deny default)` compiles to. Blazakis's dumped
+  `*rules*` for a real profile opens with exactly that.
+
+Two caveats on using this to reason further. The operation codes, the count of entries (59 on
+10.6.4) and the exact list layout are all from Snow Leopard; on macOS 27.2 the vocabulary is 217
+operations (**verified**, see [04](04-operations-reference.md)). And the compiled table is not
+inspectable — there is no supported way to dump it, which is why everything above the mechanism is
+measured behaviour rather than read structure.
+
+---
+
 ## What is still unknown
 
 * Whether operation specificity is a full hierarchy (`file-write-mode` > `file-write*` > `file*`) or

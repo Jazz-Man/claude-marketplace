@@ -75,6 +75,23 @@ On macOS 11+ the dylib itself lives inside the dyld shared cache rather than on 
    evaluate cheaply. Path filters become prefix structures, regexes become compiled matchers
    (**sourced**: macinternals.app 2026; Blazakis 2011).
 
+The compiled form is a vector indexed by **operation code**, each entry a list of
+`TEST`/`JUMP` records (**sourced**: Blazakis 2011 §4, which quotes the SBPL stub Apple ships inside
+`libsandbox`):
+
+```
+RULE -> TEST | JUMP
+TEST -> (filter action . modifiers)
+JUMP -> (#f . operation)
+```
+
+A `TEST` whose filter is `#t` always matches — that is what a bare `(allow default)` becomes. A
+`JUMP` redirects evaluation into another operation's list, which is how wildcards and `default`
+inherit, and why rule *specificity* outranks rule *position*; the measured consequences are in
+[06-rule-ordering-and-precedence.md](06-rule-ordering-and-precedence.md#why-the-model-looks-like-this).
+Regex matching is not done by `Sandbox.kext` itself: it calls into a second kernel extension,
+`AppleMatch.kext`, which ships its own compiled-regex binary format (Blazakis 2011 §5.2).
+
 The compiled bytecode is handed to the kernel through `__mac_syscall` with policy string
 `"Sandbox"` — syscall number 381 (**sourced**: Blazakis 2011 §5, which reproduces the
 `AUE_MAC_SYSCALL` entry from XNU's syscall table).
