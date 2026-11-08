@@ -7,13 +7,13 @@
 > | Published | 2011-01-11 (Black Hat DC 2011) |
 > | Mirror used | https://dl.packetstormsecurity.net/papers/general/apple-sandbox.pdf |
 > | Original (Cloudflare-blocked) | https://media.blackhat.com/bh-dc-11/Blazakis/BlackHat_DC_2011_Blazakis_Apple_Sandbox-wp.pdf |
-> | Converted to Markdown | 2026-11-08, text layer extracted with PDFKit (`tmp/apple-sandbox/pdf2md.swift`) |
+> | Retrieved | 2026-11-08 |
 >
 > This is the foundational academic reverse-engineering of Seatbelt: how `libsandbox` embeds a
 > modified TinyScheme interpreter, how profiles compile to bytecode, and how `Sandbox.kext`
 > evaluates that bytecode through TrustedBSD MAC hooks. The *architecture* described here is still
-> accurate; the *operation list, profile names and file paths* are not. Machine-converted: prose is
-> faithful to the original line breaks and code listings are **not** fenced.
+> accurate; the *operation list, profile names and file paths* are not. Prose keeps the original
+> line breaks and code listings are **not** fenced.
 >
 > ---
 >
