@@ -84,7 +84,7 @@ something was allowed once. The `deny(N)` count on the original line is the per-
 
 `(debug deny)` is **version-1 only** — at `(version 2)`/`(version 3)` the `debug` symbol is unbound
 and the profile fails to compile. See
-[03-sbpl-language.md](03-sbpl-language.md#version-n--1-2-or-3-and-it-changes-the-language).
+[03-sbpl-language.md](03-sbpl-language.md#version-1-vs-2-vs-3).
 
 Silence the noise you expect, keep the rest:
 

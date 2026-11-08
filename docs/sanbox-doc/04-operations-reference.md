@@ -34,7 +34,7 @@ sandbox-exec -p "(version 1)(allow <TOKEN>)" /usr/bin/true
 
 **Total verified operations: 217** (of which 207 compile with no filter).
 
-The **v3** column re-compiles the same token under `(version 3)`. `removed` means the name is unbound at v2/v3 — it only exists in version-1 compatibility mode. See [03-sbpl-language.md](03-sbpl-language.md#version-n--1-2-or-3-and-it-changes-the-language).
+The **v3** column re-compiles the same token under `(version 3)`. `removed` means the name is unbound at v2/v3 — it only exists in version-1 compatibility mode. See [03-sbpl-language.md](03-sbpl-language.md#version-1-vs-2-vs-3).
 
 ## Operations by category
 

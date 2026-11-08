@@ -31,7 +31,7 @@ why:
 
 `kSBXProfile*` constants in `sandbox_init()` are killed the same way (**verified** by compiling and
 running: the child died on signal 9). Write an explicit profile instead — the replacements are in
-[02-sandbox-exec-cli.md](02-sandbox-exec-cli.md#-n-profile-name--dead).
+[02-sandbox-exec-cli.md](02-sandbox-exec-cli.md#-n-profile-name-is-dead).
 
 ### `-f` no longer searches the profile directories
 
@@ -260,7 +260,7 @@ sandbox compile: using compatibility definitions for version 1 (latest version i
 Apple's own distribution: 570 profiles at v1, 22 at v2, 14 at v3 — and the v2/v3 ones are the
 hardened parsers (`blastdoor.sb`, `airlock.sb`, `CGPDFService.sb`,
 `quicklook-thumbnail-secure.sb`, `system.sb`). Full analysis in
-[03-sbpl-language.md](03-sbpl-language.md#version-n--1-2-or-3-and-it-changes-the-language).
+[03-sbpl-language.md](03-sbpl-language.md#version-1-vs-2-vs-3).
 
 ---
 

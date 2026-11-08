@@ -97,10 +97,11 @@ Six things that will bite you, each documented in detail:
 
 1. **Write physical paths in filters.** `(subpath "/tmp/x")` never matches; `/tmp` is a symlink and
    the filter string is not canonicalised. Use `/private/tmp/x`. → [05](05-filters-reference.md)
-2. **The last matching rule wins**, among rules naming the same operation. Most published guides
-   say first-match. → [06](06-rule-ordering-and-precedence.md)
-3. **A specific operation beats a wildcard regardless of order**: `(deny file-write*)` cannot
-   override an earlier `(allow file-write-mode …)`. → [06](06-rule-ordering-and-precedence.md)
+2. **The last matching rule wins**, among rules naming the same operation with the same
+   specificity. Most published guides say first-match. → [06](06-rule-ordering-and-precedence.md)
+3. **Specificity outranks order**: `(deny file-write*)` cannot override an earlier
+   `(allow file-write-mode …)`, and a filtered rule outranks an unfiltered one on the same
+   operation. → [06](06-rule-ordering-and-precedence.md)
 4. **`(deny default)` does not deny everything.** Firefox explicitly denies `process-info*`,
    `nvram*`, `iokit-get-properties` and `file-map-executable` on top of it. → [03](03-sbpl-language.md)
 5. **A bare wildcard aborts the compiler.** `(allow process-exec*)` with no filter kills
@@ -108,25 +109,39 @@ Six things that will bite you, each documented in detail:
 6. **The `-n` predefined profiles are dead.** `no-internet`, `pure-computation` and friends now
    `Killed: 9`. → [12](12-changes-since-2011.md)
 
+And one thing nobody writes down: **the latest SBPL version is 3, not 1.** `libsandbox` logs
+`sandbox compile: using compatibility definitions for version 1 (latest version is 3)` on every
+compile. Versions 2 and 3 add raw-syscall allowlists and drop several familiar names — including
+`debug`, so `(debug deny)` cannot be used there. Write `(version 1)` unless you are building a
+hardened parser. → [03](03-sbpl-language.md#version-1-vs-2-vs-3)
+
 ---
 
 ## Reproducing the machine-generated parts
 
 The tables in [04](04-operations-reference.md), [05](05-filters-reference.md) and
 [07](07-modifiers-and-predicates.md) are generated, not typed. The scripts live in
-`tmp/apple-sandbox/` (gitignored) and need only a Mac, `python3` and `swift`:
+`tmp/apple-sandbox/` (gitignored) and need only a Mac with the Command Line Tools — `python3`,
+`swift`, `clang` — and no `brew` or `sudo`:
 
 ```bash
 cd tmp/apple-sandbox
-python3 mine-libsandbox.py > mined/libsandbox-strings.tsv   # op/filter names from the dyld shared cache
+python3 mine-libsandbox.py > mined/libsandbox-strings.tsv    # op/filter names from the dyld shared cache
 ./probe-ops.sh mined/candidates-union.txt mined/op-probe.tsv # compile every candidate, record the error
+SBPL_VERSION=3 ./probe-ops.sh mined/candidates-union.txt mined/op-probe-v3.tsv
 python3 parse-profiles.py mined/profile-ast.json             # s-expression parse of all Apple .sb files
 python3 gen-reference.py ../../docs/sanbox-doc               # emit the reference tables
-./probe-ordering.sh mined/ordering.txt                       # rule-precedence experiment
-./probe-precedence.sh mined/precedence.txt                   # wildcard vs specific experiment
+
+./probe-ordering.sh mined/ordering.txt                       # rule precedence, dimensions 1/3/4
+./probe-precedence.sh mined/precedence.txt                   # wildcard vs specific, filter presence
 ./probe-paths.sh mined/paths.txt                             # symlink resolution matrix
 ./probe-semantics.sh mined/semantics.txt                     # version stmt, modifiers, directives, errors
-./probe-default-allowed.sh mined/default-allowed.txt          # what survives (deny default)
+./probe-default-allowed.sh mined/default-allowed.txt         # what survives (deny default)
+./probe-versions.sh mined/versions.txt                       # SBPL version 1 vs 2 vs 3
+./probe-versions-ordering.sh mined/versions-ordering.txt     # ordering across versions
+./probe-recipes.sh mined/recipes.txt                         # every profile in 09-recipes.md
 ```
 
 Re-running them on a different macOS version is the fastest way to find out what Apple changed.
+Full provenance, retrieval dates and the list of contradicted claims:
+[13-sources-and-provenance.md](13-sources-and-provenance.md).

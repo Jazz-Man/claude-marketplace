@@ -236,7 +236,7 @@ IOKit properties, no keychain.
 (deny process-info*)          ; not covered by (deny default)
 (deny nvram*)                 ; not covered by (deny default)
 (deny iokit-get-properties)   ; not covered by (deny default)
-(deny file-map-executable (subpath (string-append (param "HOME") "/.ssh")))
+(deny file-map-executable)    ; not covered by (deny default)
 
 (deny mach-lookup
   (global-name "com.apple.SecurityServer")
