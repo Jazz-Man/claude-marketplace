@@ -22,7 +22,7 @@ const envVars = [
   "NPM_CONFIG_TOKEN_TEST",
 ];
 
-const keySuffixes = ["pem", "pub", "key", "p12", "pfx", "ppk"];
+const keySuffixes = ["pem", "pub", "key", "p12", "pfx", "ppk", "secret", "secrets"];
 
 const keyNames = [
   "authorized_keys",
@@ -37,8 +37,54 @@ const keyFiles = [
   ...keyNames.flatMap((name) => [`~/${name}`, `~/**/${name}`]),
 ];
 
+const secretStateDirs = [
+  "~/.cloudflared",
+  "~/.gsutil",
+  "~/.mcp-auth",
+  "~/.linkedin-mcp",
+  "~/.zai",
+  "~/.alchemy",
+  "~/.slack",
+  "~/.pgadmin",
+  "~/.redis-insight",
+  "~/.mysqlsh",
+  "~/.subversion",
+  "~/.BurpSuite",
+  "~/.JWT4B",
+  "~/.cryptoplugin",
+  "~/.maryam",
+  "~/.tor",
+  "~/.postman",
+  "~/Postman",
+  "~/.ipython",
+  "~/.jupyter",
+  "~/.Trash",
+  "~/.Xauthority",
+  "~/.rnd",
+  "~/.qwen",
+  "~/.zed",
+  "~/.claude.json",
+  "~/.claude.json.backup",
+];
+
+const secretNamesAnywhere = [
+  "~/**/.netrc",
+  "~/**/.npmrc",
+  "~/**/.pypirc",
+  "~/**/.htpasswd*",
+  "~/credentials.json",
+  "~/**/credentials.json",
+  "~/token.json",
+  "~/**/token.json",
+];
+
 const protectedFiles = [
   ...keyFiles,
+  ...secretStateDirs,
+  ...secretNamesAnywhere,
+  "~/.gitconfig*",
+  "~/.bunfig.toml",
+  "~/.gdbinit",
   "**/.DS_Store*",
   "**/.env",
   "**/.env.*",
@@ -183,8 +229,11 @@ const gitHistoryWriteOnly = ["/**/.git"];
 const gitHistoryDenyRules = ["Edit(**/.git/*)", "Write(**/.git)"];
 
 const configWriteOnly = [
+  "~/.gitmodules",
   "~/**/.gitmodules",
+  "~/.mcp.json",
   "~/**/.mcp.json",
+  "~/.lsp.json",
   "~/**/.lsp.json",
 ];
 
@@ -222,6 +271,7 @@ const managerStateDirs = [
   "~/.bun",
   "~/.npm",
   "~/.pnpm-store",
+  "~/.pnpm-state",
   "~/.local/share/pnpm",
   "~/.yarn",
   "~/.local/share/yarn",
@@ -235,6 +285,7 @@ const managerStateDirs = [
   "~/.composer",
   "~/.gem",
   "~/.bundle",
+  "~/.swiftpm",
 ];
 
 const systemWriteOnly = [

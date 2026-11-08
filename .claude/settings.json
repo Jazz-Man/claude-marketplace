@@ -137,6 +137,10 @@
       "Read(~/**/*.pfx)",
       "Read(~/*.ppk)",
       "Read(~/**/*.ppk)",
+      "Read(~/*.secret)",
+      "Read(~/**/*.secret)",
+      "Read(~/*.secrets)",
+      "Read(~/**/*.secrets)",
       "Read(~/authorized_keys)",
       "Read(~/**/authorized_keys)",
       "Read(~/id_dsa)",
@@ -147,6 +151,44 @@
       "Read(~/**/id_ed25519)",
       "Read(~/id_rsa)",
       "Read(~/**/id_rsa)",
+      "Read(~/.cloudflared)",
+      "Read(~/.gsutil)",
+      "Read(~/.mcp-auth)",
+      "Read(~/.linkedin-mcp)",
+      "Read(~/.zai)",
+      "Read(~/.alchemy)",
+      "Read(~/.slack)",
+      "Read(~/.pgadmin)",
+      "Read(~/.redis-insight)",
+      "Read(~/.mysqlsh)",
+      "Read(~/.subversion)",
+      "Read(~/.BurpSuite)",
+      "Read(~/.JWT4B)",
+      "Read(~/.cryptoplugin)",
+      "Read(~/.maryam)",
+      "Read(~/.tor)",
+      "Read(~/.postman)",
+      "Read(~/Postman)",
+      "Read(~/.ipython)",
+      "Read(~/.jupyter)",
+      "Read(~/.Trash)",
+      "Read(~/.Xauthority)",
+      "Read(~/.rnd)",
+      "Read(~/.qwen)",
+      "Read(~/.zed)",
+      "Read(~/.claude.json)",
+      "Read(~/.claude.json.backup)",
+      "Read(~/**/.netrc)",
+      "Read(~/**/.npmrc)",
+      "Read(~/**/.pypirc)",
+      "Read(~/**/.htpasswd*)",
+      "Read(~/credentials.json)",
+      "Read(~/**/credentials.json)",
+      "Read(~/token.json)",
+      "Read(~/**/token.json)",
+      "Read(~/.gitconfig*)",
+      "Read(~/.bunfig.toml)",
+      "Read(~/.gdbinit)",
       "Read(**/.DS_Store*)",
       "Read(**/.env)",
       "Read(**/.env.*)",
@@ -317,6 +359,10 @@
       "Edit(~/**/*.pfx)",
       "Edit(~/*.ppk)",
       "Edit(~/**/*.ppk)",
+      "Edit(~/*.secret)",
+      "Edit(~/**/*.secret)",
+      "Edit(~/*.secrets)",
+      "Edit(~/**/*.secrets)",
       "Edit(~/authorized_keys)",
       "Edit(~/**/authorized_keys)",
       "Edit(~/id_dsa)",
@@ -327,6 +373,44 @@
       "Edit(~/**/id_ed25519)",
       "Edit(~/id_rsa)",
       "Edit(~/**/id_rsa)",
+      "Edit(~/.cloudflared)",
+      "Edit(~/.gsutil)",
+      "Edit(~/.mcp-auth)",
+      "Edit(~/.linkedin-mcp)",
+      "Edit(~/.zai)",
+      "Edit(~/.alchemy)",
+      "Edit(~/.slack)",
+      "Edit(~/.pgadmin)",
+      "Edit(~/.redis-insight)",
+      "Edit(~/.mysqlsh)",
+      "Edit(~/.subversion)",
+      "Edit(~/.BurpSuite)",
+      "Edit(~/.JWT4B)",
+      "Edit(~/.cryptoplugin)",
+      "Edit(~/.maryam)",
+      "Edit(~/.tor)",
+      "Edit(~/.postman)",
+      "Edit(~/Postman)",
+      "Edit(~/.ipython)",
+      "Edit(~/.jupyter)",
+      "Edit(~/.Trash)",
+      "Edit(~/.Xauthority)",
+      "Edit(~/.rnd)",
+      "Edit(~/.qwen)",
+      "Edit(~/.zed)",
+      "Edit(~/.claude.json)",
+      "Edit(~/.claude.json.backup)",
+      "Edit(~/**/.netrc)",
+      "Edit(~/**/.npmrc)",
+      "Edit(~/**/.pypirc)",
+      "Edit(~/**/.htpasswd*)",
+      "Edit(~/credentials.json)",
+      "Edit(~/**/credentials.json)",
+      "Edit(~/token.json)",
+      "Edit(~/**/token.json)",
+      "Edit(~/.gitconfig*)",
+      "Edit(~/.bunfig.toml)",
+      "Edit(~/.gdbinit)",
       "Edit(**/.DS_Store*)",
       "Edit(**/.env)",
       "Edit(**/.env.*)",
@@ -364,8 +448,11 @@
       "Edit(~/Applications)",
       "Edit(~/Sites)",
       "Edit(~/Desktop)",
+      "Edit(~/.gitmodules)",
       "Edit(~/**/.gitmodules)",
+      "Edit(~/.mcp.json)",
       "Edit(~/**/.mcp.json)",
+      "Edit(~/.lsp.json)",
       "Edit(~/**/.lsp.json)",
       "Edit(**/node_modules)",
       "Edit(**/node_modules/**)",
@@ -406,6 +493,7 @@
       "Edit(~/.bun)",
       "Edit(~/.npm)",
       "Edit(~/.pnpm-store)",
+      "Edit(~/.pnpm-state)",
       "Edit(~/.local/share/pnpm)",
       "Edit(~/.yarn)",
       "Edit(~/.local/share/yarn)",
@@ -419,6 +507,7 @@
       "Edit(~/.composer)",
       "Edit(~/.gem)",
       "Edit(~/.bundle)",
+      "Edit(~/.swiftpm)",
       "Edit(/Applications)",
       "Edit(/Library)",
       "Edit(/System)",
@@ -447,6 +536,10 @@
       "Write(~/**/*.pfx)",
       "Write(~/*.ppk)",
       "Write(~/**/*.ppk)",
+      "Write(~/*.secret)",
+      "Write(~/**/*.secret)",
+      "Write(~/*.secrets)",
+      "Write(~/**/*.secrets)",
       "Write(~/authorized_keys)",
       "Write(~/**/authorized_keys)",
       "Write(~/id_dsa)",
@@ -457,6 +550,44 @@
       "Write(~/**/id_ed25519)",
       "Write(~/id_rsa)",
       "Write(~/**/id_rsa)",
+      "Write(~/.cloudflared)",
+      "Write(~/.gsutil)",
+      "Write(~/.mcp-auth)",
+      "Write(~/.linkedin-mcp)",
+      "Write(~/.zai)",
+      "Write(~/.alchemy)",
+      "Write(~/.slack)",
+      "Write(~/.pgadmin)",
+      "Write(~/.redis-insight)",
+      "Write(~/.mysqlsh)",
+      "Write(~/.subversion)",
+      "Write(~/.BurpSuite)",
+      "Write(~/.JWT4B)",
+      "Write(~/.cryptoplugin)",
+      "Write(~/.maryam)",
+      "Write(~/.tor)",
+      "Write(~/.postman)",
+      "Write(~/Postman)",
+      "Write(~/.ipython)",
+      "Write(~/.jupyter)",
+      "Write(~/.Trash)",
+      "Write(~/.Xauthority)",
+      "Write(~/.rnd)",
+      "Write(~/.qwen)",
+      "Write(~/.zed)",
+      "Write(~/.claude.json)",
+      "Write(~/.claude.json.backup)",
+      "Write(~/**/.netrc)",
+      "Write(~/**/.npmrc)",
+      "Write(~/**/.pypirc)",
+      "Write(~/**/.htpasswd*)",
+      "Write(~/credentials.json)",
+      "Write(~/**/credentials.json)",
+      "Write(~/token.json)",
+      "Write(~/**/token.json)",
+      "Write(~/.gitconfig*)",
+      "Write(~/.bunfig.toml)",
+      "Write(~/.gdbinit)",
       "Write(**/.DS_Store*)",
       "Write(**/.env)",
       "Write(**/.env.*)",
@@ -494,8 +625,11 @@
       "Write(~/Applications)",
       "Write(~/Sites)",
       "Write(~/Desktop)",
+      "Write(~/.gitmodules)",
       "Write(~/**/.gitmodules)",
+      "Write(~/.mcp.json)",
       "Write(~/**/.mcp.json)",
+      "Write(~/.lsp.json)",
       "Write(~/**/.lsp.json)",
       "Write(**/node_modules)",
       "Write(**/node_modules/**)",
@@ -536,6 +670,7 @@
       "Write(~/.bun)",
       "Write(~/.npm)",
       "Write(~/.pnpm-store)",
+      "Write(~/.pnpm-state)",
       "Write(~/.local/share/pnpm)",
       "Write(~/.yarn)",
       "Write(~/.local/share/yarn)",
@@ -549,6 +684,7 @@
       "Write(~/.composer)",
       "Write(~/.gem)",
       "Write(~/.bundle)",
+      "Write(~/.swiftpm)",
       "Write(/Applications)",
       "Write(/Library)",
       "Write(/System)",
@@ -729,6 +865,22 @@
         },
         {
           "mode": "deny",
+          "path": "~/*.secret"
+        },
+        {
+          "mode": "deny",
+          "path": "~/**/*.secret"
+        },
+        {
+          "mode": "deny",
+          "path": "~/*.secrets"
+        },
+        {
+          "mode": "deny",
+          "path": "~/**/*.secrets"
+        },
+        {
+          "mode": "deny",
           "path": "~/authorized_keys"
         },
         {
@@ -766,6 +918,158 @@
         {
           "mode": "deny",
           "path": "~/**/id_rsa"
+        },
+        {
+          "mode": "deny",
+          "path": "~/.cloudflared"
+        },
+        {
+          "mode": "deny",
+          "path": "~/.gsutil"
+        },
+        {
+          "mode": "deny",
+          "path": "~/.mcp-auth"
+        },
+        {
+          "mode": "deny",
+          "path": "~/.linkedin-mcp"
+        },
+        {
+          "mode": "deny",
+          "path": "~/.zai"
+        },
+        {
+          "mode": "deny",
+          "path": "~/.alchemy"
+        },
+        {
+          "mode": "deny",
+          "path": "~/.slack"
+        },
+        {
+          "mode": "deny",
+          "path": "~/.pgadmin"
+        },
+        {
+          "mode": "deny",
+          "path": "~/.redis-insight"
+        },
+        {
+          "mode": "deny",
+          "path": "~/.mysqlsh"
+        },
+        {
+          "mode": "deny",
+          "path": "~/.subversion"
+        },
+        {
+          "mode": "deny",
+          "path": "~/.BurpSuite"
+        },
+        {
+          "mode": "deny",
+          "path": "~/.JWT4B"
+        },
+        {
+          "mode": "deny",
+          "path": "~/.cryptoplugin"
+        },
+        {
+          "mode": "deny",
+          "path": "~/.maryam"
+        },
+        {
+          "mode": "deny",
+          "path": "~/.tor"
+        },
+        {
+          "mode": "deny",
+          "path": "~/.postman"
+        },
+        {
+          "mode": "deny",
+          "path": "~/Postman"
+        },
+        {
+          "mode": "deny",
+          "path": "~/.ipython"
+        },
+        {
+          "mode": "deny",
+          "path": "~/.jupyter"
+        },
+        {
+          "mode": "deny",
+          "path": "~/.Trash"
+        },
+        {
+          "mode": "deny",
+          "path": "~/.Xauthority"
+        },
+        {
+          "mode": "deny",
+          "path": "~/.rnd"
+        },
+        {
+          "mode": "deny",
+          "path": "~/.qwen"
+        },
+        {
+          "mode": "deny",
+          "path": "~/.zed"
+        },
+        {
+          "mode": "deny",
+          "path": "~/.claude.json"
+        },
+        {
+          "mode": "deny",
+          "path": "~/.claude.json.backup"
+        },
+        {
+          "mode": "deny",
+          "path": "~/**/.netrc"
+        },
+        {
+          "mode": "deny",
+          "path": "~/**/.npmrc"
+        },
+        {
+          "mode": "deny",
+          "path": "~/**/.pypirc"
+        },
+        {
+          "mode": "deny",
+          "path": "~/**/.htpasswd*"
+        },
+        {
+          "mode": "deny",
+          "path": "~/credentials.json"
+        },
+        {
+          "mode": "deny",
+          "path": "~/**/credentials.json"
+        },
+        {
+          "mode": "deny",
+          "path": "~/token.json"
+        },
+        {
+          "mode": "deny",
+          "path": "~/**/token.json"
+        },
+        {
+          "mode": "deny",
+          "path": "~/.gitconfig*"
+        },
+        {
+          "mode": "deny",
+          "path": "~/.bunfig.toml"
+        },
+        {
+          "mode": "deny",
+          "path": "~/.gdbinit"
         },
         {
           "mode": "deny",
@@ -1405,6 +1709,10 @@
         "~/**/*.pfx",
         "~/*.ppk",
         "~/**/*.ppk",
+        "~/*.secret",
+        "~/**/*.secret",
+        "~/*.secrets",
+        "~/**/*.secrets",
         "~/authorized_keys",
         "~/**/authorized_keys",
         "~/id_dsa",
@@ -1415,6 +1723,44 @@
         "~/**/id_ed25519",
         "~/id_rsa",
         "~/**/id_rsa",
+        "~/.cloudflared",
+        "~/.gsutil",
+        "~/.mcp-auth",
+        "~/.linkedin-mcp",
+        "~/.zai",
+        "~/.alchemy",
+        "~/.slack",
+        "~/.pgadmin",
+        "~/.redis-insight",
+        "~/.mysqlsh",
+        "~/.subversion",
+        "~/.BurpSuite",
+        "~/.JWT4B",
+        "~/.cryptoplugin",
+        "~/.maryam",
+        "~/.tor",
+        "~/.postman",
+        "~/Postman",
+        "~/.ipython",
+        "~/.jupyter",
+        "~/.Trash",
+        "~/.Xauthority",
+        "~/.rnd",
+        "~/.qwen",
+        "~/.zed",
+        "~/.claude.json",
+        "~/.claude.json.backup",
+        "~/**/.netrc",
+        "~/**/.npmrc",
+        "~/**/.pypirc",
+        "~/**/.htpasswd*",
+        "~/credentials.json",
+        "~/**/credentials.json",
+        "~/token.json",
+        "~/**/token.json",
+        "~/.gitconfig*",
+        "~/.bunfig.toml",
+        "~/.gdbinit",
         "**/.DS_Store*",
         "**/.env",
         "**/.env.*",
@@ -1587,6 +1933,10 @@
         "~/**/*.pfx",
         "~/*.ppk",
         "~/**/*.ppk",
+        "~/*.secret",
+        "~/**/*.secret",
+        "~/*.secrets",
+        "~/**/*.secrets",
         "~/authorized_keys",
         "~/**/authorized_keys",
         "~/id_dsa",
@@ -1597,6 +1947,44 @@
         "~/**/id_ed25519",
         "~/id_rsa",
         "~/**/id_rsa",
+        "~/.cloudflared",
+        "~/.gsutil",
+        "~/.mcp-auth",
+        "~/.linkedin-mcp",
+        "~/.zai",
+        "~/.alchemy",
+        "~/.slack",
+        "~/.pgadmin",
+        "~/.redis-insight",
+        "~/.mysqlsh",
+        "~/.subversion",
+        "~/.BurpSuite",
+        "~/.JWT4B",
+        "~/.cryptoplugin",
+        "~/.maryam",
+        "~/.tor",
+        "~/.postman",
+        "~/Postman",
+        "~/.ipython",
+        "~/.jupyter",
+        "~/.Trash",
+        "~/.Xauthority",
+        "~/.rnd",
+        "~/.qwen",
+        "~/.zed",
+        "~/.claude.json",
+        "~/.claude.json.backup",
+        "~/**/.netrc",
+        "~/**/.npmrc",
+        "~/**/.pypirc",
+        "~/**/.htpasswd*",
+        "~/credentials.json",
+        "~/**/credentials.json",
+        "~/token.json",
+        "~/**/token.json",
+        "~/.gitconfig*",
+        "~/.bunfig.toml",
+        "~/.gdbinit",
         "**/.DS_Store*",
         "**/.env",
         "**/.env.*",
@@ -1634,8 +2022,11 @@
         "~/Applications",
         "~/Sites",
         "~/Desktop",
+        "~/.gitmodules",
         "~/**/.gitmodules",
+        "~/.mcp.json",
         "~/**/.mcp.json",
+        "~/.lsp.json",
         "~/**/.lsp.json",
         "**/node_modules",
         "**/node_modules/**",
@@ -1676,6 +2067,7 @@
         "~/.bun",
         "~/.npm",
         "~/.pnpm-store",
+        "~/.pnpm-state",
         "~/.local/share/pnpm",
         "~/.yarn",
         "~/.local/share/yarn",
@@ -1689,6 +2081,7 @@
         "~/.composer",
         "~/.gem",
         "~/.bundle",
+        "~/.swiftpm",
         "/Applications",
         "/Library",
         "/System",
