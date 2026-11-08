@@ -28,7 +28,6 @@ import {
   injectionReason,
   networkReason,
   pathRuleReason,
-  SUDO_REASON,
   TIER_REASONS,
   tildeUserReason,
   unresolvedVarReason,
@@ -273,14 +272,12 @@ interface Unwrapped {
   intent: intents.Intent | null;
   network: string | null;
   rest: string[];
-  sudo: boolean;
 }
 
 const NEUTRAL: Unwrapped = {
   intent: null,
   network: null,
   rest: [],
-  sudo: false,
 };
 
 function candidateAt(input: CandidateInput, cutoff: number): PolicyCheckResult {
@@ -327,11 +324,8 @@ function mirrorCheck(
     if (gate !== null) {
       return gate;
     }
-    const { intent, network, rest, sudo } =
+    const { intent, network, rest } =
       cutoff >= INTENT ? intents.intentOf(unit.name, unit.args) : NEUTRAL;
-    if (sudo) {
-      return deny(SUDO_REASON);
-    }
     if (network !== null) {
       return deny(networkReason(network));
     }
@@ -417,13 +411,7 @@ function unitDecisionOld(
   if (gate !== null) {
     return gate;
   }
-  const { intent, network, rest, sudo } = intents.intentOf(
-    unit.name,
-    unit.args,
-  );
-  if (sudo) {
-    return deny(SUDO_REASON);
-  }
+  const { intent, network, rest } = intents.intentOf(unit.name, unit.args);
   if (network !== null) {
     return deny(networkReason(network));
   }
@@ -522,10 +510,7 @@ function unitDecisionAllOld(
   if (gate !== null) {
     return gate;
   }
-  const { intent, network, rest, sudo } = intentOfOld(unit.name, unit.args);
-  if (sudo) {
-    return deny(SUDO_REASON);
-  }
+  const { intent, network, rest } = intentOfOld(unit.name, unit.args);
   if (network !== null) {
     return deny(networkReason(network));
   }
@@ -690,16 +675,10 @@ function resolveTokenOld(
   };
 }
 
-function unwrapScanOld(
-  args: string[],
-  sudoIn: boolean,
-  networkIn: string | null,
-): Unwrapped {
-  let sudo = sudoIn;
+function unwrapScanOld(args: string[], networkIn: string | null): Unwrapped {
   let network = networkIn;
   for (const [index, token] of args.entries()) {
-    sudo ||= token === "sudo";
-    if (token !== "sudo" && !isScanNoiseOld(token)) {
+    if (!isScanNoiseOld(token)) {
       const resolved = resolveTokenOld(token, network);
       if (resolved.intent !== null) {
         const rest = args.slice(index + 1);
@@ -707,7 +686,6 @@ function unwrapScanOld(
           intent: adjustForFlagsOld(baseName(token), resolved.intent, rest),
           network: resolved.network,
           rest,
-          sudo,
         };
       }
       ({ network } = resolved);
@@ -717,7 +695,6 @@ function unwrapScanOld(
     intent: null,
     network,
     rest: args,
-    sudo,
   };
 }
 
@@ -745,16 +722,14 @@ function intentOfOld(name: string, args: string[]): Unwrapped {
   if (intents.NETWORK_TOOLS.has(base)) {
     network = base;
   }
-  const sudo = name === "sudo";
-  if (!SHARED_WRAPPERS.has(name) && name !== "sudo") {
+  if (!SHARED_WRAPPERS.has(name)) {
     return {
       intent: adjustForFlagsOld(base, intent, args),
       network,
       rest: args,
-      sudo,
     };
   }
-  return unwrapScanOld(args, sudo, network);
+  return unwrapScanOld(args, network);
 }
 
 // ---------------------------------------------------------------------------
