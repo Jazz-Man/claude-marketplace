@@ -21,7 +21,23 @@ const envVars = [
   "NPM_CONFIG_TOKEN_TEST",
 ];
 
+const keySuffixes = ["pem", "pub", "key", "p12", "pfx", "ppk"];
+
+const keyNames = [
+  "authorized_keys",
+  "id_dsa",
+  "id_ecdsa",
+  "id_ed25519",
+  "id_rsa",
+];
+
+const keyFiles = [
+  ...keySuffixes.flatMap((suffix) => [`~/*.${suffix}`, `~/**/*.${suffix}`]),
+  ...keyNames.flatMap((name) => [`~/${name}`, `~/**/${name}`]),
+];
+
 const protectedFiles = [
+  ...keyFiles,
   "**/.DS_Store*",
   "**/.env",
   "**/.env.*",

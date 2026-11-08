@@ -99,6 +99,28 @@
   },
   "permissions": {
     "deny": [
+      "Read(~/*.pem)",
+      "Read(~/**/*.pem)",
+      "Read(~/*.pub)",
+      "Read(~/**/*.pub)",
+      "Read(~/*.key)",
+      "Read(~/**/*.key)",
+      "Read(~/*.p12)",
+      "Read(~/**/*.p12)",
+      "Read(~/*.pfx)",
+      "Read(~/**/*.pfx)",
+      "Read(~/*.ppk)",
+      "Read(~/**/*.ppk)",
+      "Read(~/authorized_keys)",
+      "Read(~/**/authorized_keys)",
+      "Read(~/id_dsa)",
+      "Read(~/**/id_dsa)",
+      "Read(~/id_ecdsa)",
+      "Read(~/**/id_ecdsa)",
+      "Read(~/id_ed25519)",
+      "Read(~/**/id_ed25519)",
+      "Read(~/id_rsa)",
+      "Read(~/**/id_rsa)",
       "Read(**/.DS_Store*)",
       "Read(**/.env)",
       "Read(**/.env.*)",
@@ -136,6 +158,28 @@
       "Read(~/Applications)",
       "Read(~/Sites)",
       "Read(~/Desktop)",
+      "Edit(~/*.pem)",
+      "Edit(~/**/*.pem)",
+      "Edit(~/*.pub)",
+      "Edit(~/**/*.pub)",
+      "Edit(~/*.key)",
+      "Edit(~/**/*.key)",
+      "Edit(~/*.p12)",
+      "Edit(~/**/*.p12)",
+      "Edit(~/*.pfx)",
+      "Edit(~/**/*.pfx)",
+      "Edit(~/*.ppk)",
+      "Edit(~/**/*.ppk)",
+      "Edit(~/authorized_keys)",
+      "Edit(~/**/authorized_keys)",
+      "Edit(~/id_dsa)",
+      "Edit(~/**/id_dsa)",
+      "Edit(~/id_ecdsa)",
+      "Edit(~/**/id_ecdsa)",
+      "Edit(~/id_ed25519)",
+      "Edit(~/**/id_ed25519)",
+      "Edit(~/id_rsa)",
+      "Edit(~/**/id_rsa)",
       "Edit(**/.DS_Store*)",
       "Edit(**/.env)",
       "Edit(**/.env.*)",
@@ -173,6 +217,28 @@
       "Edit(~/Applications)",
       "Edit(~/Sites)",
       "Edit(~/Desktop)",
+      "Write(~/*.pem)",
+      "Write(~/**/*.pem)",
+      "Write(~/*.pub)",
+      "Write(~/**/*.pub)",
+      "Write(~/*.key)",
+      "Write(~/**/*.key)",
+      "Write(~/*.p12)",
+      "Write(~/**/*.p12)",
+      "Write(~/*.pfx)",
+      "Write(~/**/*.pfx)",
+      "Write(~/*.ppk)",
+      "Write(~/**/*.ppk)",
+      "Write(~/authorized_keys)",
+      "Write(~/**/authorized_keys)",
+      "Write(~/id_dsa)",
+      "Write(~/**/id_dsa)",
+      "Write(~/id_ecdsa)",
+      "Write(~/**/id_ecdsa)",
+      "Write(~/id_ed25519)",
+      "Write(~/**/id_ed25519)",
+      "Write(~/id_rsa)",
+      "Write(~/**/id_rsa)",
       "Write(**/.DS_Store*)",
       "Write(**/.env)",
       "Write(**/.env.*)",
@@ -433,6 +499,94 @@
         }
       ],
       "files": [
+        {
+          "mode": "deny",
+          "path": "~/*.pem"
+        },
+        {
+          "mode": "deny",
+          "path": "~/**/*.pem"
+        },
+        {
+          "mode": "deny",
+          "path": "~/*.pub"
+        },
+        {
+          "mode": "deny",
+          "path": "~/**/*.pub"
+        },
+        {
+          "mode": "deny",
+          "path": "~/*.key"
+        },
+        {
+          "mode": "deny",
+          "path": "~/**/*.key"
+        },
+        {
+          "mode": "deny",
+          "path": "~/*.p12"
+        },
+        {
+          "mode": "deny",
+          "path": "~/**/*.p12"
+        },
+        {
+          "mode": "deny",
+          "path": "~/*.pfx"
+        },
+        {
+          "mode": "deny",
+          "path": "~/**/*.pfx"
+        },
+        {
+          "mode": "deny",
+          "path": "~/*.ppk"
+        },
+        {
+          "mode": "deny",
+          "path": "~/**/*.ppk"
+        },
+        {
+          "mode": "deny",
+          "path": "~/authorized_keys"
+        },
+        {
+          "mode": "deny",
+          "path": "~/**/authorized_keys"
+        },
+        {
+          "mode": "deny",
+          "path": "~/id_dsa"
+        },
+        {
+          "mode": "deny",
+          "path": "~/**/id_dsa"
+        },
+        {
+          "mode": "deny",
+          "path": "~/id_ecdsa"
+        },
+        {
+          "mode": "deny",
+          "path": "~/**/id_ecdsa"
+        },
+        {
+          "mode": "deny",
+          "path": "~/id_ed25519"
+        },
+        {
+          "mode": "deny",
+          "path": "~/**/id_ed25519"
+        },
+        {
+          "mode": "deny",
+          "path": "~/id_rsa"
+        },
+        {
+          "mode": "deny",
+          "path": "~/**/id_rsa"
+        },
         {
           "mode": "deny",
           "path": "**/.DS_Store*"
@@ -955,6 +1109,28 @@
     "failIfUnavailable": true,
     "filesystem": {
       "denyRead": [
+        "~/*.pem",
+        "~/**/*.pem",
+        "~/*.pub",
+        "~/**/*.pub",
+        "~/*.key",
+        "~/**/*.key",
+        "~/*.p12",
+        "~/**/*.p12",
+        "~/*.pfx",
+        "~/**/*.pfx",
+        "~/*.ppk",
+        "~/**/*.ppk",
+        "~/authorized_keys",
+        "~/**/authorized_keys",
+        "~/id_dsa",
+        "~/**/id_dsa",
+        "~/id_ecdsa",
+        "~/**/id_ecdsa",
+        "~/id_ed25519",
+        "~/**/id_ed25519",
+        "~/id_rsa",
+        "~/**/id_rsa",
         "**/.DS_Store*",
         "**/.env",
         "**/.env.*",
@@ -1089,6 +1265,28 @@
         "~/go/pkg/mod/**/.qwen/**"
       ],
       "denyWrite": [
+        "~/*.pem",
+        "~/**/*.pem",
+        "~/*.pub",
+        "~/**/*.pub",
+        "~/*.key",
+        "~/**/*.key",
+        "~/*.p12",
+        "~/**/*.p12",
+        "~/*.pfx",
+        "~/**/*.pfx",
+        "~/*.ppk",
+        "~/**/*.ppk",
+        "~/authorized_keys",
+        "~/**/authorized_keys",
+        "~/id_dsa",
+        "~/**/id_dsa",
+        "~/id_ecdsa",
+        "~/**/id_ecdsa",
+        "~/id_ed25519",
+        "~/**/id_ed25519",
+        "~/id_rsa",
+        "~/**/id_rsa",
         "**/.DS_Store*",
         "**/.env",
         "**/.env.*",
