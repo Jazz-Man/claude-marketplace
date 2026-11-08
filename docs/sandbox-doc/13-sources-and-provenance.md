@@ -144,7 +144,7 @@ counts and every `(define …)` macro name.
 ### Emit the reference tables
 
 ```bash
-python3 gen-reference.py ../../docs/sanbox-doc
+python3 gen-reference.py ../../docs/sandbox-doc
 ```
 
 Writes `04-operations-reference.md`, `05-filters-reference.md` and

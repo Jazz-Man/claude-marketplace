@@ -132,7 +132,7 @@ python3 mine-libsandbox.py > mined/libsandbox-strings.tsv    # op/filter names f
 ./probe-ops.sh mined/candidates-union.txt mined/op-probe.tsv # compile every candidate, record the error
 SBPL_VERSION=3 ./probe-ops.sh mined/candidates-union.txt mined/op-probe-v3.tsv
 python3 parse-profiles.py mined/profile-ast.json             # s-expression parse of all Apple .sb files
-python3 gen-reference.py ../../docs/sanbox-doc               # emit the reference tables
+python3 gen-reference.py ../../docs/sandbox-doc               # emit the reference tables
 
 ./probe-ordering.sh mined/ordering.txt                       # rule precedence, dimensions 1/3/4
 ./probe-precedence.sh mined/precedence.txt                   # wildcard vs specific, filter presence
