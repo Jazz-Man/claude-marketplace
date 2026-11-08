@@ -61,7 +61,6 @@ mutableCommands.set(
     except(UPDATE_ALIASES, UPGRADE),
   ),
 );
-mutableCommands.set("bunx", subs());
 mutableCommands.set(
   "bundle",
   subs([ADD, CACHE, INSTALL, LOCK, REMOVE, UPDATE, "package"]),
@@ -124,13 +123,6 @@ mutableCommands.set(
   ),
 );
 mutableCommands.set(
-  "nix",
-  subs(
-    ["build", BUNDLE, "develop", RUN, "shell", "upgrade-nix"],
-    prefixed("profile", [INSTALL, REMOVE, UPGRADE]),
-  ),
-);
-mutableCommands.set(
   "npm",
   subs(
     [
@@ -155,7 +147,6 @@ mutableCommands.set(
     except(UPDATE_ALIASES, UPGRADE),
   ),
 );
-mutableCommands.set("npx", subs());
 mutableCommands.set("pip", subs(PIP_ALIASES));
 mutableCommands.set(
   "pipx",
@@ -207,7 +198,6 @@ mutableCommands.set(
     prefixed("store", [ADD]),
   ),
 );
-mutableCommands.set("pnpx", subs());
 mutableCommands.set(
   "poetry",
   subs(
@@ -251,7 +241,6 @@ mutableCommands.set(
     SELF_UPDATE,
   ),
 );
-mutableCommands.set("uvx", subs());
 mutableCommands.set(
   "yarn",
   subs(

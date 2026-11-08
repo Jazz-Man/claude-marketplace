@@ -139,7 +139,6 @@ pnpm up
 pnpm update
 pnpm upgrade
 pnpm with
-pnpx
 poetry add
 poetry install
 poetry lock
