@@ -301,6 +301,42 @@
       "Read(~/.zed)",
       "Read(~/.claude.json)",
       "Read(~/.claude.json.backup)",
+      "Read(~/.fly)",
+      "Read(~/.supabase)",
+      "Read(~/.netlify)",
+      "Read(~/.heroku)",
+      "Read(~/.circleci)",
+      "Read(~/.travis)",
+      "Read(~/.buildkite)",
+      "Read(~/.railway)",
+      "Read(~/.render)",
+      "Read(~/.planetscale)",
+      "Read(~/.neon)",
+      "Read(~/.twilio)",
+      "Read(~/.newrelic)",
+      "Read(~/.launchdarkly)",
+      "Read(~/.op)",
+      "Read(~/.doctl)",
+      "Read(~/.linode-cli)",
+      "Read(~/.vultr)",
+      "Read(~/.ibm-cloud)",
+      "Read(~/.bluemix)",
+      "Read(~/.alibabacloud)",
+      "Read(~/.aliyun)",
+      "Read(~/.tencentcloud)",
+      "Read(~/.pulumi)",
+      "Read(~/.p4tickets)",
+      "Read(~/.p4trust)",
+      "Read(~/.chef)",
+      "Read(~/.okta-aws)",
+      "Read(~/.saml2aws)",
+      "Read(~/.aws-sso)",
+      "Read(~/.aws-vault)",
+      "Read(~/.minikube)",
+      "Read(~/.colima)",
+      "Read(~/.helm)",
+      "Read(~/.mc)",
+      "Read(~/.irssi)",
       "Read(~/Library)",
       "Read(~/Documents)",
       "Read(~/Downloads)",
@@ -608,6 +644,42 @@
       "Edit(~/.zed)",
       "Edit(~/.claude.json)",
       "Edit(~/.claude.json.backup)",
+      "Edit(~/.fly)",
+      "Edit(~/.supabase)",
+      "Edit(~/.netlify)",
+      "Edit(~/.heroku)",
+      "Edit(~/.circleci)",
+      "Edit(~/.travis)",
+      "Edit(~/.buildkite)",
+      "Edit(~/.railway)",
+      "Edit(~/.render)",
+      "Edit(~/.planetscale)",
+      "Edit(~/.neon)",
+      "Edit(~/.twilio)",
+      "Edit(~/.newrelic)",
+      "Edit(~/.launchdarkly)",
+      "Edit(~/.op)",
+      "Edit(~/.doctl)",
+      "Edit(~/.linode-cli)",
+      "Edit(~/.vultr)",
+      "Edit(~/.ibm-cloud)",
+      "Edit(~/.bluemix)",
+      "Edit(~/.alibabacloud)",
+      "Edit(~/.aliyun)",
+      "Edit(~/.tencentcloud)",
+      "Edit(~/.pulumi)",
+      "Edit(~/.p4tickets)",
+      "Edit(~/.p4trust)",
+      "Edit(~/.chef)",
+      "Edit(~/.okta-aws)",
+      "Edit(~/.saml2aws)",
+      "Edit(~/.aws-sso)",
+      "Edit(~/.aws-vault)",
+      "Edit(~/.minikube)",
+      "Edit(~/.colima)",
+      "Edit(~/.helm)",
+      "Edit(~/.mc)",
+      "Edit(~/.irssi)",
       "Edit(~/Library)",
       "Edit(~/Documents)",
       "Edit(~/Downloads)",
@@ -870,6 +942,42 @@
       "Write(~/.zed)",
       "Write(~/.claude.json)",
       "Write(~/.claude.json.backup)",
+      "Write(~/.fly)",
+      "Write(~/.supabase)",
+      "Write(~/.netlify)",
+      "Write(~/.heroku)",
+      "Write(~/.circleci)",
+      "Write(~/.travis)",
+      "Write(~/.buildkite)",
+      "Write(~/.railway)",
+      "Write(~/.render)",
+      "Write(~/.planetscale)",
+      "Write(~/.neon)",
+      "Write(~/.twilio)",
+      "Write(~/.newrelic)",
+      "Write(~/.launchdarkly)",
+      "Write(~/.op)",
+      "Write(~/.doctl)",
+      "Write(~/.linode-cli)",
+      "Write(~/.vultr)",
+      "Write(~/.ibm-cloud)",
+      "Write(~/.bluemix)",
+      "Write(~/.alibabacloud)",
+      "Write(~/.aliyun)",
+      "Write(~/.tencentcloud)",
+      "Write(~/.pulumi)",
+      "Write(~/.p4tickets)",
+      "Write(~/.p4trust)",
+      "Write(~/.chef)",
+      "Write(~/.okta-aws)",
+      "Write(~/.saml2aws)",
+      "Write(~/.aws-sso)",
+      "Write(~/.aws-vault)",
+      "Write(~/.minikube)",
+      "Write(~/.colima)",
+      "Write(~/.helm)",
+      "Write(~/.mc)",
+      "Write(~/.irssi)",
       "Write(~/Library)",
       "Write(~/Documents)",
       "Write(~/Downloads)",
@@ -1776,6 +1884,150 @@
         },
         {
           "mode": "deny",
+          "path": "~/.fly"
+        },
+        {
+          "mode": "deny",
+          "path": "~/.supabase"
+        },
+        {
+          "mode": "deny",
+          "path": "~/.netlify"
+        },
+        {
+          "mode": "deny",
+          "path": "~/.heroku"
+        },
+        {
+          "mode": "deny",
+          "path": "~/.circleci"
+        },
+        {
+          "mode": "deny",
+          "path": "~/.travis"
+        },
+        {
+          "mode": "deny",
+          "path": "~/.buildkite"
+        },
+        {
+          "mode": "deny",
+          "path": "~/.railway"
+        },
+        {
+          "mode": "deny",
+          "path": "~/.render"
+        },
+        {
+          "mode": "deny",
+          "path": "~/.planetscale"
+        },
+        {
+          "mode": "deny",
+          "path": "~/.neon"
+        },
+        {
+          "mode": "deny",
+          "path": "~/.twilio"
+        },
+        {
+          "mode": "deny",
+          "path": "~/.newrelic"
+        },
+        {
+          "mode": "deny",
+          "path": "~/.launchdarkly"
+        },
+        {
+          "mode": "deny",
+          "path": "~/.op"
+        },
+        {
+          "mode": "deny",
+          "path": "~/.doctl"
+        },
+        {
+          "mode": "deny",
+          "path": "~/.linode-cli"
+        },
+        {
+          "mode": "deny",
+          "path": "~/.vultr"
+        },
+        {
+          "mode": "deny",
+          "path": "~/.ibm-cloud"
+        },
+        {
+          "mode": "deny",
+          "path": "~/.bluemix"
+        },
+        {
+          "mode": "deny",
+          "path": "~/.alibabacloud"
+        },
+        {
+          "mode": "deny",
+          "path": "~/.aliyun"
+        },
+        {
+          "mode": "deny",
+          "path": "~/.tencentcloud"
+        },
+        {
+          "mode": "deny",
+          "path": "~/.pulumi"
+        },
+        {
+          "mode": "deny",
+          "path": "~/.p4tickets"
+        },
+        {
+          "mode": "deny",
+          "path": "~/.p4trust"
+        },
+        {
+          "mode": "deny",
+          "path": "~/.chef"
+        },
+        {
+          "mode": "deny",
+          "path": "~/.okta-aws"
+        },
+        {
+          "mode": "deny",
+          "path": "~/.saml2aws"
+        },
+        {
+          "mode": "deny",
+          "path": "~/.aws-sso"
+        },
+        {
+          "mode": "deny",
+          "path": "~/.aws-vault"
+        },
+        {
+          "mode": "deny",
+          "path": "~/.minikube"
+        },
+        {
+          "mode": "deny",
+          "path": "~/.colima"
+        },
+        {
+          "mode": "deny",
+          "path": "~/.helm"
+        },
+        {
+          "mode": "deny",
+          "path": "~/.mc"
+        },
+        {
+          "mode": "deny",
+          "path": "~/.irssi"
+        },
+        {
+          "mode": "deny",
           "path": "~/Library"
         },
         {
@@ -2468,6 +2720,42 @@
         "~/.zed",
         "~/.claude.json",
         "~/.claude.json.backup",
+        "~/.fly",
+        "~/.supabase",
+        "~/.netlify",
+        "~/.heroku",
+        "~/.circleci",
+        "~/.travis",
+        "~/.buildkite",
+        "~/.railway",
+        "~/.render",
+        "~/.planetscale",
+        "~/.neon",
+        "~/.twilio",
+        "~/.newrelic",
+        "~/.launchdarkly",
+        "~/.op",
+        "~/.doctl",
+        "~/.linode-cli",
+        "~/.vultr",
+        "~/.ibm-cloud",
+        "~/.bluemix",
+        "~/.alibabacloud",
+        "~/.aliyun",
+        "~/.tencentcloud",
+        "~/.pulumi",
+        "~/.p4tickets",
+        "~/.p4trust",
+        "~/.chef",
+        "~/.okta-aws",
+        "~/.saml2aws",
+        "~/.aws-sso",
+        "~/.aws-vault",
+        "~/.minikube",
+        "~/.colima",
+        "~/.helm",
+        "~/.mc",
+        "~/.irssi",
         "~/Library",
         "~/Documents",
         "~/Downloads",
@@ -2777,6 +3065,42 @@
         "~/.zed",
         "~/.claude.json",
         "~/.claude.json.backup",
+        "~/.fly",
+        "~/.supabase",
+        "~/.netlify",
+        "~/.heroku",
+        "~/.circleci",
+        "~/.travis",
+        "~/.buildkite",
+        "~/.railway",
+        "~/.render",
+        "~/.planetscale",
+        "~/.neon",
+        "~/.twilio",
+        "~/.newrelic",
+        "~/.launchdarkly",
+        "~/.op",
+        "~/.doctl",
+        "~/.linode-cli",
+        "~/.vultr",
+        "~/.ibm-cloud",
+        "~/.bluemix",
+        "~/.alibabacloud",
+        "~/.aliyun",
+        "~/.tencentcloud",
+        "~/.pulumi",
+        "~/.p4tickets",
+        "~/.p4trust",
+        "~/.chef",
+        "~/.okta-aws",
+        "~/.saml2aws",
+        "~/.aws-sso",
+        "~/.aws-vault",
+        "~/.minikube",
+        "~/.colima",
+        "~/.helm",
+        "~/.mc",
+        "~/.irssi",
         "~/Library",
         "~/Documents",
         "~/Downloads",

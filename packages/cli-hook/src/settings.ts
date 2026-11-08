@@ -4,6 +4,8 @@ import { debug } from "./debug.ts";
 
 const bothForms = (name: string): string[] => [`~/${name}`, `~/**/${name}`];
 
+const unique = (items: readonly string[]): string[] => [...new Set(items)];
+
 const envVars = [
   "GITHUB_TOKEN",
   "GITHUB_AUTH_TOKEN",
@@ -158,6 +160,45 @@ const secretStateDirs = [
   "~/.claude.json.backup",
 ];
 
+const cloudStateDirs = [
+  "~/.fly",
+  "~/.supabase",
+  "~/.netlify",
+  "~/.heroku",
+  "~/.circleci",
+  "~/.travis",
+  "~/.buildkite",
+  "~/.railway",
+  "~/.render",
+  "~/.planetscale",
+  "~/.neon",
+  "~/.twilio",
+  "~/.newrelic",
+  "~/.launchdarkly",
+  "~/.op",
+  "~/.doctl",
+  "~/.linode-cli",
+  "~/.vultr",
+  "~/.ibm-cloud",
+  "~/.bluemix",
+  "~/.alibabacloud",
+  "~/.aliyun",
+  "~/.tencentcloud",
+  "~/.pulumi",
+  "~/.p4tickets",
+  "~/.p4trust",
+  "~/.chef",
+  "~/.okta-aws",
+  "~/.saml2aws",
+  "~/.aws-sso",
+  "~/.aws-vault",
+  "~/.minikube",
+  "~/.colima",
+  "~/.helm",
+  "~/.mc",
+  "~/.irssi",
+];
+
 const macOSDirs = [
   "~/Library",
   "~/Documents",
@@ -171,7 +212,7 @@ const macOSDirs = [
   "~/Desktop",
 ];
 
-const protectedFiles = [
+const protectedFiles = unique([
   ...keySuffixes.flatMap((suffix) => bothForms(`*.${suffix}`)),
   ...keyNames.flatMap(bothForms),
   ...secretFileNames.flatMap(bothForms),
@@ -182,8 +223,9 @@ const protectedFiles = [
   ...homeStateFiles,
   ...credentialDirs,
   ...secretStateDirs,
+  ...cloudStateDirs,
   ...macOSDirs,
-];
+]);
 
 const memoryPaths = [
   "~/.claude/projects/**/memory",
@@ -269,7 +311,7 @@ const memoryEntries = [
   ...dependencyMemoryDirs.map((dir) => `${dir}/**`),
 ];
 
-const dependencyMemoryFiles = [
+const dependencyMemoryFiles = unique([
   ...dependencyFolders.flatMap((folder) =>
     memoryEntries.map((entry) => `~/**/${folder}/**/${entry}`),
   ),
@@ -282,7 +324,7 @@ const dependencyMemoryFiles = [
   ...dependencyCacheRoots.flatMap((root) =>
     memoryEntries.map((entry) => `${root}/**/${entry}`),
   ),
-];
+]);
 
 const gitHistoryWriteOnly = ["/**/.git"];
 
@@ -398,45 +440,47 @@ const disableCommands = [
   "xargs find*",
 ];
 
-const readDenyPaths = [
+const readDenyPaths = unique([
   ...protectedFiles,
   ...memoryPaths,
   ...dependencyMemoryFiles,
-];
+]);
 
-const writeDenyPaths = [
+const writeDenyPaths = unique([
   ...protectedFiles,
   ...configWriteOnly,
   ...dependencyWriteOnly,
   ...managerStateDirs,
   ...systemWriteOnly,
   ...memoryPaths,
-];
+]);
 
 const pathsToRules = (paths: readonly string[], ...tools: string[]) =>
   tools.flatMap((tool) => paths.map((path) => `${tool}(${path})`));
 
 const config = {
-  claudeMdExcludes: dependencyMemoryFiles,
+  claudeMdExcludes: unique(dependencyMemoryFiles),
   permissions: {
-    deny: [
+    deny: unique([
       ...pathsToRules(readDenyPaths, "Read"),
       ...pathsToRules(writeDenyPaths, "Edit", "Write"),
       ...gitHistoryDenyRules,
       ...pathsToRules(gitWriteCommands, "Bash"),
       ...pathsToRules(disableCommands, "Bash"),
-    ],
+    ]),
   },
   sandbox: {
     allowAppleEvents: true,
     allowUnsandboxedCommands: false,
     autoAllowBashIfSandboxed: true,
     credentials: {
-      envVars: envVars.map((env) => ({ mode: "deny", name: env })),
-      files: [...protectedFiles, ...dependencyMemoryFiles].map((file) => ({
-        mode: "deny",
-        path: file,
-      })),
+      envVars: unique(envVars).map((name) => ({ mode: "deny", name })),
+      files: unique([...protectedFiles, ...dependencyMemoryFiles]).map(
+        (file) => ({
+          mode: "deny",
+          path: file,
+        }),
+      ),
     },
     enabled: true,
     enabledPlatforms: ["macos"],
@@ -444,7 +488,7 @@ const config = {
     failIfUnavailable: true,
     filesystem: {
       denyRead: readDenyPaths,
-      denyWrite: [...writeDenyPaths, ...gitHistoryWriteOnly],
+      denyWrite: unique([...writeDenyPaths, ...gitHistoryWriteOnly]),
     },
     network: { allowAllUnixSockets: true, allowLocalBinding: true },
   },
