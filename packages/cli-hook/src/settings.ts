@@ -76,6 +76,9 @@ const secretRcFiles = [
   ".mailrc",
   ".lftprc",
   ".screenrc",
+  ".zshrc*",
+  ".bashrc*",
+  ".kshrc*",
 ];
 
 const secretConfigFiles = [
@@ -111,9 +114,9 @@ const homeStateFiles = [
   "~/.viminfo*",
   "~/.tmux*",
   "~/.git-credentials*",
-  "~/.gitconfig*",
   "~/.bunfig.toml",
   "~/.gdbinit",
+  "~/.oh-my-zsh",
 ];
 
 const credentialDirs = [
@@ -328,7 +331,7 @@ const dependencyMemoryFiles = unique([
 
 const gitHistoryWriteOnly = ["/**/.git"];
 
-const gitHistoryDenyRules = ["Edit(**/.git/*)", "Write(**/.git)"];
+const gitConfigWriteOnly = ["~/.gitconfig*"];
 
 const configWriteOnly = [".gitmodules", ".mcp.json", ".lsp.json"].flatMap(
   bothForms,
@@ -426,6 +429,7 @@ const gitWriteCommands = [
 
 const disableCommands = [
   "sudo*",
+  "omz*",
   "brew*",
   "nix*",
   "bunx*",
@@ -448,6 +452,7 @@ const readDenyPaths = unique([
 
 const writeDenyPaths = unique([
   ...protectedFiles,
+  ...gitConfigWriteOnly,
   ...configWriteOnly,
   ...dependencyWriteOnly,
   ...managerStateDirs,
@@ -463,8 +468,8 @@ const config = {
   permissions: {
     deny: unique([
       ...pathsToRules(readDenyPaths, "Read"),
-      ...pathsToRules(writeDenyPaths, "Edit", "Write"),
-      ...gitHistoryDenyRules,
+      ...pathsToRules(writeDenyPaths, "Edit"),
+      ...pathsToRules(["**/.git", "**/.git/**"], "Edit"),
       ...pathsToRules(gitWriteCommands, "Bash"),
       ...pathsToRules(disableCommands, "Bash"),
     ]),
