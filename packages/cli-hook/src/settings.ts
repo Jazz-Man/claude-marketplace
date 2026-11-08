@@ -155,10 +155,22 @@ const dependencyMemoryDirs = [
 
 const dependencyCacheRoots = ["~/.cargo/registry/src", "~/go/pkg/mod"];
 
+const dependencyPrefixes = ["/opt/homebrew"];
+
 const dependencyMemoryFiles = [
   ...dependencyFolders.flatMap((folder) => [
     ...dependencyMemoryNames.map((name) => `~/**/${folder}/**/${name}`),
     ...dependencyMemoryDirs.map((dir) => `~/**/${folder}/**/${dir}/**`),
+  ]),
+  ...dependencyPrefixes.flatMap((prefix) => [
+    ...dependencyMemoryNames.flatMap((name) => [
+      `${prefix}/${name}`,
+      `${prefix}/**/${name}`,
+    ]),
+    ...dependencyMemoryDirs.flatMap((dir) => [
+      `${prefix}/${dir}`,
+      `${prefix}/**/${dir}`,
+    ]),
   ]),
   ...dependencyCacheRoots.flatMap((root) => [
     ...dependencyMemoryNames.map((name) => `${root}/**/${name}`),
@@ -179,8 +191,31 @@ const configWriteOnly = [
 const dependencyWriteOnly = [
   ...dependencyFolders.flatMap((folder) => [`**/${folder}`, `**/${folder}/**`]),
   "**/package.json",
+  "**/package-lock.json",
+  "**/npm-shrinkwrap.json",
   "**/bun.lock",
   "**/bun.lockb",
+  "**/pnpm-lock.yaml",
+  "**/yarn.lock",
+  "**/Cargo.toml",
+  "**/Cargo.lock",
+  "**/go.mod",
+  "**/go.sum",
+  "**/composer.json",
+  "**/composer.lock",
+  "**/Gemfile",
+  "**/Gemfile.lock",
+  "**/gems.locked",
+  "**/Package.swift",
+  "**/Package.resolved",
+  "**/pyproject.toml",
+  "**/requirements*.txt",
+  "**/poetry.lock",
+  "**/uv.lock",
+  "**/Pipfile",
+  "**/Pipfile.lock",
+  "**/deno.json",
+  "**/deno.lock",
 ];
 
 const managerStateDirs = [
@@ -200,6 +235,20 @@ const managerStateDirs = [
   "~/.composer",
   "~/.gem",
   "~/.bundle",
+];
+
+const systemWriteOnly = [
+  "/Applications",
+  "/Library",
+  "/System",
+  "/Volumes",
+  "/bin",
+  "/etc",
+  "/opt",
+  "/private",
+  "/sbin",
+  "/usr",
+  "/var",
 ];
 
 const gitWriteCommands = [
@@ -253,6 +302,7 @@ const writeDenyPaths = [
   ...configWriteOnly,
   ...dependencyWriteOnly,
   ...managerStateDirs,
+  ...systemWriteOnly,
   ...memoryPaths,
 ];
 
