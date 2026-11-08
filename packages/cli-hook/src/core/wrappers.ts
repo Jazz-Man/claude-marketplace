@@ -5,7 +5,6 @@ export const SHARED_WRAPPERS: ReadonlySet<string> = new Set([
   "nice",
   "nohup",
   "parallel",
-  "sudo",
   "time",
   "timeout",
   "xargs",

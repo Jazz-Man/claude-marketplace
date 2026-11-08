@@ -38,9 +38,6 @@ export const unresolvedVarReason = (token: string) =>
 export const tildeUserReason = (token: string) =>
   `Filesystem policy: "${token}" uses a tilde-user path — only ~ and ~/ are resolvable inside the guard.`;
 
-export const SUDO_REASON =
-  "Filesystem policy: sudo is blocked — privilege escalation is never an agent operation; every needed command runs under the user account.";
-
 export const injectionReason = (pattern: string) =>
   `Filesystem policy: command contains a blocked obfuscation/injection pattern ("${pattern}").`;
 

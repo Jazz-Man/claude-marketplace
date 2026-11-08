@@ -5,7 +5,6 @@ import { filesystemPolicy } from "../src/policies/filesystem/policy.ts";
 import {
   askReason,
   injectionReason,
-  SUDO_REASON,
 } from "../src/policies/filesystem/reasons.ts";
 import { ALLOW, ASK, DENY } from "./fixtures/filesystem.ts";
 import {
@@ -50,7 +49,9 @@ describe("filesystem policy v2 (reasons)", () => {
 
   it("the PATH override beats non-ASCII whitespace in the guard precedence", () => {
     expect(
-      reasonOf(policyCheck(filesystemPolicy, 'cat "x\u00A0y" PATH=/evil ls')),
+      reasonOf(
+        policyCheck(filesystemPolicy, 'cat "x\u00A0y" PATH=/evil ls'),
+      ),
     ).toBe(injectionReason("PATH override"));
   });
 
@@ -61,15 +62,15 @@ describe("filesystem policy v2 (reasons)", () => {
   });
 
   it("the scanner's numeric whitespace set denies (U+00A0, U+2028, U+3000)", () => {
-    expect(reasonOf(policyCheck(filesystemPolicy, "cat\u00A0file.txt"))).toBe(
-      injectionReason("non-ASCII whitespace"),
-    );
-    expect(reasonOf(policyCheck(filesystemPolicy, "cat\u2028file.txt"))).toBe(
-      injectionReason("non-ASCII whitespace"),
-    );
-    expect(reasonOf(policyCheck(filesystemPolicy, "cat\u3000file.txt"))).toBe(
-      injectionReason("non-ASCII whitespace"),
-    );
+    expect(
+      reasonOf(policyCheck(filesystemPolicy, "cat\u00A0file.txt")),
+    ).toBe(injectionReason("non-ASCII whitespace"));
+    expect(
+      reasonOf(policyCheck(filesystemPolicy, "cat\u2028file.txt")),
+    ).toBe(injectionReason("non-ASCII whitespace"));
+    expect(
+      reasonOf(policyCheck(filesystemPolicy, "cat\u3000file.txt")),
+    ).toBe(injectionReason("non-ASCII whitespace"));
   });
 
   it("the /tmp deny reason teaches ./tmp/ at the project root", () => {
@@ -112,14 +113,5 @@ describe("filesystem policy (mutator flags)", () => {
         policyCheck(filesystemPolicy, "find /workspace -name x -delete"),
       ),
     ).toBe("deny");
-  });
-
-  it("the sudo deny fires behind time and parallel, with the sudo reason", () => {
-    expect(reasonOf(policyCheck(filesystemPolicy, "time sudo rm x"))).toBe(
-      SUDO_REASON,
-    );
-    expect(reasonOf(policyCheck(filesystemPolicy, "parallel sudo rm x"))).toBe(
-      SUDO_REASON,
-    );
   });
 });

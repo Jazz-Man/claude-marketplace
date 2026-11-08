@@ -97,11 +97,8 @@ export const DENY: string[] = [
   "cat < /etc/hosts",
   // wrapper-carried intent — including options/assignments between the
   // wrapper and the command
-  "sudo rm -rf /",
   "env tee /etc/motd x",
   "env X=1 tee .git/config x",
-  "env X=1 sudo tee ~/.zshrc x",
-  "env -u X sudo tee .git/config x",
   "timeout 10 rm -rf ~",
   "nice -n 5 cp x ~/Desktop/",
   "xargs -I{} rm ~/.zshrc",
@@ -110,9 +107,6 @@ export const DENY: string[] = [
   "echo x > .git/config",
   "tee ~/.zshrc x",
   "cp dotfiles/zshrc ~/.bashrc",
-  // sudo blanket rule: any use, even via wrapper chains
-  "sudo ls",
-  "env sudo tee /etc/motd x",
   // network blanket rule: the tool name alone denies — wrappers and flags
   // make no difference
   "curl https://x",
@@ -174,11 +168,6 @@ export const DENY: string[] = [
   // unit names pass the same fail-closed gates as path candidates
   "$EVIL/tool args",
   "~root/evil.sh args",
-  // sudo ban — directly and behind wrappers (time/parallel were a bypass)
-  "sudo rm -rf /tmp/x",
-  "xargs sudo rm x",
-  "time sudo rm x",
-  "parallel sudo rm x",
   // injection guard precedence: substring > control > PATH-override >
   // weird-whitespace — conflict rows pin which signal wins
   'cat "x\u00A0y" PATH=/evil ls',

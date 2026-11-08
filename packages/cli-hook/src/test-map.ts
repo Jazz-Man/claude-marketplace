@@ -52,14 +52,6 @@ const SELF_UPDATE = prefixed("self", [UPDATE]);
 export const mutableCommands = new Map<string, readonly Pattern[]>();
 
 mutableCommands.set(
-  "brew",
-  subs(
-    [BUNDLE, FETCH, INSTALL, REINSTALL, UNINSTALL, UPDATE, UPGRADE],
-    LINK_ALIASES,
-    ["autoremove", "pin", "services", "tap", "unpin", "untap"],
-  ),
-);
-mutableCommands.set(
   "bun",
   subs(
     [ADD, CREATE, INIT, X],

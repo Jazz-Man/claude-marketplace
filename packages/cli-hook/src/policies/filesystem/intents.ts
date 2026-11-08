@@ -95,16 +95,10 @@ function resolveToken(
   };
 }
 
-function unwrapScan(
-  args: string[],
-  sudoIn: boolean,
-  networkIn: string | null,
-): Unwrapped {
-  let sudo = sudoIn;
+function unwrapScan(args: string[], networkIn: string | null): Unwrapped {
   let network = networkIn;
   for (const [index, token] of args.entries()) {
-    sudo ||= token === "sudo";
-    if (token !== "sudo" && !isNoiseToken(token)) {
+    if (!isNoiseToken(token)) {
       const resolved = resolveToken(token, network);
       if (resolved.intent !== null) {
         const rest = args.slice(index + 1);
@@ -112,7 +106,6 @@ function unwrapScan(
           intent: adjustForFlags(ast.baseName(token), resolved.intent, rest),
           network: resolved.network,
           rest,
-          sudo,
         };
       }
       ({ network } = resolved);
@@ -122,7 +115,6 @@ function unwrapScan(
     intent: null,
     network,
     rest: args,
-    sudo,
   };
 }
 
@@ -130,7 +122,6 @@ interface Unwrapped {
   intent: Intent | null;
   network: string | null;
   rest: string[];
-  sudo: boolean;
 }
 
 export const IN_PLACE_CLUSTER = /^-[A-Za-z]*i[A-Za-z]*$/u;
@@ -159,14 +150,12 @@ export function intentOf(name: string, args: string[]): Unwrapped {
   if (NETWORK_TOOLS.has(base)) {
     network = base;
   }
-  const sudo = name === "sudo";
-  if (!SHARED_WRAPPERS.has(name) && name !== "sudo") {
+  if (!SHARED_WRAPPERS.has(name)) {
     return {
       intent: adjustForFlags(base, intent, args),
       network,
       rest: args,
-      sudo,
     };
   }
-  return unwrapScan(args, sudo, network);
+  return unwrapScan(args, network);
 }

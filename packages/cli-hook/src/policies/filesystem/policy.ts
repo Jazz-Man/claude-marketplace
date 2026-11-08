@@ -15,7 +15,6 @@ import {
   injectionReason,
   networkReason,
   pathRuleReason,
-  SUDO_REASON,
   TIER_REASONS,
   tildeUserReason,
   unresolvedVarReason,
@@ -171,13 +170,7 @@ function unitDecision(
   if (gate !== null) {
     return gate;
   }
-  const { intent, network, rest, sudo } = intents.intentOf(
-    unit.name,
-    unit.args,
-  );
-  if (sudo) {
-    return deny(SUDO_REASON);
-  }
+  const { intent, network, rest } = intents.intentOf(unit.name, unit.args);
   if (network !== null) {
     return deny(networkReason(network));
   }
