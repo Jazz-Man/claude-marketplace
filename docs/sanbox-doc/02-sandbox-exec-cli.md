@@ -20,8 +20,43 @@ sandbox-exec [-f profile-file] [-n profile-name] [-p profile-string] [-D key=val
 **starts** inside the sandbox and can never have run unsandboxed. This is the property that makes it
 useful for confining third-party binaries you do not control.
 
-The man page in full: [legacy/man-sandbox-exec.md](legacy/man-sandbox-exec.md). Its complete
-description of the profile language is the sentence *"The **sandbox-exec** command is **DEPRECATED**."*
+This is the entire official documentation for the profile language. Reproduced verbatim from
+`/usr/share/man/man1/sandbox-exec.1` on macOS 27.2 — it is short enough to quote in full:
+
+```
+SANDBOX-EXEC(1)             General Commands Manual             SANDBOX-EXEC(1)
+
+NAME
+     sandbox-exec - execute within a sandbox (DEPRECATED)
+
+SYNOPSIS
+     sandbox-exec [-f profile-file] [-n profile-name] [-p profile-string]
+                  [-D key=value ...] command [arguments ...]
+
+DESCRIPTION
+     The sandbox-exec command is DEPRECATED.  Developers who wish to sandbox an
+     app should instead adopt the App Sandbox feature described in the App
+     Sandbox Design Guide.
+
+     The sandbox-exec command enters a sandbox using a profile specified by the
+     -f, -n, or -p option and executes command with arguments.
+
+     The options are as follows:
+
+     -f profile-file     Read the profile from the file named profile-file.
+     -n profile-name     Use the pre-defined profile profile-name.
+     -p profile-string   Specify the profile to be used on the command line.
+     -D key=value        Set the profile parameter key to value.
+
+SEE ALSO
+     sandbox_init(3), sandbox(7), sandboxd(8)
+
+Mac OS X - March 9, 2017 - SANDBOX-EXEC(1)
+```
+
+Everything the man page does *not* tell you — what a profile looks like, what the operations mean,
+what the exit codes are — is reconstructed from measurement in the rest of this directory. Note that
+both `SEE ALSO` targets, `sandbox(7)` and `sandboxd(8)`, **no longer have man pages** on macOS 27.2.
 
 ---
 
@@ -111,13 +146,28 @@ exit 137        (= 128 + SIGKILL)
 Same for `no-network`, `no-write`, `no-write-except-temporary`, `pure-computation` (**verified**).
 
 This is not a bug — it is documented in the SDK's `sandbox_init(3)` man page
-([legacy/man-sandbox_init.md](legacy/man-sandbox_init.md)):
+(`$SDKROOT/usr/share/man/man3/sandbox_init.3`, dated *Mac OS X - March 9, 2017*), which lists the
+five profiles, marks each one **DEPRECATED** individually, and then adds:
 
 > **These profiles must not be used when building against macOS SDK >= 27.0.**
 > **Processes opting into them will be killed on attempt to do so.**
 
-Every one of the five constants is additionally marked **DEPRECATED** individually. Write an
-explicit profile instead; the equivalents are one or two lines:
+The five, verbatim from that man page:
+
+```
+kSBXProfileNoInternet             TCP/IP networking is prohibited.                    DEPRECATED.
+kSBXProfileNoNetwork              All sockets-based networking is prohibited.           DEPRECATED.
+kSBXProfileNoWrite                File system writes are prohibited.                    DEPRECATED.
+kSBXProfileNoWriteExceptTemporary File system writes are restricted to /var/tmp and     DEPRECATED.
+                                  the confstr(3) _CS_DARWIN_USER_TEMP_DIR folder.
+kSBXProfilePureComputation        All operating system services are prohibited.         DEPRECATED.
+```
+
+It also carries the note that *"sandbox(7) restrictions are typically enforced at resource
+acquisition time"* — which is why a process can hold an already-open file descriptor that the
+profile would have refused to open.
+
+Write an explicit profile instead; the equivalents are one or two lines:
 
 | Old `-n` name | Replace with |
 |---|---|
@@ -272,12 +322,41 @@ The `flags` argument, measured:
 So `SANDBOX_NAMED` means "look up a built-in profile by name", and the built-ins are now lethal.
 Pass `0` for raw SBPL.
 
-Caveats, from the shipped header ([legacy/sandbox.h](legacy/sandbox.h)):
+Caveats, from the shipped header (`$SDKROOT/usr/include/sandbox.h`, © 2006-2011,2018 Apple Inc.).
+The whole public surface is two functions and one constant:
+
+```c
+/*
+ * This header is deprecated and may be removed in a future release.
+ * Developers who wish to sandbox an app should instead adopt the App Sandbox
+ * feature described in the App Sandbox Design Guide.
+ */
+
+/*
+ * @param flags (input)   Must be SANDBOX_NAMED.  All other values are reserved.
+ * @result 0 on success, -1 otherwise.
+ */
+API_DEPRECATED("No longer supported", macos(10.5, 10.8), ios(2.0, 6.0), tvos(4.0, 4.0), watchos(1.0, 1.0))
+API_UNAVAILABLE(macCatalyst)
+OS_WARN_RESULT
+int sandbox_init(const char *profile, uint64_t flags, char **errorbuf);
+
+/* The `profile' argument specifies a Sandbox profile named by one of the
+   kSBXProfile* string constants. */
+#define SANDBOX_NAMED           0x0001
+
+API_DEPRECATED("No longer supported", macos(10.5, 10.8), ios(2.0, 6.0), tvos(4.0, 4.0), watchos(1.0, 1.0))
+API_UNAVAILABLE(macCatalyst)
+void sandbox_free_error(char *errorbuf);
+```
+
+Reading it against the measured behaviour:
 
 * The header documents only `SANDBOX_NAMED` and states *flags* "Must be `SANDBOX_NAMED`. All other
-  values are reserved." The `0` above is the historical "profile is SBPL text" value; it works, but
-  it is undocumented. The `SANDBOX_KEXT` and `SANDBOX_FILTER_*` constants that older code and blog
-  posts use are **not** in the macOS 27 SDK header.
+  values are reserved." The `0` used above is the historical "profile is SBPL text" value; it works,
+  but it is undocumented. The `SANDBOX_KEXT` and `SANDBOX_FILTER_*` constants that older code and
+  blog posts use are **not** in the macOS 27 SDK header, and the `kSBXProfile*` string constants are
+  **not** declared either — which is why Blazakis had to compile a program to print them in 2011.
 * `sandbox_init_with_parameters()` — the variant that would take `-D`-style parameters — has **no
   man page and no declaration** in this SDK (**verified**: `man -w sandbox_init_with_parameters`
   returns nothing; `sandbox.h` declares only `sandbox_init` and `sandbox_free_error`). Parameters are
@@ -346,5 +425,5 @@ sandbox-exec -f profile.sb /usr/bin/true; echo $?    # 0 or 71 = compiles; 65/13
 * Operations → [04-operations-reference.md](04-operations-reference.md)
 * Filters and path resolution → [05-filters-reference.md](05-filters-reference.md)
 * Errors and debugging → [08-debugging-and-troubleshooting.md](08-debugging-and-troubleshooting.md)
-* Man pages as shipped → [legacy/man-sandbox-exec.md](legacy/man-sandbox-exec.md),
-  [legacy/man-sandbox_init.md](legacy/man-sandbox_init.md), [legacy/sandbox.h](legacy/sandbox.h)
+* The shipped originals, if you want to read them yourself:
+  `man sandbox-exec`, `$SDKROOT/usr/share/man/man3/sandbox_init.3`, `$SDKROOT/usr/include/sandbox.h`
