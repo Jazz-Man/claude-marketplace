@@ -36,8 +36,8 @@ Claude Code builds the sandbox on the open source [`@anthropic-ai/sandbox-runtim
 The sandbox wraps shell commands. These tools and processes run outside it:
 
 * **Built-in file and web tools**: tools such as Read, Edit, Write, WebFetch, and WebSearch follow [permission rules](permissions.md) instead. A `denyRead` entry doesn't stop the Read tool, and `allowedDomains` doesn't limit WebFetch
-* **Other processes Claude Code starts**: command [hooks](hooks.md), local [MCP servers](mcp.md), [plugin monitors](https://code.claude.com/docs/en/plugins/components.md#monitors), [LSP servers](tools-reference.md#lsp-tool-behavior), and helper commands such as your [status line](https://code.claude.com/docs/en/statusline.md) command and `apiKeyHelper` run with your full access
-* **Mods**: a [mod](https://code.claude.com/docs/en/plugins/mods/overview.md) runs its own code inside Claude Code, so its file access, network requests, and programs started with [`$.process`](https://code.claude.com/docs/en/plugins/mods/api#reach-files-processes-and-the-network) aren't sandboxed. See [What a mod can reach](https://code.claude.com/docs/en/plugins/mods/overview.md#what-a-mod-can-reach)
+* **Other processes Claude Code starts**: command [hooks](hooks.md), local [MCP servers](mcp.md), [plugin monitors](plugins/components.md#monitors), [LSP servers](tools-reference.md#lsp-tool-behavior), and helper commands such as your [status line](https://code.claude.com/docs/en/statusline.md) command and `apiKeyHelper` run with your full access
+* **Mods**: a [mod](plugins/mods/overview.md) runs its own code inside Claude Code, so its file access, network requests, and programs started with [`$.process`](plugins/mods/api.md#reach-files-processes-and-the-network) aren't sandboxed. See [What a mod can reach](plugins/mods/overview.md#what-a-mod-can-reach)
 
 Some shell commands also run outside the sandbox, depending on your settings:
 
@@ -707,7 +707,7 @@ Administrators can require sandboxing for every user, keep developers from widen
 
 ### Enforce sandboxing with managed settings
 
-To require the sandbox for every developer, deliver the `sandbox` keys through [managed settings](https://code.claude.com/docs/en/managed-settings.md#delivery-mechanisms), either as a file managed by your MDM or through [server-managed settings](https://code.claude.com/docs/en/server-managed-settings.md) on claude.ai.
+To require the sandbox for every developer, deliver the `sandbox` keys through [managed settings](managed-settings.md#delivery-mechanisms), either as a file managed by your MDM or through [server-managed settings](https://code.claude.com/docs/en/server-managed-settings.md) on claude.ai.
 
 The following managed settings configuration enables the sandbox, refuses to start Claude Code when the platform is unsupported or a dependency is missing, and prevents the model from retrying commands outside the sandbox:
 
@@ -735,7 +735,7 @@ This configuration sandboxes the commands Claude runs. A developer can still typ
 
 The sandbox doesn't run on native Windows, so with `failIfUnavailable` set, Claude Code exits at startup on those machines. If your fleet includes Windows hosts, you can:
 
-* **Deliver the configuration by operating system**: deploy it through your MDM or as a [managed settings file](https://code.claude.com/docs/en/managed-settings.md#delivery-mechanisms) on macOS and Linux machines only. [Server-managed settings](https://code.claude.com/docs/en/server-managed-settings.md#current-limitations) apply to all users in the organization
+* **Deliver the configuration by operating system**: deploy it through your MDM or as a [managed settings file](managed-settings.md#delivery-mechanisms) on macOS and Linux machines only. [Server-managed settings](https://code.claude.com/docs/en/server-managed-settings.md#current-limitations) apply to all users in the organization
 * **Move Windows users into a supported environment**: have them run Claude Code inside WSL2 or a container
 
 ### Keep developers from widening the policy
@@ -942,7 +942,7 @@ A placeholder stays behind in cases such as these:
 
 Later sessions bind the placeholders read-only again on every start, so a settings write such as saving a permission choice fails at a path where a placeholder remains.
 
-Run `claude doctor` in your terminal to list the leftover placeholder files. The [`Sandbox mask files left behind at write-deny paths`](https://code.claude.com/docs/en/errors#stale-sandbox-mask-files-left-by-a-killed-session) warning names some of them and counts the rest. Delete each file with `rm` while no other Claude Code session is running in that project. Before v2.1.257, Claude Code left the same placeholders behind when a session was killed, without flagging them.
+Run `claude doctor` in your terminal to list the leftover placeholder files. The [`Sandbox mask files left behind at write-deny paths`](errors.md#stale-sandbox-mask-files-left-by-a-killed-session) warning names some of them and counts the rest. Delete each file with `rm` while no other Claude Code session is running in that project. Before v2.1.257, Claude Code left the same placeholders behind when a session was killed, without flagging them.
 
 ### `git` over SSH fails with the sandbox on
 
@@ -1114,7 +1114,7 @@ The sandbox isolates shell commands and their child processes. [What runs outsid
 * **Subagents**: [subagents](sub-agents.md) run in the same process as the parent session and use the same sandbox configuration. Bash commands inside a subagent are sandboxed when sandboxing is enabled in the parent session.
 * **Background sessions**: a [background session](agent-view.md) runs in its own process, and its Bash commands are sandboxed when [its settings](agent-view.md#settings-and-provider) enable sandboxing.
 * **A boundary around the whole process**: to put the processes in [What runs outside the sandbox](#what-runs-outside-the-sandbox) behind a boundary too, run Claude Code (local mode) inside the [sandbox runtime](sandbox-environments.md#sandbox-runtime) with a network allowlist limited to the hosts you approve, or in the [dev container](https://code.claude.com/docs/en/devcontainer.md) with its firewall script. For the background service and the sessions it hosts, see [Run Claude Code behind a corporate launcher](https://code.claude.com/docs/en/corporate-launcher.md).
-* **Mods**: a [mod](https://code.claude.com/docs/en/plugins/mods/overview.md) is a plugin that runs its own code inside Claude Code, and a process that a mod starts runs outside the sandbox. See [What a mod can reach](https://code.claude.com/docs/en/plugins/mods/overview.md#what-a-mod-can-reach).
+* **Mods**: a [mod](plugins/mods/overview.md) is a plugin that runs its own code inside Claude Code, and a process that a mod starts runs outside the sandbox. See [What a mod can reach](plugins/mods/overview.md#what-a-mod-can-reach).
 
 > [!WARNING]
 >

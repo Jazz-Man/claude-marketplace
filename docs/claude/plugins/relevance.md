@@ -1,7 +1,3 @@
-> ## Documentation Index
-> Fetch the complete documentation index at: https://code.claude.com/docs/llms.txt
-> Use this file to discover all available pages before exploring further.
-
 # Recommend plugins for your org
 
 > Add a relevance block to marketplace plugin entries so Claude Code suggests them when a user's work matches, and allowlist the marketplace in managed settings.
@@ -14,7 +10,7 @@ A marketplace operator writes the `relevance` entries. An administrator then all
 >
 > These cases are covered on other pages:
 >
-> * **You want to install plugins**: see [Install and manage plugins](https://code.claude.com/docs/en/plugins/install.md)
+> * **You want to install plugins**: see [Install and manage plugins](plugins/install.md)
 > * **You want to turn suggestions off**: see [Understand how plugin relevance works](#understand-how-plugin-relevance-works), or for the suggestions Claude makes in a cloud session's conversation, [Turn off plugin suggestions](https://code.claude.com/docs/en/claude-code-on-the-web.md#turn-off-plugin-suggestions)
 
 Start with the sections for your role:
@@ -38,7 +34,7 @@ When a signal matches and the plugin isn't already installed, Claude Code sugges
 
 Claude Code never installs the plugin automatically. The user always confirms.
 
-The spinner tip and the session-start notification both stop appearing when the user or project sets [`spinnerTipsEnabled`](https://code.claude.com/docs/en/settings-reference#spinnertipsenabled) to `false`, or when a [`spinnerTipsOverride`](https://code.claude.com/docs/en/settings-reference#spinnertipsoverride) with `excludeDefault` replaces the built-in tips. The Discover-tab pin isn't affected by either setting.
+The spinner tip and the session-start notification both stop appearing when the user or project sets [`spinnerTipsEnabled`](settings-reference.md#spinnertipsenabled) to `false`, or when a [`spinnerTipsOverride`](settings-reference.md#spinnertipsoverride) with `excludeDefault` replaces the built-in tips. The Discover-tab pin isn't affected by either setting.
 
 ## Add relevance to a plugin entry
 
@@ -217,7 +213,7 @@ Claude Code limits how often it suggests a given plugin:
 
 ## See also
 
-* [Host a marketplace](https://code.claude.com/docs/en/plugins/host-marketplace.md): run the marketplace that hosts your plugins
-* [Marketplace reference](https://code.claude.com/docs/en/plugins/marketplace-reference.md#plugin-entries): every field a plugin entry accepts
-* [Recommend your plugin from your CLI](https://code.claude.com/docs/en/plugins/cli-hints.md): prompt users from your own CLI instead of from Claude Code's session signals
+* [Host a marketplace](plugins/host-marketplace.md): run the marketplace that hosts your plugins
+* [Marketplace reference](plugins/marketplace-reference.md#plugin-entries): every field a plugin entry accepts
+* [Recommend your plugin from your CLI](plugins/cli-hints.md): prompt users from your own CLI instead of from Claude Code's session signals
 * [Manage plugins for your organization](https://code.claude.com/docs/en/plugins/org.md): `extraKnownMarketplaces`, `strictKnownMarketplaces`, and the rest of the plugin policy keys

@@ -58,5 +58,5 @@ When a gateway cuts responses short or rewrites the results into a form Claude C
 * [Auto mode](permission-modes.md#eliminate-prompts-with-auto-mode): what auto mode is and what it blocks by default
 * [Server-side classifier review](permission-modes.md#server-side-classifier-review): which sessions ask the server to check actions, and the Claude Code version each one requires
 * [Gateway compatibility guide](https://code.claude.com/docs/en/llm-gateway-protocol.md#feature-pass-through): what breaks when a gateway strips headers or body fields
-* [The server returned no safety verdict](https://code.claude.com/docs/en/errors.md#the-server-returned-no-safety-verdict): the denial you see when the server gives no verdict for an action
+* [The server returned no safety verdict](errors.md#the-server-returned-no-safety-verdict): the denial you see when the server gives no verdict for an action
 * [Manage costs effectively](https://code.claude.com/docs/en/costs.md): track token usage and reduce Claude Code costs

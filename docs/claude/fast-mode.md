@@ -141,7 +141,7 @@ Fast mode requires all of the following:
 > Four organization settings can block turning fast mode on with `/fast`:
 >
 > * **Fast mode not enabled**: if fast mode hasn't been enabled for your organization, turning fast mode on with `/fast` shows "Fast mode has been disabled by your organization."
-> * **Fast mode turned off by managed settings**: if your organization deploys [managed settings](https://code.claude.com/docs/en/managed-settings.md) that set [`fastMode: false`](settings-reference.md#fastmode), turning fast mode on with `/fast` shows the same "Fast mode has been disabled by your organization" message.
+> * **Fast mode turned off by managed settings**: if your organization deploys [managed settings](managed-settings.md) that set [`fastMode: false`](settings-reference.md#fastmode), turning fast mode on with `/fast` shows the same "Fast mode has been disabled by your organization" message.
 > * **Per-session opt-in required**: managed settings that set [`fastModePerSessionOptIn: true`](#require-per-session-opt-in) refuse `/fast on` with the same message everywhere except an interactive terminal session.
 > * **Fast-mode model not allowed**: if your organization's [`availableModels`](model-config.md#restrict-model-selection) allowlist excludes the fast-mode Opus model, turning it on is refused with "is not in your organization's allowed models". In a session already running on an allowed Opus model that supports fast mode, `/fast` instead enables fast mode on your current model without switching models.
 

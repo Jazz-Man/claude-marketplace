@@ -20,7 +20,7 @@ Subagents help you:
 
 Claude uses each subagent's description to decide when to delegate tasks. When you create a subagent, write a clear description so Claude knows when to use it.
 
-Those descriptions take up context, so keep them short. When the combined descriptions of your subagents, except the built-in ones, exceed 15,000 tokens, Claude Code shows a [warning at startup with the total token count](https://code.claude.com/docs/en/errors.md#agent-descriptions-are-over-the-15000-token-limit). Trim the `description` fields of your subagents, and move detail into each subagent's system prompt, which only loads when that subagent runs.
+Those descriptions take up context, so keep them short. When the combined descriptions of your subagents, except the built-in ones, exceed 15,000 tokens, Claude Code shows a [warning at startup with the total token count](errors.md#agent-descriptions-are-over-the-15000-token-limit). Trim the `description` fields of your subagents, and move detail into each subagent's system prompt, which only loads when that subagent runs.
 
 ## Built-in subagents
 
@@ -81,7 +81,7 @@ Built-in subagents are registered by default in interactive sessions. To restric
 * To remove only the built-in `Explore` and `Plan` subagents, set [`CLAUDE_CODE_DISABLE_EXPLORE_PLAN_AGENTS=1`](env-vars.md). Claude reads and explores files directly instead of delegating to them. Requires Claude Code v2.1.198 or later.
 * In [non-interactive mode](https://code.claude.com/docs/en/headless.md) and the [Agent SDK](https://code.claude.com/docs/en/agent-sdk/overview.md), set [`CLAUDE_AGENT_SDK_DISABLE_BUILTIN_AGENTS=1`](env-vars.md) to remove all built-in types and supply only your own.
 
-An Agent tool call that omits `subagent_type` fails with [`subagent_type is required`](https://code.claude.com/docs/en/errors#subagent-type-is-required) when the session has no `general-purpose` subagent to fall back on.
+An Agent tool call that omits `subagent_type` fails with [`subagent_type is required`](errors.md#subagent-type-is-required) when the session has no `general-purpose` subagent to fall back on.
 
 Beyond these built-in subagents, you can create your own with custom prompts, tool restrictions, permission modes, hooks, and skills. The following sections show how to get started and customize subagents.
 
@@ -157,13 +157,13 @@ Store subagent files in different locations depending on scope. When multiple su
 | `--agents` CLI flag | Current session | 2 | Pass JSON when launching Claude Code |
 | `.claude/agents/` | Current project | 3 | Ask Claude, or create the file manually |
 | `~/.claude/agents/` | All your projects | 4 | Ask Claude, or create the file manually |
-| Plugin's `agents/` directory | Where plugin is enabled | 5 (lowest) | Installed with [plugins](https://code.claude.com/docs/en/plugins/overview.md) |
+| Plugin's `agents/` directory | Where plugin is enabled | 5 (lowest) | Installed with [plugins](plugins/overview.md) |
 
 **Project subagents** (`.claude/agents/`) are ideal for subagents specific to a codebase. Check them into version control so your team can use and improve them collaboratively.
 
 Project subagents are discovered by walking up from the current working directory, so every `.claude/agents/` between there and the repository root is scanned. When more than one of these nested directories defines the same `name`, Claude Code uses the definition closest to the working directory.
 
-When you add a directory with `--add-dir` or `/add-dir`, Claude Code also loads its `.claude/agents/` folder, alongside your project subagents. See [Additional directories](permissions.md#additional-directories-grant-file-access-not-configuration) for which other configuration types load from `--add-dir`. To share subagents across projects without `--add-dir`, use `~/.claude/agents/` or a [plugin](https://code.claude.com/docs/en/plugins/overview.md).
+When you add a directory with `--add-dir` or `/add-dir`, Claude Code also loads its `.claude/agents/` folder, alongside your project subagents. See [Additional directories](permissions.md#additional-directories-grant-file-access-not-configuration) for which other configuration types load from `--add-dir`. To share subagents across projects without `--add-dir`, use `~/.claude/agents/` or a [plugin](plugins/overview.md).
 
 **User subagents** (`~/.claude/agents/`) are personal subagents available in all your projects.
 
@@ -219,17 +219,17 @@ Each top-level key in the JSON is an agent's name, and its value is that agent's
 * **[Frontmatter fields](#supported-frontmatter-fields)**: `description`, `tools`, `disallowedTools`, `model`, `permissionMode`, `mcpServers`, `hooks`, `maxTurns`, `autoCompactWindow`, `skills`, `initialPrompt`, `memory`, `effort`, `background`, `omitClaudeMd`, and `isolation`.
 * **Ignored fields**: `color` and `experimental` aren't accepted here and are ignored rather than rejected.
 
-For what Claude Code does with a value it can't load, and the flags and environment variable that skip that check, see [`Invalid --agents configuration`](https://code.claude.com/docs/en/errors#invalid-agents-configuration).
+For what Claude Code does with a value it can't load, and the flags and environment variable that skip that check, see [`Invalid --agents configuration`](errors.md#invalid-agents-configuration).
 
-**Managed subagents** are deployed by organization administrators. Place markdown files in `.claude/agents/` inside the [managed settings directory](https://code.claude.com/docs/en/managed-settings.md#delivery-mechanisms), using the same frontmatter format as project and user subagents. Managed definitions take precedence over project and user subagents with the same name.
+**Managed subagents** are deployed by organization administrators. Place markdown files in `.claude/agents/` inside the [managed settings directory](managed-settings.md#delivery-mechanisms), using the same frontmatter format as project and user subagents. Managed definitions take precedence over project and user subagents with the same name.
 
-**Plugin subagents** come from [plugins](https://code.claude.com/docs/en/plugins/overview.md) you've installed. They load automatically alongside your custom subagents and appear in the @-mention typeahead under their scoped name. See the [plugin components reference](https://code.claude.com/docs/en/plugins/components.md#agents) for details on creating plugin subagents.
+**Plugin subagents** come from [plugins](plugins/overview.md) you've installed. They load automatically alongside your custom subagents and appear in the @-mention typeahead under their scoped name. See the [plugin components reference](plugins/components.md#agents) for details on creating plugin subagents.
 
 > [!NOTE]
 >
 > For security reasons, plugin subagents don't support the `hooks`, `mcpServers`, or `permissionMode` frontmatter fields. These fields are ignored when loading agents from a plugin. If you need them, copy the agent file into `.claude/agents/` or `~/.claude/agents/`. You can also add rules to [`permissions.allow`](settings-reference.md#permissions-allow) in `settings.json` or `settings.local.json`, but these rules apply to the entire session, not only the plugin subagent.
 >
-> If you're the plugin's author, ship the hooks in the plugin's [`hooks/hooks.json`](https://code.claude.com/docs/en/plugins/components#hooks) and the MCP servers in its [`.mcp.json`](https://code.claude.com/docs/en/plugins/components#mcp-servers) instead. They apply whenever the plugin is enabled rather than only inside the subagent.
+> If you're the plugin's author, ship the hooks in the plugin's [`hooks/hooks.json`](plugins/components.md#hooks) and the MCP servers in its [`.mcp.json`](plugins/components.md#mcp-servers) instead. They apply whenever the plugin is enabled rather than only inside the subagent.
 
 You can also reuse a subagent definition as an [agent team](agent-teams.md) teammate: name the subagent type when you ask Claude to spawn the teammate, and Claude Code applies parts of that definition to it. [Use subagent definitions for teammates](agent-teams.md#use-subagent-definitions-for-teammates) says which scopes and which parts apply in each display mode.
 
@@ -291,9 +291,9 @@ Multi-word field names use camelCase, such as `maxTurns` and `disallowedTools`, 
 
 | Field | Required | Description |
 | :- | :- | :- |
-| `name` | Yes | Unique identifier of at most 256 characters, such as `code-reviewer` or `reviewer-v2`. [Hooks](hooks.md#subagentstart) receive this value as `agent_type`. The filename doesn't have to match. Names can't contain `:`, which is reserved for [plugin-scoped identifiers](https://code.claude.com/docs/en/plugins/overview.md) such as `my-plugin:reviewer` |
+| `name` | Yes | Unique identifier of at most 256 characters, such as `code-reviewer` or `reviewer-v2`. [Hooks](hooks.md#subagentstart) receive this value as `agent_type`. The filename doesn't have to match. Names can't contain `:`, which is reserved for [plugin-scoped identifiers](plugins/overview.md) such as `my-plugin:reviewer` |
 | `description` | Yes | When Claude should delegate to this subagent |
-| `tools` | No | [Tools](#available-tools) the subagent can use, as a comma-separated string such as `Read, Grep, Bash` or a YAML list. Inherits every tool available to subagents if omitted. If no entry in the list resolves to a tool, the subagent usually [fails to launch](https://code.claude.com/docs/en/errors.md#agent-would-be-spawned-with-zero-tools) with an error naming the entries. To preload Skills into context, use the `skills` field rather than listing `Skill` here |
+| `tools` | No | [Tools](#available-tools) the subagent can use, as a comma-separated string such as `Read, Grep, Bash` or a YAML list. Inherits every tool available to subagents if omitted. If no entry in the list resolves to a tool, the subagent usually [fails to launch](errors.md#agent-would-be-spawned-with-zero-tools) with an error naming the entries. To preload Skills into context, use the `skills` field rather than listing `Skill` here |
 | `disallowedTools` | No | Tools to deny, removed from inherited or specified list. Same format as `tools`. An entry with a specifier, such as `Bash(git push *)`, still [removes the whole tool](#restrict-which-tools-a-subagent-can-use) |
 | `model` | No | [Model](#choose-a-model) to use: `sonnet`, `opus`, `haiku`, `fable`, a full model ID such as `claude-opus-5-5`, or `inherit`. When you omit it, Claude Code picks the model in the [subagent model order](#choose-a-model) |
 | `permissionMode` | No | [Permission mode](#permission-modes): `default`, `acceptEdits`, `auto`, `dontAsk`, `bypassPermissions`, `plan`, or `manual` as an alias for `default`. Ignored for [plugin subagents](#choose-the-subagent-scope) |
@@ -334,11 +334,11 @@ Claude Code skips a file in a project, user, or managed `agents` directory, or i
 
 To see the debug log, run Claude Code with `--debug`.
 
-A [plugin subagent](https://code.claude.com/docs/en/plugins/components.md#agents) whose frontmatter has no `name` or doesn't parse still loads, under its filename.
+A [plugin subagent](plugins/components.md#agents) whose frontmatter has no `name` or doesn't parse still loads, under its filename.
 
 ##### Check an `agents` directory before a session
 
-To find files in an `agents` directory whose frontmatter doesn't parse, run `claude plugin validate` against the directory, for example `.claude/agents` or `~/.claude/agents`. Claude Code checks only [the directory you name](https://code.claude.com/docs/en/plugins/cli-reference.md#validate-a-directory), and doesn't flag a file whose frontmatter parses but has no `name`. Requires Claude Code v2.1.233 or later.
+To find files in an `agents` directory whose frontmatter doesn't parse, run `claude plugin validate` against the directory, for example `.claude/agents` or `~/.claude/agents`. Claude Code checks only [the directory you name](plugins/cli-reference.md#validate-a-directory), and doesn't flag a file whose frontmatter parses but has no `name`. Requires Claude Code v2.1.233 or later.
 
 ### Choose a model
 
@@ -355,7 +355,7 @@ When Claude invokes a subagent, it can also pass a `model` parameter for that sp
 3. The [`CLAUDE_CODE_SUBAGENT_MODEL`](model-config.md#environment-variables) environment variable, when you set it to a model alias or model ID
 4. The main conversation's model
 
-If an installed [mod](https://code.claude.com/docs/en/plugins/mods/overview.md) sets a model in its [`agent.spawn`](https://code.claude.com/docs/en/plugins/mods/reference#subagents) hook, Claude Code uses that model in place of the per-invocation parameter.
+If an installed [mod](plugins/mods/overview.md) sets a model in its [`agent.spawn`](plugins/mods/reference.md#subagents) hook, Claude Code uses that model in place of the per-invocation parameter.
 
 In two cases, a family alias such as `opus` in the per-invocation parameter or the frontmatter resolves to the main conversation's model instead of the [version the alias points to](model-config.md#model-aliases):
 
@@ -433,7 +433,7 @@ Subagents inherit the [built-in tools](tools-reference.md) and MCP tools availab
 * `WaitForMcpServers`
 * `Workflow`
 
-The second filter applies to subagents running in the background. Apart from `Agent` and `ExitPlanMode`, which follow the first filter's conditions wherever the subagent runs, a background subagent keeps every MCP tool but only these built-in tools: `Read`, `Grep`, `Glob`, `LSP`, `Bash`, `PowerShell`, `Edit`, `Write`, `NotebookEdit`, `WebFetch`, `WebSearch`, `TodoWrite`, `Skill`, `ToolSearch`, `EnterWorktree`, `ExitWorktree`, `Monitor`, `TaskStop`, `SendMessage`, and `Artifact`, plus [`SubagentHandback`](tools-reference.md) for a subagent that reports through it. Claude Code removes every other built-in tool from a background subagent, whether inherited or listed in the `tools` field, so the same definition can resolve to different tools in the foreground and the background. The removal reports no error unless it leaves the `tools` list [resolving to nothing](https://code.claude.com/docs/en/errors.md#agent-would-be-spawned-with-zero-tools).
+The second filter applies to subagents running in the background. Apart from `Agent` and `ExitPlanMode`, which follow the first filter's conditions wherever the subagent runs, a background subagent keeps every MCP tool but only these built-in tools: `Read`, `Grep`, `Glob`, `LSP`, `Bash`, `PowerShell`, `Edit`, `Write`, `NotebookEdit`, `WebFetch`, `WebSearch`, `TodoWrite`, `Skill`, `ToolSearch`, `EnterWorktree`, `ExitWorktree`, `Monitor`, `TaskStop`, `SendMessage`, and `Artifact`, plus [`SubagentHandback`](tools-reference.md) for a subagent that reports through it. Claude Code removes every other built-in tool from a background subagent, whether inherited or listed in the `tools` field, so the same definition can resolve to different tools in the foreground and the background. The removal reports no error unless it leaves the `tools` list [resolving to nothing](errors.md#agent-would-be-spawned-with-zero-tools).
 
 Before v2.1.280, background subagents couldn't use `LSP`.
 
@@ -465,7 +465,7 @@ disallowedTools: Write, Edit
 ---
 ```
 
-When nothing in the `tools` list resolves to a tool, for example because every entry is misspelled or names a tool that isn't available to subagents, Claude Code usually refuses to launch the subagent and the Agent tool returns an error naming the unresolved entries; see [Agent would be spawned with zero tools](https://code.claude.com/docs/en/errors.md#agent-would-be-spawned-with-zero-tools) for the message and how to fix each entry.
+When nothing in the `tools` list resolves to a tool, for example because every entry is misspelled or names a tool that isn't available to subagents, Claude Code usually refuses to launch the subagent and the Agent tool returns an error naming the unresolved entries; see [Agent would be spawned with zero tools](errors.md#agent-would-be-spawned-with-zero-tools) for the message and how to fix each entry.
 
 The `tools` and `disallowedTools` fields also take entries for a whole MCP server:
 
@@ -600,7 +600,7 @@ The main conversation's permission mode decides whether Claude Code uses the val
 | `default` | Manual mode: prompts for permission |
 | `acceptEdits` | Auto-accept file edits and common filesystem commands for paths in the working directory or `additionalDirectories` |
 | `auto` | [Auto mode](permission-modes.md#eliminate-prompts-with-auto-mode): a background classifier reviews commands and protected-directory writes |
-| `dontAsk` | Auto-denies calls that would prompt, though a [mod](https://code.claude.com/docs/en/plugins/mods/overview.md) you installed can still approve [some of those calls](permissions.md#precedence-among-rules-hooks-and-mods). Explicitly allowed tools still work. `AskUserQuestion`, MCP tools marked [`requiresUserInteraction`](mcp.md#require-approval-for-a-specific-tool), [reads from network paths](permissions.md#network-paths), and connector tools [your organization set to `ask`](mcp.md#organization-controls-on-connector-tools) in sessions where that setting reaches Claude Code are denied even if you've allowed them |
+| `dontAsk` | Auto-denies calls that would prompt, though a [mod](plugins/mods/overview.md) you installed can still approve [some of those calls](permissions.md#precedence-among-rules-hooks-and-mods). Explicitly allowed tools still work. `AskUserQuestion`, MCP tools marked [`requiresUserInteraction`](mcp.md#require-approval-for-a-specific-tool), [reads from network paths](permissions.md#network-paths), and connector tools [your organization set to `ask`](mcp.md#organization-controls-on-connector-tools) in sessions where that setting reaches Claude Code are denied even if you've allowed them |
 | `bypassPermissions` | [Skip permission prompts](permission-modes.md#skip-all-checks-with-bypasspermissions-mode). A subagent runs in this mode only when the main conversation does |
 | `plan` | Plan mode (read-only exploration) |
 
@@ -803,7 +803,7 @@ Configure hooks in `settings.json` that respond to subagent lifecycle events in 
 | `SubagentStart` | Agent type name | When a subagent begins execution |
 | `SubagentStop` | Agent type name | When a subagent completes |
 
-Both events support matchers to target specific agent types by name. The matcher value is the agent's frontmatter `name` for project-level and user-level subagents, or the plugin-scoped identifier such as `my-plugin:db-agent` for [plugin subagents](https://code.claude.com/docs/en/plugins/components.md#agents). A scoped name contains a colon, so it is evaluated as an [unanchored regular expression](hooks.md#matcher-patterns); anchor it with `^` and `$`, as in `^my-plugin:db-agent$`, to match only that agent.
+Both events support matchers to target specific agent types by name. The matcher value is the agent's frontmatter `name` for project-level and user-level subagents, or the plugin-scoped identifier such as `my-plugin:db-agent` for [plugin subagents](plugins/components.md#agents). A scoped name contains a colon, so it is evaluated as an [unanchored regular expression](hooks.md#matcher-patterns); anchor it with `^` and `$`, as in `^my-plugin:db-agent$`, to match only that agent.
 
 This example runs a setup script only when the `db-agent` subagent starts, and a cleanup script when any subagent stops:
 
@@ -837,9 +837,9 @@ See [Hooks](hooks.md) for the complete hook configuration format.
 
 Claude automatically delegates tasks based on the task description in your request, the `description` field in subagent configurations, and current context. To encourage proactive delegation, include phrases like "use proactively" in your subagent's description field.
 
-Keep descriptions brief: Claude Code shows a startup warning when your subagents' combined descriptions pass [the 15,000-token limit](https://code.claude.com/docs/en/errors.md#agent-descriptions-are-over-the-15000-token-limit), and still loads every subagent.
+Keep descriptions brief: Claude Code shows a startup warning when your subagents' combined descriptions pass [the 15,000-token limit](errors.md#agent-descriptions-are-over-the-15000-token-limit), and still loads every subagent.
 
-If the subagent ships in a [plugin](https://code.claude.com/docs/en/plugins/overview.md), you can measure how reliably Claude delegates to it across realistic prompts instead of checking one at a time: [`claude plugin eval`](https://code.claude.com/docs/en/plugin-evals) runs each prompt with and without the plugin and scores the results.
+If the subagent ships in a [plugin](plugins/overview.md), you can measure how reliably Claude delegates to it across realistic prompts instead of checking one at a time: [`claude plugin eval`](https://code.claude.com/docs/en/plugin-evals) runs each prompt with and without the plugin and scores the results.
 
 ### Invoke subagents explicitly
 
@@ -864,7 +864,7 @@ Have the code-reviewer subagent look at my recent changes
 
 Your full message still goes to Claude, which writes the subagent's task prompt based on what you asked. The @-mention controls which subagent Claude invokes, not what prompt it receives.
 
-Subagents provided by an enabled [plugin](https://code.claude.com/docs/en/plugins/overview.md) appear in the typeahead under their scoped name, such as `my-plugin:code-reviewer` or `my-plugin:review:security` when the plugin [organizes agents into subfolders](#choose-the-subagent-scope). Named background subagents currently running in the session also appear in the typeahead, showing their status next to the name.
+Subagents provided by an enabled [plugin](plugins/overview.md) appear in the typeahead under their scoped name, such as `my-plugin:code-reviewer` or `my-plugin:review:security` when the plugin [organizes agents into subfolders](#choose-the-subagent-scope). Named background subagents currently running in the session also appear in the typeahead, showing their status next to the name.
 
 You can also type the mention manually without using the picker: `@agent-<name>` for local subagents, or `@agent-` followed by the scoped name for plugin subagents, for example `@agent-my-plugin:code-reviewer`. While you type this form the typeahead shows file matches rather than agents. The agent mention still resolves when you submit.
 
@@ -878,7 +878,7 @@ Unless the agent's [prompt is empty](#choose-the-subagent-scope), a custom subag
 
 The agent name appears as `@<name>` in the startup header so you can confirm it's active.
 
-This works with built-in and custom subagents, and the choice persists when you resume the session: Claude Code restores the agent's tool restrictions and model along with the conversation. If the agent no longer exists when you resume, the session continues with the default tools and shows a [warning naming the agent](https://code.claude.com/docs/en/errors.md#session-agent-no-longer-available). For the system prompt in either case, see [System prompt flags in resumed conversations](cli-reference.md#system-prompt-flags-in-resumed-conversations).
+This works with built-in and custom subagents, and the choice persists when you resume the session: Claude Code restores the agent's tool restrictions and model along with the conversation. If the agent no longer exists when you resume, the session continues with the default tools and shows a [warning naming the agent](errors.md#session-agent-no-longer-available). For the system prompt in either case, see [System prompt flags in resumed conversations](cli-reference.md#system-prompt-flags-in-resumed-conversations).
 
 For a plugin-provided subagent, you can pass only the agent name and Claude Code finds it:
 
@@ -967,11 +967,11 @@ In an interactive session with [agent teams](agent-teams.md) enabled, a subagent
 
 ### API errors in subagents
 
-When something [cuts off a subagent's response mid-stream](https://code.claude.com/docs/en/errors.md#the-response-above-may-be-incomplete), and the partial response contains text but no tool calls, Claude Code prompts the subagent to continue rather than ending the run. This happens in interactive sessions too. The run ends on the error only once those continuations are used up.
+When something [cuts off a subagent's response mid-stream](errors.md#the-response-above-may-be-incomplete), and the partial response contains text but no tool calls, Claude Code prompts the subagent to continue rather than ending the run. This happens in interactive sessions too. The run ends on the error only once those continuations are used up.
 
 A subagent whose run ends on an API error, such as a usage limit or a repeated server error, reports that failure back to Claude. What Claude receives depends on where the subagent ran:
 
-* **Foreground**: if a rate limit, overload, or server error cuts off a subagent that already produced text output, the Agent tool returns that partial output with a note that the subagent was cut off and didn't finish its task. A subagent that produced nothing, or whose only output was tool calls, fails with [`Agent terminated early due to an API error`](https://code.claude.com/docs/en/errors#agent-terminated-early-due-to-an-api-error), followed by the error detail.
+* **Foreground**: if a rate limit, overload, or server error cuts off a subagent that already produced text output, the Agent tool returns that partial output with a note that the subagent was cut off and didn't finish its task. A subagent that produced nothing, or whose only output was tool calls, fails with [`Agent terminated early due to an API error`](errors.md#agent-terminated-early-due-to-an-api-error), followed by the error detail.
 * **Background**: the subagent is marked failed, and the message Claude receives when it ends names the API error and includes the subagent's last output, so partial work isn't lost.
 
 If a subagent's report opens with the following line, the subagent finished on a fallback model:
@@ -1467,6 +1467,6 @@ The system prompt tells the subagent to refuse write requests, so the hook is a 
 
 Now that you understand subagents, explore these related features:
 
-* [Distribute subagents with plugins](https://code.claude.com/docs/en/plugins/components.md#agents) to share subagents across teams or projects
+* [Distribute subagents with plugins](plugins/components.md#agents) to share subagents across teams or projects
 * [Run Claude Code programmatically](https://code.claude.com/docs/en/headless.md) with the Agent SDK for CI/CD and automation
 * [Use MCP servers](mcp.md) to give subagents access to external tools and data

@@ -380,7 +380,7 @@ If you don't want Claude to retry right away, you can approve an action for late
 You can't approve an action from the tab when its row can't show all of its command or input, or when the action has no row:
 
 * **The row reads `This row can't be approved here`**: if you intended the action, tell Claude in your next message and Claude may try it again
-* **No row, and `Not run` or a classifier error in the conversation**: auto mode's classifier gave no verdict. To see how to run the action, read [Auto mode cannot determine the safety of an action](https://code.claude.com/docs/en/errors.md#auto-mode-cannot-determine-the-safety-of-an-action)
+* **No row, and `Not run` or a classifier error in the conversation**: auto mode's classifier gave no verdict. To see how to run the action, read [Auto mode cannot determine the safety of an action](errors.md#auto-mode-cannot-determine-the-safety-of-an-action)
 
 ### Fix a denial with an allow rule, an environment entry, or a retry
 
@@ -390,7 +390,7 @@ Notices read like `bash blocked by auto mode · /permissions · Auto mode: [Data
 * **Hook**: to capture the exact input of denials programmatically, add a [`PermissionDenied` hook](hooks.md#permissiondenied), which receives it as `tool_input`. If your hook reads `reason`, expect no `Auto mode:` prefix, and text such as `Blocked by classifier` instead of `No reason provided`.
 * **Conversation**: find the tool call. If the call appears shortened or folded into a summary line such as `Ran 3 shell commands`, press `Ctrl+O` to open the [transcript viewer](https://code.claude.com/docs/en/interactive-mode.md#transcript-viewer), which expands it.
 
-The text beneath the call tells you whether there is anything to fix. A dim `Not run · auto mode's check had no usable answer` row, or text that reports a problem with the classifier itself, such as `Auto mode could not evaluate this action`, means Claude Code blocked the call without a verdict from the classifier. For a `Not run` row, press `Ctrl+O` to read the full message, then see [Auto mode cannot determine the safety of an action](https://code.claude.com/docs/en/errors.md#auto-mode-cannot-determine-the-safety-of-an-action) or [The server returned no safety verdict](https://code.claude.com/docs/en/errors.md#the-server-returned-no-safety-verdict) for what to do.
+The text beneath the call tells you whether there is anything to fix. A dim `Not run · auto mode's check had no usable answer` row, or text that reports a problem with the classifier itself, such as `Auto mode could not evaluate this action`, means Claude Code blocked the call without a verdict from the classifier. For a `Not run` row, press `Ctrl+O` to read the full message, then see [Auto mode cannot determine the safety of an action](errors.md#auto-mode-cannot-determine-the-safety-of-an-action) or [The server returned no safety verdict](errors.md#the-server-returned-no-safety-verdict) for what to do.
 
 Otherwise, a `Blocked by auto mode` line means the classifier judged the call unsafe. To let the call through, take the step that matches what Claude was trying to reach or do:
 

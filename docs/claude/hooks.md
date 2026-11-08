@@ -8,7 +8,7 @@
 
 Hooks are user-defined shell commands, HTTP endpoints, MCP tool calls, LLM prompts, or subagents that execute automatically at specific points in Claude Code's lifecycle. Claude Code fires the same hook events wherever it runs: sessions in the terminal, IDE extensions, the [Desktop app](https://code.claude.com/docs/en/desktop-quickstart.md), and [cloud sessions](https://code.claude.com/docs/en/claude-code-on-the-web.md). Use this reference to look up event schemas, configuration options, JSON input/output formats, and advanced features like async hooks, HTTP hooks, and MCP tool hooks.
 
-A plugin can also register hooks as JavaScript functions that Claude Code calls in its own process, which can draw in the interface as well as act on events. A plugin that does is a [mod](https://code.claude.com/docs/en/plugins/mods/overview.md), and those function hooks are covered in [React to events](https://code.claude.com/docs/en/plugins/mods/events.md) rather than here. The hooks on this page keep working alongside mods.
+A plugin can also register hooks as JavaScript functions that Claude Code calls in its own process, which can draw in the interface as well as act on events. A plugin that does is a [mod](plugins/mods/overview.md), and those function hooks are covered in [React to events](plugins/mods/events.md) rather than here. The hooks on this page keep working alongside mods.
 
 ## Hook lifecycle
 
@@ -240,22 +240,22 @@ Where you define a hook determines its scope:
 | `.claude/settings.json` | Single project | Yes, can be committed to the repo |
 | `.claude/settings.local.json` | Single project | No, gitignored when Claude Code saves a setting to it |
 | Managed policy settings | Organization-wide | Yes, admin-controlled |
-| [Plugin](https://code.claude.com/docs/en/plugins/overview.md) `hooks/hooks.json` | When plugin is enabled | Yes, bundled with the plugin |
+| [Plugin](plugins/overview.md) `hooks/hooks.json` | When plugin is enabled | Yes, bundled with the plugin |
 | [Skill](skills.md) frontmatter | The rest of the session once the skill is invoked. See [Hooks in skills and agents](#hooks-in-skills-and-agents) | Yes, defined in the skill file |
 | [Subagent](sub-agents.md) frontmatter | While that subagent is running | Yes, defined in the subagent file |
 
-[Cloud sessions](https://code.claude.com/docs/en/claude-code-on-the-web.md) don't read your local `~/.claude/settings.json`. In a [self-hosted environment](https://code.claude.com/docs/en/self-hosted-environments-configuration.md#permissions-and-tool-approval), Claude Code also runs the hooks the operator seeded from the runner host's `~/.claude/`, and it runs the hooks in the runner image's managed settings file when that file is among the [managed sources Claude Code applies](https://code.claude.com/docs/en/managed-settings.md#how-claude-code-combines-managed-sources), which by default means only when neither server-managed settings nor an MDM-delivered Claude Code policy supplies the managed tier. See [what carries over from your setup](https://code.claude.com/docs/en/cloud-environments.md#what-carries-over-from-your-setup) for which settings files and plugins, and so which hooks, reach a cloud session.
+[Cloud sessions](https://code.claude.com/docs/en/claude-code-on-the-web.md) don't read your local `~/.claude/settings.json`. In a [self-hosted environment](https://code.claude.com/docs/en/self-hosted-environments-configuration.md#permissions-and-tool-approval), Claude Code also runs the hooks the operator seeded from the runner host's `~/.claude/`, and it runs the hooks in the runner image's managed settings file when that file is among the [managed sources Claude Code applies](managed-settings.md#how-claude-code-combines-managed-sources), which by default means only when neither server-managed settings nor an MDM-delivered Claude Code policy supplies the managed tier. See [what carries over from your setup](https://code.claude.com/docs/en/cloud-environments.md#what-carries-over-from-your-setup) for which settings files and plugins, and so which hooks, reach a cloud session.
 
 For details on settings file resolution, see [settings](settings.md).
 
 Hooks from settings files, managed policy settings, and plugins also run inside [subagents](sub-agents.md). When a subagent calls a tool, tool events such as `PreToolUse` and `PostToolUse` fire the same configured hooks as in the main conversation, and the input carries the `agent_id` and `agent_type` [common input fields](#common-input-fields) that identify the subagent.
 
-Administrators can use [`allowManagedHooksOnly`](settings-reference.md#allowmanagedhooksonly) in [managed settings](https://code.claude.com/docs/en/managed-settings.md) to restrict which hooks run:
+Administrators can use [`allowManagedHooksOnly`](settings-reference.md#allowmanagedhooksonly) in [managed settings](managed-settings.md) to restrict which hooks run:
 
 * Your user, project, local, and plugin hooks are blocked. Hooks from plugins force-enabled in managed settings `enabledPlugins` are exempt
 * Claude Code also narrows your [`statusLine`](https://code.claude.com/docs/en/statusline), [`fileSuggestion`](settings-reference.md#filesuggestion), and [`subagentStatusLine`](https://code.claude.com/docs/en/statusline#subagent-status-lines) settings to managed settings
-* Claude Code also disables plugins with a [`command` source](https://code.claude.com/docs/en/plugins/marketplace-reference#command-plugin-source), including plugins force-enabled in managed settings `enabledPlugins`, unless [`disableCommandPluginSources`](settings-reference.md#disablecommandpluginsources) is explicitly set to `false`. `command` sources require Claude Code v2.1.229 or later
-* Claude Code also blocks marketplace [`headersHelper` commands](https://code.claude.com/docs/en/plugins/host-marketplace#authenticate-archive-downloads) unless [`disableCommandPluginSources`](settings-reference.md#disablecommandpluginsources) is explicitly set to `false`, except for a marketplace that managed settings themselves declare
+* Claude Code also disables plugins with a [`command` source](plugins/marketplace-reference.md#command-plugin-source), including plugins force-enabled in managed settings `enabledPlugins`, unless [`disableCommandPluginSources`](settings-reference.md#disablecommandpluginsources) is explicitly set to `false`. `command` sources require Claude Code v2.1.229 or later
+* Claude Code also blocks marketplace [`headersHelper` commands](plugins/host-marketplace.md#authenticate-archive-downloads) unless [`disableCommandPluginSources`](settings-reference.md#disablecommandpluginsources) is explicitly set to `false`, except for a marketplace that managed settings themselves declare
 
 See [what runs under `allowManagedHooksOnly`](settings-reference.md#what-runs-under-allowmanagedhooksonly).
 
@@ -484,9 +484,9 @@ The equivalent shell form needs quoting to handle paths with spaces or special c
 
 Both forms support the same [path placeholders](#reference-scripts-by-path), and both export them as the environment variables `CLAUDE_PROJECT_DIR`, `CLAUDE_PLUGIN_ROOT`, and `CLAUDE_PLUGIN_DATA` on the spawned process, so a script can read `process.env.CLAUDE_PLUGIN_ROOT` regardless of how it was launched.
 
-Plugin hooks additionally substitute [`${user_config.*}`](https://code.claude.com/docs/en/plugins/manifest-reference#user-configuration) values, in exec form only: the value is substituted into `command` and into each `args` element as a plain string, so no shell re-parses it.
+Plugin hooks additionally substitute [`${user_config.*}`](plugins/manifest-reference.md#user-configuration) values, in exec form only: the value is substituted into `command` and into each `args` element as a plain string, so no shell re-parses it.
 
-A shell-form plugin hook whose `command` references `${user_config.*}` fails with an [error](https://code.claude.com/docs/en/errors.md#plugin-command-references-user-config) instead of running. To use an option value from a shell-form hook, read the `$CLAUDE_PLUGIN_OPTION_<KEY>` environment variable, such as `$CLAUDE_PLUGIN_OPTION_WEBHOOK_URL` for a `webhook_url` option, or set `args` to switch the hook to exec form. Before v2.1.207, shell-form plugin hook commands also substituted `${user_config.*}`.
+A shell-form plugin hook whose `command` references `${user_config.*}` fails with an [error](errors.md#plugin-command-references-user-config) instead of running. To use an option value from a shell-form hook, read the `$CLAUDE_PLUGIN_OPTION_<KEY>` environment variable, such as `$CLAUDE_PLUGIN_OPTION_WEBHOOK_URL` for a `webhook_url` option, or set `args` to switch the hook to exec form. Before v2.1.207, shell-form plugin hook commands also substituted `${user_config.*}`.
 
 > [!NOTE]
 >
@@ -592,8 +592,8 @@ In addition to the [common fields](#common-fields), prompt and agent hooks accep
 Use these placeholders to reference hook scripts relative to the project or plugin root, regardless of the working directory when the hook runs:
 
 * `${CLAUDE_PROJECT_DIR}`: the project root where the session started. Claude Code also sets this variable in the environment of [stdio MCP servers](mcp.md#option-3-add-a-local-stdio-server) and plugin LSP servers.
-* `${CLAUDE_PLUGIN_ROOT}`: the plugin's installation directory, for scripts bundled with a [plugin](https://code.claude.com/docs/en/plugins/overview.md). See [plugin environment variables](https://code.claude.com/docs/en/plugins/manifest-reference.md#environment-variables) for how the path behaves across updates.
-* `${CLAUDE_PLUGIN_DATA}`: the plugin's [persistent data directory](https://code.claude.com/docs/en/plugins/components.md#path-variables-and-persistent-data), for dependencies and state that should survive plugin updates.
+* `${CLAUDE_PLUGIN_ROOT}`: the plugin's installation directory, for scripts bundled with a [plugin](plugins/overview.md). See [plugin environment variables](plugins/manifest-reference.md#environment-variables) for how the path behaves across updates.
+* `${CLAUDE_PLUGIN_DATA}`: the plugin's [persistent data directory](plugins/components.md#path-variables-and-persistent-data), for dependencies and state that should survive plugin updates.
 
 > [!NOTE]
 >
@@ -656,7 +656,7 @@ Prefer [exec form](#exec-form-and-shell-form) for any hook that references a pat
 > }
 > ```
 >
-> See the [plugin components reference](https://code.claude.com/docs/en/plugins/components.md#hooks) for details on creating plugin hooks.
+> See the [plugin components reference](plugins/components.md#hooks) for details on creating plugin hooks.
 
 ### Hooks in skills and agents
 
@@ -690,9 +690,9 @@ Frontmatter hooks in a project subagent run only after you accept the [workspace
 
 When a skill's frontmatter hooks don't fire after you or Claude invoke the skill, run [`/hooks`](#the-%2Fhooks-menu) in that session. If it lists them, see [Hook not firing](hooks-guide.md#hook-not-firing). If it lists none of them, the skill may be under a plugin-only lock or past a hook limit, and runs without any of its frontmatter hooks. Check for each case:
 
-* **Plugin-only lock**: your organization's administrator can lock hooks to plugins and managed settings with the [`strictPluginOnlyCustomization`](settings-reference.md#strictpluginonlycustomization-hooks) managed setting. A skill keeps its frontmatter hooks under that lock only if it's a plugin skill, a [bundled skill](skills.md#bundled-skills), or a skill in the [managed settings directory](https://code.claude.com/docs/en/managed-settings.md#delivery-mechanisms). The hooks in your own settings files don't run either.
+* **Plugin-only lock**: your organization's administrator can lock hooks to plugins and managed settings with the [`strictPluginOnlyCustomization`](settings-reference.md#strictpluginonlycustomization-hooks) managed setting. A skill keeps its frontmatter hooks under that lock only if it's a plugin skill, a [bundled skill](skills.md#bundled-skills), or a skill in the [managed settings directory](managed-settings.md#delivery-mechanisms). The hooks in your own settings files don't run either.
   * **Check**: type `/status` in a Claude Code session. If the [`Setting sources` line](settings.md#check-what-your-organization-enforces) includes `Enterprise managed settings`, ask your administrator whether `strictPluginOnlyCustomization` locks hooks.
-  * **Fix**: move the skill into a [plugin](https://code.claude.com/docs/en/plugins/create.md#convert-an-existing-claude-setup), because plugin skills keep their frontmatter hooks. List the plugin in a [marketplace](https://code.claude.com/docs/en/plugins/create-marketplace.md#create-a-marketplace), then install it from there. If Claude Code refuses the marketplace with [`is blocked by enterprise policy`](https://code.claude.com/docs/en/plugins/troubleshooting#marketplace-source-is-blocked-by-enterprise-policy), ask your administrator to allow that marketplace.
+  * **Fix**: move the skill into a [plugin](plugins/create.md#convert-an-existing-claude-setup), because plugin skills keep their frontmatter hooks. List the plugin in a [marketplace](plugins/create-marketplace.md#create-a-marketplace), then install it from there. If Claude Code refuses the marketplace with [`is blocked by enterprise policy`](plugins/troubleshooting.md#marketplace-source-is-blocked-by-enterprise-policy), ask your administrator to allow that marketplace.
 * **Hook limit**: in Claude Code v2.1.304 or later, each source of skills has its own limit per session. Your project, your personal skills folder, and each plugin count as separate sources. The skills from one source can register at most 1,024 hooks. Those hooks' matchers can total at most 16,384 characters. A matcher with several hooks under it counts once for each hook.
   * **Check**: repeat the session where the hook didn't fire, with debug logging on:
     1. Start a new session from your shell with `claude --debug`. If you don't start sessions from a shell, type [`/debug`](commands.md#all-commands) first in the new session instead.
@@ -1414,7 +1414,7 @@ When you start or continue a conversation with `-p`, you also need to supply a p
 
 On success, `--init-only` prints nothing to the terminal. To confirm the hooks ran, start with `claude --debug-file <path> --init-only`, replacing `<path>` with a log file location, and check the log for the Setup and SessionStart hook entries.
 
-Because Setup doesn't fire on every launch, a plugin that needs a dependency installed can't rely on Setup alone. The practical pattern is to check for the dependency on first use and install on miss, for example a hook or skill that tests for `${CLAUDE_PLUGIN_DATA}/node_modules` and runs `npm install` if absent. See the [persistent data directory](https://code.claude.com/docs/en/plugins/components.md#path-variables-and-persistent-data) for where to store installed dependencies. If you distribute your plugin through a marketplace, you may not need this pattern: Claude Code [installs eligible Node.js package dependencies automatically](https://code.claude.com/docs/en/plugins/loading.md#node-js-package-dependencies) when it caches the plugin.
+Because Setup doesn't fire on every launch, a plugin that needs a dependency installed can't rely on Setup alone. The practical pattern is to check for the dependency on first use and install on miss, for example a hook or skill that tests for `${CLAUDE_PLUGIN_DATA}/node_modules` and runs `npm install` if absent. See the [persistent data directory](plugins/components.md#path-variables-and-persistent-data) for where to store installed dependencies. If you distribute your plugin through a marketplace, you may not need this pattern: Claude Code [installs eligible Node.js package dependencies automatically](plugins/loading.md#node-js-package-dependencies) when it caches the plugin.
 
 #### Setup input
 
@@ -2008,7 +2008,7 @@ After a denial with this text, Claude can issue the changed call again so that t
 * It can deny the call or send it to the permission prompt
 * Any `updatedInput` it returns is dropped, so what runs is what the server reviewed
 
-You don't need to change your hook for this denial unless [Claude tells you in its reply that auto mode couldn't check the call](https://code.claude.com/docs/en/errors.md#hook-changed-input-after-review).
+You don't need to change your hook for this denial unless [Claude tells you in its reply that auto mode couldn't check the call](errors.md#hook-changed-input-after-review).
 
 In the sessions that show this text, a [`command` hook](#command-hook-fields) in settings or a plugin's hooks file can change Bash, PowerShell, Monitor, Edit, Write, and NotebookEdit calls without this denial. The denial can still appear, such as when any hook changed an earlier call in the same Claude response or a Bash command asks to run outside the sandbox.
 
@@ -2455,7 +2455,7 @@ Returning `decision: "block"` or `continue: false` stops the agentic loop before
 
 ### PermissionDenied
 
-Runs when [auto mode](permission-modes.md#eliminate-prompts-with-auto-mode) denies a tool call, including when it denies without a classifier verdict because [a safety check separate from auto mode refused the classifier's own request](https://code.claude.com/docs/en/errors.md#auto-mode-cannot-determine-the-safety-of-an-action) or its response didn't parse. This hook only fires in auto mode: it doesn't run when you manually deny a permission dialog, when a `PreToolUse` hook blocks a call, or when a `deny` rule matches. Use it to log denials, adjust configuration, or tell the model it may retry the tool call.
+Runs when [auto mode](permission-modes.md#eliminate-prompts-with-auto-mode) denies a tool call, including when it denies without a classifier verdict because [a safety check separate from auto mode refused the classifier's own request](errors.md#auto-mode-cannot-determine-the-safety-of-an-action) or its response didn't parse. This hook only fires in auto mode: it doesn't run when you manually deny a permission dialog, when a `PreToolUse` hook blocks a call, or when a `deny` rule matches. Use it to log denials, adjust configuration, or tell the model it may retry the tool call.
 
 Matches on tool name, same values as PreToolUse.
 
@@ -2499,7 +2499,7 @@ PermissionDenied hooks can tell the model it may retry the denied tool call. Ret
 
 When `retry` is `true`, Claude Code adds a message to the conversation telling the model it may retry the tool call. Claude Code doesn't reverse the denial itself. If your hook doesn't return JSON, or returns `retry: false`, the denial stands and the model receives the original rejection message.
 
-Claude Code ignores `retry: true` when the classifier produced [no verdict on the action](https://code.claude.com/docs/en/errors.md#auto-mode-cannot-determine-the-safety-of-an-action): its response didn't parse, or a safety check separate from auto mode refused the classifier's own request. For those denials, Claude Code already tells the model in the rejection message whether to retry later or move on.
+Claude Code ignores `retry: true` when the classifier produced [no verdict on the action](errors.md#auto-mode-cannot-determine-the-safety-of-an-action): its response didn't parse, or a safety check separate from auto mode refused the classifier's own request. For those denials, Claude Code already tells the model in the rejection message whether to retry later or move on.
 
 ### Notification
 
@@ -2522,7 +2522,7 @@ You receive these hook events even with desktop notifications turned off: the `p
 | `quota_auto_resume_fired` | Claude Code continues your task after a claude.ai usage limit paused it: at the reset, or sooner when something you do in Claude Code during the wait, such as adding usage credits, upgrading your plan, or switching models, makes usage available again, with the [model-setting exception](https://code.claude.com/docs/en/interactive-mode.md#wait-for-a-usage-limit-to-reset) |
 | `quota_auto_resume_stale` | A claude.ai usage limit reset while your computer slept for more than about 30 minutes. Claude Code waits for you to press `Enter` instead of continuing. After a shorter sleep it continues and fires `quota_auto_resume_fired` instead |
 | `quota_auto_resume_disabled` | Claude Code ends its wait for a claude.ai usage limit without continuing your task: [`autoContinueAtUsageLimit`](settings-reference.md#autocontinueatusagelimit) turned off or the reset moved more than 24 hours away during a wait Claude Code started on its own, the continued task kept hitting the limit, or the continuation was blocked before it reached the model. Doesn't fire when you press `Esc` or `Ctrl+C`, or pick **Don't continue automatically** |
-| `plugin_notification` | A [mod](https://code.claude.com/docs/en/plugins/mods/api.md#show-something-without-starting-a-turn) raises a notification with `$.ui.notify`. The hook's `title` is the mod's name unless the mod set one |
+| `plugin_notification` | A [mod](plugins/mods/api.md#show-something-without-starting-a-turn) raises a notification with `$.ui.notify`. The hook's `title` is the mod's name unless the mod set one |
 
 The `quota_auto_resume_fired`, `quota_auto_resume_stale`, and `quota_auto_resume_disabled` types require Claude Code v2.1.234 or later. The `auth_storage_failure` type requires v2.1.288 or later.
 
@@ -2599,7 +2599,7 @@ Notification hooks can't block or modify notifications. Claude Code discards the
 
 Runs when Claude spawns a subagent with the Agent tool, when Claude [resumes a subagent](sub-agents.md#resume-subagents), and each time an in-process [agent team](agent-teams.md) teammate handles a new message. Supports matchers to filter by agent type name. For built-in agents, this is the agent name like `general-purpose`, `Explore`, or `Plan`. For [custom subagents](sub-agents.md), this is the `name` field from the agent's frontmatter, not the filename.
 
-For subagents shipped by a [plugin](https://code.claude.com/docs/en/plugins/overview.md), the agent type is the plugin-scoped identifier such as `my-plugin:reviewer`, not the bare frontmatter name. The colon places a plugin-scoped name on the regular-expression path, so anchor the matcher with `^` and `$` for an exact match: `^my-plugin:reviewer$`.
+For subagents shipped by a [plugin](plugins/overview.md), the agent type is the plugin-scoped identifier such as `my-plugin:reviewer`, not the bare frontmatter name. The colon places a plugin-scoped name on the regular-expression path, so anchor the matcher with `^` and `$` for an exact match: `^my-plugin:reviewer$`.
 
 #### SubagentStart input
 

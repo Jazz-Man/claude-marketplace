@@ -6,7 +6,7 @@ Hooks are user-defined shell commands. Claude Code runs them at specific points 
 
 For decisions that require judgment rather than deterministic rules, you can also use [prompt-based hooks](#prompt-based-hooks) or [agent-based hooks](#agent-based-hooks) that use a Claude model to evaluate conditions.
 
-For other ways to extend Claude Code, see [skills](skills.md) for giving Claude additional instructions and executable commands, [subagents](sub-agents.md) for running tasks in isolated contexts, and [plugins](https://code.claude.com/docs/en/plugins/overview.md) for packaging extensions to share across projects.
+For other ways to extend Claude Code, see [skills](skills.md) for giving Claude additional instructions and executable commands, [subagents](sub-agents.md) for running tasks in isolated contexts, and [plugins](plugins/overview.md) for packaging extensions to share across projects.
 
 > [!TIP]
 >
@@ -190,7 +190,7 @@ The empty `matcher` fires on all notification types. To fire only on specific ev
 | `quota_auto_resume_fired` | Claude Code continues your task after a claude.ai usage limit paused it: at the reset, or sooner when something you do in Claude Code during the wait, such as adding usage credits, upgrading your plan, or switching models, makes usage available again, with the [model-setting exception](https://code.claude.com/docs/en/interactive-mode.md#wait-for-a-usage-limit-to-reset) |
 | `quota_auto_resume_stale` | A claude.ai usage limit reset while your computer slept for more than about 30 minutes. Claude Code waits for you to press `Enter` instead of continuing. After a shorter sleep it continues and fires `quota_auto_resume_fired` instead |
 | `quota_auto_resume_disabled` | Claude Code ends its wait for a claude.ai usage limit without continuing your task: [`autoContinueAtUsageLimit`](settings-reference.md#autocontinueatusagelimit) turned off or the reset moved more than 24 hours away during a wait Claude Code started on its own, the continued task kept hitting the limit, or the continuation was blocked before it reached the model. Doesn't fire when you press `Esc` or `Ctrl+C`, or pick **Don't continue automatically** |
-| `plugin_notification` | A [mod](https://code.claude.com/docs/en/plugins/mods/api.md#show-something-without-starting-a-turn) raises a notification with `$.ui.notify`. The hook's `title` is the mod's name unless the mod set one |
+| `plugin_notification` | A [mod](plugins/mods/api.md#show-something-without-starting-a-turn) raises a notification with `$.ui.notify`. The hook's `title` is the mod's name unless the mod set one |
 
 Claude Code times `permission_prompt` differently in a terminal and in Claude Desktop, the VS Code extension, and other hosts that answer permission requests through the Agent SDK. See [when each notification type fires](hooks.md#notification) for both timings.
 
@@ -811,7 +811,7 @@ Where you add a hook determines its scope:
 | `.claude/settings.json` | Single project | Yes, can be committed to the repo |
 | `.claude/settings.local.json` | Single project | No, gitignored when Claude Code saves a setting to it |
 | Managed policy settings | Organization-wide | Yes, admin-controlled |
-| [Plugin](https://code.claude.com/docs/en/plugins/overview.md) `hooks/hooks.json` | When plugin is enabled | Yes, bundled with the plugin |
+| [Plugin](plugins/overview.md) `hooks/hooks.json` | When plugin is enabled | Yes, bundled with the plugin |
 | [Skill](skills.md) frontmatter | The rest of the session once the skill is invoked. See [Hooks in skills and agents](hooks.md#hooks-in-skills-and-agents) | Yes, defined in the skill file |
 | [Subagent](sub-agents.md) frontmatter | While that subagent is running | Yes, defined in the subagent file |
 
@@ -960,7 +960,7 @@ With a hook in a settings file or a plugin's `hooks/hooks.json` you can't loosen
 
 > [!NOTE]
 >
-> If your machine has no [managed settings](settings.md#check-what-your-organization-enforces) and your session doesn't use [`/login` credentials](https://code.claude.com/docs/en/authentication#authentication-precedence) for a Team or Enterprise plan, a [mod](https://code.claude.com/docs/en/plugins/mods/overview.md) can approve a call your `PreToolUse` hook blocked. A session that runs on an API key or a long-lived [`CLAUDE_CODE_OAUTH_TOKEN`](https://code.claude.com/docs/en/authentication#generate-a-long-lived-token) instead isn't using that login, even when that login is stored.
+> If your machine has no [managed settings](settings.md#check-what-your-organization-enforces) and your session doesn't use [`/login` credentials](https://code.claude.com/docs/en/authentication#authentication-precedence) for a Team or Enterprise plan, a [mod](plugins/mods/overview.md) can approve a call your `PreToolUse` hook blocked. A session that runs on an API key or a long-lived [`CLAUDE_CODE_OAUTH_TOKEN`](https://code.claude.com/docs/en/authentication#generate-a-long-lived-token) instead isn't using that login, even when that login is stored.
 >
 > In plan mode, a mod can approve such a blocked call only when it's read-only, so not a file edit. For the cases where a mod's approval doesn't get past your rules and hooks, see [Extend permissions with hooks](permissions.md#precedence-among-rules-hooks-and-mods).
 

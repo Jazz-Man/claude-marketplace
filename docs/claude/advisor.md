@@ -105,7 +105,7 @@ Subagents inherit the configured advisor and apply the same pairing check agains
 
 Claude Code validates the pairing before sending a request, and the API validates it again:
 
-* For an advisor that ranks below the main model, Claude Code doesn't attach it to the main model's requests. The `/advisor` command output and a notification show this; see [Advisor is less capable than the current main model](https://code.claude.com/docs/en/errors.md#advisor-is-less-capable-than-the-current-main-model). Subagents whose own model satisfies the pairing may still use the advisor.
+* For an advisor that ranks below the main model, Claude Code doesn't attach it to the main model's requests. The `/advisor` command output and a notification show this; see [Advisor is less capable than the current main model](errors.md#advisor-is-less-capable-than-the-current-main-model). Subagents whose own model satisfies the pairing may still use the advisor.
 * If the API refuses the pairing of an advisor that Claude Code attached, Claude Code resends that request without the advisor. The conversation continues without one, so you see no error and get no advisor calls. If you then pick a different advisor with `/advisor`, it takes effect after `/clear` or `/compact` and in new sessions.
 * If the main model or the advisor is a model Claude Code does not recognize, the advisor is not attached.
 

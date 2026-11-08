@@ -139,7 +139,7 @@ If a turn fails on an error that won't clear until you fix it, Claude Code clear
 After any other failure the goal stays set. In an interactive session on Claude Code v2.1.269 or later, Claude Code also prints a line naming the cause and either retries on its own or waits for you:
 
 * **Retry**: after a failure that tends to clear on its own, such as an overloaded server or a dropped connection, a notice starting with `Goal still active` shows the wait before the next attempt. After three automatic retries, the goal pauses instead.
-* **Pause**: after a failure that a retry would only repeat, such as an API rate limit, a claude.ai [usage limit](https://code.claude.com/docs/en/errors.md#youve-hit-your-session-limit), or a hook that ended the turn, a notice starting with `Goal paused` names the cause. If the session is [waiting to continue automatically when a usage limit resets](https://code.claude.com/docs/en/interactive-mode.md#wait-for-a-usage-limit-to-reset), Claude resumes work toward the goal then.
+* **Pause**: after a failure that a retry would only repeat, such as an API rate limit, a claude.ai [usage limit](errors.md#youve-hit-your-session-limit), or a hook that ended the turn, a notice starting with `Goal paused` names the cause. If the session is [waiting to continue automatically when a usage limit resets](https://code.claude.com/docs/en/interactive-mode.md#wait-for-a-usage-limit-to-reset), Claude resumes work toward the goal then.
 
 Send a message at any time to start the next turn immediately. To turn automatic retries off, set [`CLAUDE_CODE_GOAL_CHECKIN_MINUTES`](env-vars.md) to `0`, which also turns [check-ins](#background-work-defers-evaluation) off.
 

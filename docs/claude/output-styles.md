@@ -121,7 +121,7 @@ Save it at one of three levels. The file name becomes the style name unless you 
 
 * User: `~/.claude/output-styles`
 * Project: `.claude/output-styles`
-* Managed policy: `.claude/output-styles` inside the [managed settings directory](https://code.claude.com/docs/en/managed-settings.md#delivery-mechanisms)
+* Managed policy: `.claude/output-styles` inside the [managed settings directory](managed-settings.md#delivery-mechanisms)
 
 Project output styles load from every `.claude/output-styles/` between the working directory and the repository root. When more than one of these nested directories defines a style with the same name, Claude Code uses the one closest to the working directory.
 
@@ -149,7 +149,7 @@ Use `flowchart TD` for control flow and `sequenceDiagram` for request paths. Kee
 
 Run `/output-style <style>` in the terminal, or run `/config` and select your style under **Output style**. Claude uses the new style starting with your next message. In the terminal, Claude Code reads style files when it starts, so if you create or edit one during a running session, restart Claude Code to pick up the change.
 
-[Plugins](https://code.claude.com/docs/en/plugins/manifest-reference.md) can also ship output styles in an `output-styles/` directory.
+[Plugins](plugins/manifest-reference.md) can also ship output styles in an `output-styles/` directory.
 
 ### Frontmatter reference
 
@@ -196,5 +196,5 @@ The built-in Explanatory and Learning styles produce longer responses than Defau
 
 * [Settings](settings.md): where the `outputStyle` field lives and how settings precedence works
 * [Permission modes](permission-modes.md): how the Proactive style compares to auto mode
-* [Plugins](https://code.claude.com/docs/en/plugins/overview.md): package and distribute output styles alongside skills, hooks, and agents
+* [Plugins](plugins/overview.md): package and distribute output styles alongside skills, hooks, and agents
 * [Debug your configuration](https://code.claude.com/docs/en/debug-your-config.md): diagnose why an output style isn't taking effect

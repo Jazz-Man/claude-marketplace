@@ -1,18 +1,14 @@
-> ## Documentation Index
-> Fetch the complete documentation index at: https://code.claude.com/docs/llms.txt
-> Use this file to discover all available pages before exploring further.
-
 # Recommend your plugin from your CLI
 
 > Prompt Claude Code users to install your official-marketplace plugin by emitting a claude-code-hint tag from your CLI or SDK.
 
 If you maintain a CLI or SDK, your tool can prompt Claude Code users to install your plugin. When your CLI detects that it's running inside Claude Code, have it write a one-line `<claude-code-hint />` tag to stderr. Claude Code removes the line from Bash and PowerShell tool output before the model sees the output, then shows the user a one-time install prompt.
 
-This page applies only if your plugin is listed in `claude-plugins-official` or another marketplace with one of Anthropic's [official marketplace names](https://code.claude.com/docs/en/plugins/security.md#official-marketplace-names). The community marketplace, `claude-community`, isn't one of them.
+This page applies only if your plugin is listed in `claude-plugins-official` or another marketplace with one of Anthropic's [official marketplace names](plugins/security.md#official-marketplace-names). The community marketplace, `claude-community`, isn't one of them.
 
 > [!NOTE]
 >
-> To publish a plugin, see [Publish and distribute a plugin](https://code.claude.com/docs/en/plugins/publish.md).
+> To publish a plugin, see [Publish and distribute a plugin](plugins/publish.md).
 
 ## Emit the hint
 
@@ -23,7 +19,7 @@ Claude Code sets `CLAUDECODE=1` in the commands it runs through the Bash and Pow
 * **`CLAUDECODE`**: set by every Claude Code version. IDE extensions also set it in their integrated terminals, so a gate on `CLAUDECODE` alone also emits the tag when a person runs your CLI themselves in one of those terminals
 * **`CLAUDE_CODE_CHILD_SESSION`**: set only in subprocesses Claude Code itself starts. Use it when you can require v2.1.172 or later
 
-The [environment variables reference](https://code.claude.com/docs/en/env-vars.md) has the details.
+The [environment variables reference](env-vars.md) has the details.
 
 The following examples gate on `CLAUDECODE` for the widest reach and emit a hint for a plugin named `example-cli` in the official marketplace:
 
@@ -114,11 +110,11 @@ When the checks in [Check when the prompt appears](#check-when-the-prompt-appear
 
 The dialog names the first word of the shell command Claude ran, so users can spot a mismatch. Each answer has one effect:
 
-* **Yes, install**: installs the plugin at [user scope](https://code.claude.com/docs/en/plugins/install.md)
+* **Yes, install**: installs the plugin at [user scope](plugins/install.md)
 * **No, and don't show plugin installation hints again**: turns off future hint prompts for that user
 * **No answer for 30 seconds**: counts as **No**
 
 ## Next steps
 
-* [Publish and distribute a plugin](https://code.claude.com/docs/en/plugins/publish.md): the routes for distributing a plugin, including the official marketplace, which the hint requires
-* [Plugin commands reference](https://code.claude.com/docs/en/plugins/cli-reference.md#plugin-install): the shell command that installs the same plugin outside a session
+* [Publish and distribute a plugin](plugins/publish.md): the routes for distributing a plugin, including the official marketplace, which the hint requires
+* [Plugin commands reference](plugins/cli-reference.md#plugin-install): the shell command that installs the same plugin outside a session

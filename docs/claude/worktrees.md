@@ -110,7 +110,7 @@ These checks read the path an edit targets, the directory a command runs in, and
 
 The checks apply to the repository you launched Claude Code from. They also cover the main checkout a linked worktree is linked from. For PowerShell commands, Claude Code applies only the working-directory check.
 
-Claude sees each refusal as a tool error that names the worktree and says how to proceed. For a refused command, see [what the refusal message means and how to clear it](https://code.claude.com/docs/en/errors.md#command-blocked-by-the-worktree-isolation-checks).
+Claude sees each refusal as a tool error that names the worktree and says how to proceed. For a refused command, see [what the refusal message means and how to clear it](errors.md#command-blocked-by-the-worktree-isolation-checks).
 
 ## Isolate subagents with worktrees
 
@@ -250,7 +250,7 @@ Configure a [`WorktreeCreate` hook](hooks.md#worktreecreate) to replace the defa
 A worktree gets its own files and branch, but it shares the following with the main checkout:
 
 * **The repository's `.git` directory**: git commands in a worktree write to the main repository's shared `.git` directory, and [sandboxing](sandboxing.md#filesystem-isolation) allows those writes, so commands such as `git commit` work from inside a worktree with the sandbox enabled.
-* **Plugins**: plugins installed at [project scope](https://code.claude.com/docs/en/plugins/loading.md#find-where-a-plugin-is-enabled) from the main checkout also load in worktrees of the same repository, so you don't need to reinstall them per worktree.
+* **Plugins**: plugins installed at [project scope](plugins/loading.md#find-where-a-plugin-is-enabled) from the main checkout also load in worktrees of the same repository, so you don't need to reinstall them per worktree.
 * **Permission approvals**: choosing "Yes, and don't ask again" for a Bash command in a worktree session saves the rule to the main checkout's `.claude/settings.local.json`. The rule applies in the main checkout and in every other worktree of the repository, and it survives the worktree's removal.
 
   On Windows and in the other cases where Claude Code [doesn't use the repository root](settings.md#where-claude-code-looks-for-each-file), the rule stays with that worktree. See [where approvals are saved](permissions.md#permission-system).

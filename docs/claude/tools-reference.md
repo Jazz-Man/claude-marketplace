@@ -108,7 +108,7 @@ Which tools a non-fork subagent can use depends on the `tools` and `disallowedTo
 
 In every case, the resolved set is limited to the [tools available to subagents](sub-agents.md#available-tools): a tool that isn't available to subagents is never granted, even when listed in `tools`. Where the conditions in the `SubagentHandback` tools-table entry hold, Claude Code also gives the subagent that tool, even if you leave it out of `tools` or list it in `disallowedTools`.
 
-If every entry in a subagent's `tools` list fails to match a usable tool, the Agent tool usually returns an error naming the entries instead of launching the subagent; see [Agent would be spawned with zero tools](https://code.claude.com/docs/en/errors.md#agent-would-be-spawned-with-zero-tools) for the message and how to fix each entry.
+If every entry in a subagent's `tools` list fails to match a usable tool, the Agent tool usually returns an error naming the entries instead of launching the subagent; see [Agent would be spawned with zero tools](errors.md#agent-would-be-spawned-with-zero-tools) for the message and how to fix each entry.
 
 Launching the subagent doesn't itself prompt for permission. Claude Code checks the subagent's own tool calls against your permission rules as it runs.
 
@@ -232,7 +232,7 @@ Claude Code can also count other kinds of processes it starts against the same l
 * `mcp`: local [MCP servers](mcp.md)
 * `lsp`: [language servers](#lsp-tool-behavior)
 * `hooks`: [hook](hooks.md) commands
-* `plugin`: commands that [plugins](https://code.claude.com/docs/en/plugins/overview.md) run
+* `plugin`: commands that [plugins](plugins/overview.md) run
 * `helper`: Claude Code's own helper commands, such as `git`
 * `agent`: child Claude Code processes, such as [agent teammates](agent-teams.md)
 
@@ -262,7 +262,7 @@ When Claude views a file this way, Claude Code also loads any [subdirectory `CLA
 
 Claude can't use [NotebookEdit](#notebookedit-tool-behavior) on a file that isn't valid UTF-8. The same goes for Edit, unless the file starts with a little-endian UTF-16 byte-order mark. When Claude tries, the tool refuses the change and leaves the file untouched. Refused files include non-ASCII text saved in a legacy encoding such as Windows-1252 or Shift-JIS, binary files, and UTF-8 with an invalid byte sequence.
 
-The tools refuse because they save the whole file back as UTF-8, which would replace every byte they can't decode with the replacement character `U+FFFD`. Instead, the [error Claude receives](https://code.claude.com/docs/en/errors.md#file-is-not-valid-utf-8) tells it to make the change with a shell command that keeps the file's encoding, or to ask you about converting it to UTF-8 first.
+The tools refuse because they save the whole file back as UTF-8, which would replace every byte they can't decode with the replacement character `U+FFFD`. Instead, the [error Claude receives](errors.md#file-is-not-valid-utf-8) tells it to make the change with a shell command that keeps the file's encoding, or to ask you about converting it to UTF-8 first.
 
 Claude can still replace such a file with Write, unless the new content contains `U+FFFD`, the character Read shows Claude in place of bytes it can't decode. That guard stops Claude from writing back the garbled text it read. When Write does replace the file, it saves the new content as UTF-8, so the file's original encoding is lost.
 
@@ -360,7 +360,7 @@ The LSP tool gives Claude code intelligence from a running language server. Afte
 * Find implementations of an interface
 * Trace call hierarchies
 
-Claude Code keeps the tool inactive until you install a [code intelligence plugin](https://code.claude.com/docs/en/plugins/code-intelligence.md) for your language. In [cloud sessions](https://code.claude.com/docs/en/claude-code-on-the-web.md), Claude Code doesn't start plugin language servers, so the LSP tool stays inactive there. Claude Code takes the language server's configuration from the plugin, and you install the server binary yourself.
+Claude Code keeps the tool inactive until you install a [code intelligence plugin](plugins/code-intelligence.md) for your language. In [cloud sessions](https://code.claude.com/docs/en/claude-code-on-the-web.md), Claude Code doesn't start plugin language servers, so the LSP tool stays inactive there. Claude Code takes the language server's configuration from the plugin, and you install the server binary yourself.
 
 Claude Code returns an error result for each LSP call on a file whose language server it can't start.
 
@@ -393,7 +393,7 @@ Monitor needs a minimum version or Git Bash in these cases:
 * **Minimum version**: on Amazon Bedrock, Claude Platform on AWS, Google Cloud's Agent Platform, or Microsoft Foundry, or with `DISABLE_TELEMETRY` or `CLAUDE_CODE_DISABLE_NONESSENTIAL_TRAFFIC` set, Monitor requires Claude Code v2.1.310 or later. The requirement applies when [feature-flag fetching](env-vars.md#features-that-need-feature-flag-fetching) is off
 * **Windows**: the tool is available only when [Git Bash](https://code.claude.com/docs/en/setup.md#set-up-on-windows) is installed
 
-Plugins can declare monitors that start automatically when the plugin is active, instead of asking Claude to start them. See [plugin monitors](https://code.claude.com/docs/en/plugins/components.md#monitors).
+Plugins can declare monitors that start automatically when the plugin is active, instead of asking Claude to start them. See [plugin monitors](plugins/components.md#monitors).
 
 ### WebSocket source
 
@@ -518,7 +518,7 @@ Read handles several file types beyond plain text:
 
   If Claude misses fine pixel-level detail in a large image, ask it to crop the region you care about, such as with ImageMagick via Bash, and then read the crop.
 
-  Read refuses an image file larger than 128 MB with an error that tells Claude to resize the image or export a smaller copy, then read that copy. If Claude stops at the error instead of doing so, see [File is too large to read as an image](https://code.claude.com/docs/en/errors.md#file-is-too-large-to-read-as-an-image).
+  Read refuses an image file larger than 128 MB with an error that tells Claude to resize the image or export a smaller copy, then read that copy. If Claude stops at the error instead of doing so, see [File is too large to read as an image](errors.md#file-is-too-large-to-read-as-an-image).
 * **PDFs**: Claude reads short `.pdf` files whole. For PDFs longer than 10 pages, it reads in ranges with a `pages` parameter, such as `"1-5"`, up to 20 pages at a time. Page-range reads render pages with `pdftoppm` from poppler-utils, so install it with `brew install poppler` on macOS or `apt-get install poppler-utils` on Debian and Ubuntu. On Windows and other platforms, install a poppler build that puts `pdftoppm` on your `PATH`. Without it, a page-range read fails with `pdftoppm is not installed`.
 * **Jupyter notebooks**: `.ipynb` files return all cells with their outputs, including code, markdown, and visualizations. A notebook whose cells come to more than 256 KB, or more than the [token limit](#large-files), returns an error instead. Claude Code refuses to read a notebook file over 100 MB; the error tells Claude how to read a portion of the notebook instead, such as a slice of cells, with a shell command.
 
@@ -581,7 +581,7 @@ When you discard a draft, Claude Code deletes it from your machine. A draft you 
 
 ### Turn Claude-drafted feedback off
 
-Set **Claude-drafted feedback** to `off` in `/config`, which writes the [`feedbackDrafts`](settings-reference.md#feedbackdrafts) setting, or set [`CLAUDE_CODE_SEND_FEEDBACK=0`](env-vars.md) for one session. With either, Claude can't queue drafts. To keep drafting on without cards, set `feedbackDrafts` to `quiet` instead. Administrators can set `feedbackDrafts` in [managed settings](https://code.claude.com/docs/en/managed-settings.md), which takes precedence over your own setting.
+Set **Claude-drafted feedback** to `off` in `/config`, which writes the [`feedbackDrafts`](settings-reference.md#feedbackdrafts) setting, or set [`CLAUDE_CODE_SEND_FEEDBACK=0`](env-vars.md) for one session. With either, Claude can't queue drafts. To keep drafting on without cards, set `feedbackDrafts` to `quiet` instead. Administrators can set `feedbackDrafts` in [managed settings](managed-settings.md), which takes precedence over your own setting.
 
 ### Sessions without Claude-drafted feedback
 
@@ -629,7 +629,7 @@ This makes WebFetch lossy by design. The extraction prompt determines what reach
 
 A few behaviors shape the response Claude receives:
 
-* WebFetch refuses `localhost` and any other hostname without a dot, such as a bare intranet name, before making a request. The [error it returns](https://code.claude.com/docs/en/errors.md#webfetch-cannot-fetch-localhost) tells Claude to reach local servers with `curl` through Bash instead.
+* WebFetch refuses `localhost` and any other hostname without a dot, such as a bare intranet name, before making a request. The [error it returns](errors.md#webfetch-cannot-fetch-localhost) tells Claude to reach local servers with `curl` through Bash instead.
 * HTTP URLs are automatically upgraded to HTTPS.
 * WebFetch reads up to 100,000 characters of a page's content per call. On Claude Code v2.1.290 or later, the result for a longer page tells Claude how much went unread, so Claude can fetch the next part.
 * WebFetch caches each response for 15 minutes by default, so repeated fetches of the same URL return quickly. On Claude Code v2.1.233 or later, set [`CLAUDE_CODE_WEBFETCH_CACHE_TTL_MS`](env-vars.md#variables) to change how long WebFetch keeps each response.

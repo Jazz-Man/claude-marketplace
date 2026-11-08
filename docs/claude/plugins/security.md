@@ -1,7 +1,3 @@
-> ## Documentation Index
-> Fetch the complete documentation index at: https://code.claude.com/docs/llms.txt
-> Use this file to discover all available pages before exploring further.
-
 # Plugin security and trust
 
 > Decide whether to trust a plugin before you install it, from what a plugin can do on your machine to how to review one and remove it.
@@ -26,20 +22,20 @@ Start with [what a plugin can do](#understand-what-a-plugin-can-do) and [which m
 
 A plugin can carry content that runs code on your machine with your user privileges and content that enters Claude's context as instructions, so [review a plugin before you install it](#review-a-plugin-before-you-install). Here's what an installed plugin can do:
 
-* **Hooks**: a plugin's [hooks](https://code.claude.com/docs/en/hooks.md) run as shell commands at points in Claude Code's lifecycle, such as before or after a tool call.
-* **Monitors**: a plugin's [monitors](https://code.claude.com/docs/en/plugins/components.md#monitors) run as background shell commands that Claude Code starts on its own when the session starts, when you reload plugins, or the first time a named skill runs.
-* **Mods**: a plugin's [mod](https://code.claude.com/docs/en/plugins/mods/overview.md) runs JavaScript inside Claude Code with your permissions. To list what a mod does before you install it, see [Decide whether to trust a mod](https://code.claude.com/docs/en/plugins/mods/overview.md#decide-whether-to-trust-a-mod).
-* **MCP and LSP servers**: Claude Code connects to the [MCP servers](https://code.claude.com/docs/en/mcp.md) an enabled plugin declares and gives Claude their tools. A stdio MCP server runs as a process that Claude Code starts on your machine. Claude Code also starts the language servers the plugin declares.
-* **`bin/` directory**: Claude Code adds each enabled plugin's `bin/` directory to the `PATH` of the Bash tool's shell, so Claude's Bash commands can run any executable there. A command that Claude runs with the [PowerShell tool](https://code.claude.com/docs/en/tools-reference.md#powershell-tool) gets those directories on its `PATH` when it runs outside the [sandbox](https://code.claude.com/docs/en/sandboxing.md), and not when it runs inside it.
+* **Hooks**: a plugin's [hooks](hooks.md) run as shell commands at points in Claude Code's lifecycle, such as before or after a tool call.
+* **Monitors**: a plugin's [monitors](plugins/components.md#monitors) run as background shell commands that Claude Code starts on its own when the session starts, when you reload plugins, or the first time a named skill runs.
+* **Mods**: a plugin's [mod](plugins/mods/overview.md) runs JavaScript inside Claude Code with your permissions. To list what a mod does before you install it, see [Decide whether to trust a mod](plugins/mods/overview.md#decide-whether-to-trust-a-mod).
+* **MCP and LSP servers**: Claude Code connects to the [MCP servers](mcp.md) an enabled plugin declares and gives Claude their tools. A stdio MCP server runs as a process that Claude Code starts on your machine. Claude Code also starts the language servers the plugin declares.
+* **`bin/` directory**: Claude Code adds each enabled plugin's `bin/` directory to the `PATH` of the Bash tool's shell, so Claude's Bash commands can run any executable there. A command that Claude runs with the [PowerShell tool](tools-reference.md#powershell-tool) gets those directories on its `PATH` when it runs outside the [sandbox](sandboxing.md), and not when it runs inside it.
 * **Skills, commands, and agents**: these enter Claude's context as instructions, so they influence what Claude does with the tools it already has.
-* **Updates**: when auto-update is on for the marketplace you installed a plugin from, Claude Code updates that plugin in the background, so the files you reviewed can change on disk. [When auto-update runs](https://code.claude.com/docs/en/plugins/loading.md#when-auto-update-runs) has the timing. To turn auto-update on or off per marketplace, see [Keep plugins updated](https://code.claude.com/docs/en/plugins/install.md#keep-plugins-updated).
+* **Updates**: when auto-update is on for the marketplace you installed a plugin from, Claude Code updates that plugin in the background, so the files you reviewed can change on disk. [When auto-update runs](plugins/loading.md#when-auto-update-runs) has the timing. To turn auto-update on or off per marketplace, see [Keep plugins updated](plugins/install.md#keep-plugins-updated).
 
-Claude Code's [permission rules](https://code.claude.com/docs/en/permissions.md) and [sandbox](https://code.claude.com/docs/en/sandboxing.md) cover the tool calls Claude makes, not the code a plugin runs by itself:
+Claude Code's [permission rules](permissions.md) and [sandbox](sandboxing.md) cover the tool calls Claude makes, not the code a plugin runs by itself:
 
-* **Hooks, monitors, and server processes**: command hooks and monitors are shell commands that run with your full user permissions. Claude Code runs hooks, monitors, MCP servers, LSP servers, and the processes a [mod](https://code.claude.com/docs/en/plugins/mods/overview.md#what-a-mod-can-reach) starts outside the sandbox.
-* **Claude's tool calls**: a call to one of the plugin's MCP tools, and a Bash command that runs an executable from the plugin's `bin/`, are tool calls, so your permission rules apply to them. For what a mod can do to a tool call, see [Decide whether to trust a mod](https://code.claude.com/docs/en/plugins/mods/overview.md#decide-whether-to-trust-a-mod).
+* **Hooks, monitors, and server processes**: command hooks and monitors are shell commands that run with your full user permissions. Claude Code runs hooks, monitors, MCP servers, LSP servers, and the processes a [mod](plugins/mods/overview.md#what-a-mod-can-reach) starts outside the sandbox.
+* **Claude's tool calls**: a call to one of the plugin's MCP tools, and a Bash command that runs an executable from the plugin's `bin/`, are tool calls, so your permission rules apply to them. For what a mod can do to a tool call, see [Decide whether to trust a mod](plugins/mods/overview.md#decide-whether-to-trust-a-mod).
 
-Installing a plugin also enables it, unless its manifest or marketplace entry sets [`defaultEnabled: false`](https://code.claude.com/docs/en/plugins/install#choose-an-install-scope) and you haven't enabled it yourself.
+Installing a plugin also enables it, unless its manifest or marketplace entry sets [`defaultEnabled: false`](plugins/install.md#choose-an-install-scope) and you haven't enabled it yourself.
 
 To remove a plugin you no longer trust, see [Remove a plugin you no longer trust](#remove-a-plugin-you-no-longer-trust).
 
@@ -76,7 +72,7 @@ These marketplace names make up the official tier:
 * `first-party-plugins`
 * `claude-tag-plugins`
 
-For how the official and community marketplaces differ and where to browse what each one lists, see [Anthropic's marketplaces](https://code.claude.com/docs/en/plugins/anthropic-marketplaces.md).
+For how the official and community marketplaces differ and where to browse what each one lists, see [Anthropic's marketplaces](plugins/anthropic-marketplaces.md).
 
 ## Review a plugin before you install
 
@@ -106,11 +102,11 @@ After you install a plugin, run `claude plugin details <plugin name>` in your sh
 
 ### Remove a plugin you no longer trust
 
-In your shell, run [`claude plugin uninstall <plugin>`](https://code.claude.com/docs/en/plugins/cli-reference#plugin-uninstall) with the `--scope` you installed it at. Then check what the uninstall removed and what it left:
+In your shell, run [`claude plugin uninstall <plugin>`](plugins/cli-reference.md#plugin-uninstall) with the `--scope` you installed it at. Then check what the uninstall removed and what it left:
 
-* **Persistent data**: by default, when that was the last scope the plugin was installed at, uninstalling also deletes the plugin's persistent data directory. For `--keep-data` and the other cases where it stays, see [plugin uninstall](https://code.claude.com/docs/en/plugins/cli-reference.md#plugin-uninstall).
-* **Cached files**: the plugin's files stay on disk under `~/.claude/plugins/cache/` for 14 days before a [background sweep removes them](https://code.claude.com/docs/en/plugins/loading.md#cleanup-of-previous-versions). After you uninstall your last plugin, orphaned directories stay until you install another. To delete the files now, remove the plugin's directory under `~/.claude/plugins/cache/<marketplace>/<plugin>/` yourself.
-* **The marketplace**: if you don't trust the marketplace's owner either, [remove the marketplace](https://code.claude.com/docs/en/plugins/install.md#manage-marketplaces) too, which uninstalls every plugin you installed from it.
+* **Persistent data**: by default, when that was the last scope the plugin was installed at, uninstalling also deletes the plugin's persistent data directory. For `--keep-data` and the other cases where it stays, see [plugin uninstall](plugins/cli-reference.md#plugin-uninstall).
+* **Cached files**: the plugin's files stay on disk under `~/.claude/plugins/cache/` for 14 days before a [background sweep removes them](plugins/loading.md#cleanup-of-previous-versions). After you uninstall your last plugin, orphaned directories stay until you install another. To delete the files now, remove the plugin's directory under `~/.claude/plugins/cache/<marketplace>/<plugin>/` yourself.
+* **The marketplace**: if you don't trust the marketplace's owner either, [remove the marketplace](plugins/install.md#manage-marketplaces) too, which uninstalls every plugin you installed from it.
 
 ## Recognize when Claude Code refuses or warns
 
@@ -130,8 +126,8 @@ If your organization sets `pluginTrustMessage` in [managed settings](https://cod
 
 Claude Code refuses to load a marketplace or to install a plugin in these cases, each with its own error message:
 
-* **Untrusted marketplace source**: when a marketplace uses an official or community name but its source is outside `github.com/anthropics/`, Claude Code stops loading the marketplace and the plugins you installed from it. The error is [Marketplace is registered from an untrusted source](https://code.claude.com/docs/en/errors.md#marketplace-is-registered-from-an-untrusted-source).
-* **Archive integrity**: when a marketplace entry pins an [`archive` source](https://code.claude.com/docs/en/plugins/marketplace-reference#archive-plugin-source) to a `sha256` digest and the downloaded file's digest doesn't match it, Claude Code refuses the install. The error is [Plugin archive integrity check failed](https://code.claude.com/docs/en/errors.md#plugin-archive-integrity-check-failed).
+* **Untrusted marketplace source**: when a marketplace uses an official or community name but its source is outside `github.com/anthropics/`, Claude Code stops loading the marketplace and the plugins you installed from it. The error is [Marketplace is registered from an untrusted source](errors.md#marketplace-is-registered-from-an-untrusted-source).
+* **Archive integrity**: when a marketplace entry pins an [`archive` source](plugins/marketplace-reference.md#archive-plugin-source) to a `sha256` digest and the downloaded file's digest doesn't match it, Claude Code refuses the install. The error is [Plugin archive integrity check failed](errors.md#plugin-archive-integrity-check-failed).
 
 The `sha256` pin is separate from the community catalog's commit SHA pin, which selects the git commit to check out.
 
@@ -159,6 +155,6 @@ If your organization exports Claude Code's [OpenTelemetry events](https://code.c
 ## Next steps
 
 * [Manage plugins for your organization](https://code.claude.com/docs/en/plugins/org.md): restrict which marketplaces users can install from and require the ones you trust
-* [Install and manage plugins](https://code.claude.com/docs/en/plugins/install.md): review a plugin's details pane before you choose a scope
-* [Anthropic's marketplaces](https://code.claude.com/docs/en/plugins/anthropic-marketplaces.md): which marketplace names are Anthropic's
+* [Install and manage plugins](plugins/install.md): review a plugin's details pane before you choose a scope
+* [Anthropic's marketplaces](plugins/anthropic-marketplaces.md): which marketplace names are Anthropic's
 * [Security](https://code.claude.com/docs/en/security.md): Claude Code's own security model

@@ -61,7 +61,7 @@ Claude Code refuses a message in the following cases:
 * The message is [over the size cap](#limitations). Claude Code refuses it in the sending session, before it leaves.
 * A rapid burst to a session on this machine has reached [what that session's inbox accepts](#limitations). Claude Code refuses further messages to that session.
 * A session beyond this machine is [listed as unable to receive cross-session messages](#message-sessions-on-other-machines). Claude Code refuses the message in the sending session, before it leaves this machine.
-* The reply target on this machine fails a safety check, such as a symlinked target. [Refusing to send a cross-session message](https://code.claude.com/docs/en/errors.md#refusing-to-send-a-cross-session-message) lists these checks.
+* The reply target on this machine fails a safety check, such as a symlinked target. [Refusing to send a cross-session message](errors.md#refusing-to-send-a-cross-session-message) lists these checks.
 
 The receiving session checks each arriving message against its own [inbound controls](#control-inbound-messages), and the check ends in one of three outcomes:
 
@@ -286,7 +286,7 @@ Receiving and sending are separate controls, so turn off whichever direction you
 * **Stop receiving**: set `crossSessionInbound` to `refuse`, and Claude Code drops inbound peer messages without delivering them. From project or local settings, `refuse` applies over every other source, and from your user settings it applies unless managed settings or the `--settings` flag set a value.
 * **Stop sending and listing**: add [permission deny rules](permissions.md#tool-specific-permission-rules) naming `SendMessage` and `ListAgents`. Both take the bare tool name with no specifier.
 
-Administrators can turn both sides off for an organization in [managed settings](https://code.claude.com/docs/en/managed-settings.md), combining the deny rules with the `refuse`:
+Administrators can turn both sides off for an organization in [managed settings](managed-settings.md), combining the deny rules with the `refuse`:
 
 ```json theme={null}
 {
@@ -330,8 +330,8 @@ In a session with messaging, `/status` also shows a `Peer address` row with the 
 The limits here are properties of the messaging channel itself and apply wherever the feature runs. For platform and provider gaps, see [Availability](#availability) instead.
 
 * **Plain text only**: Claude sends only plain text across sessions. Structured [agent team](agent-teams.md) protocol messages stay within a team.
-* **Same-machine message size is capped**: Claude Code refuses a message to a session on this machine once its serialized form passes about a million characters. The refusal [names the exact sizes](https://code.claude.com/docs/en/errors.md#message-too-large-for-cross-session-delivery). Nothing reaches the receiving session.
-* **Rapid bursts to one session are refused at the sender**: once a rapid burst of messages to a session on this machine reaches what that session's inbox accepts, Claude Code refuses further sends in the sending session. The [refusal names the burst](https://code.claude.com/docs/en/errors.md#too-many-messages-to-this-session-just-now) and tells Claude to batch the rest into one message or wait.
+* **Same-machine message size is capped**: Claude Code refuses a message to a session on this machine once its serialized form passes about a million characters. The refusal [names the exact sizes](errors.md#message-too-large-for-cross-session-delivery). Nothing reaches the receiving session.
+* **Rapid bursts to one session are refused at the sender**: once a rapid burst of messages to a session on this machine reaches what that session's inbox accepts, Claude Code refuses further sends in the sending session. The [refusal names the burst](errors.md#too-many-messages-to-this-session-just-now) and tells Claude to batch the rest into one message or wait.
 * **Message loops are throttled**: in the receiving session, Claude Code rate-limits repeated messages per sender, drops identical repeats arriving within a short window, and queues at most 50 accepted messages for Claude to read. A message loop between two sessions therefore stops on its own.
 
 ## Related resources

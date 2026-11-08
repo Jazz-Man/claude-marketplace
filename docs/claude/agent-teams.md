@@ -139,7 +139,7 @@ Claude Code picks each teammate's model from the first of these that applies:
 3. [`CLAUDE_CODE_SUBAGENT_MODEL`](model-config.md#environment-variables), when it's set to anything other than `inherit`.
 4. The lead's current model.
 
-If an installed [mod](https://code.claude.com/docs/en/plugins/mods/overview.md) sets a model in its [`agent.spawn`](https://code.claude.com/docs/en/plugins/mods/reference#subagents) hook, Claude Code uses that model in place of the first source.
+If an installed [mod](plugins/mods/overview.md) sets a model in its [`agent.spawn`](plugins/mods/reference.md#subagents) hook, Claude Code uses that model in place of the first source.
 
 If you set [`CLAUDE_CODE_SUBAGENT_MODEL_FORCE=1`](sub-agents.md#run-every-subagent-on-one-model), the first two sources don't apply. Claude Code picks every teammate's model from `CLAUDE_CODE_SUBAGENT_MODEL` when it's set to anything other than `inherit`, and from the lead's current model otherwise. Requires Claude Code v2.1.257 or later.
 
@@ -238,7 +238,7 @@ An agent team consists of:
 
 Each agent's mailbox is a JSON file at `~/.claude/teams/{team-name}/inboxes/{agent-name}.json`. Claude Code validates every entry when it reads a mailbox file. Entries that don't match the message format are reported as errors and removed from the file; the valid messages are still delivered.
 
-Claude Code reports a message as sent only when the write to the recipient's mailbox file succeeds, whether the message is plain text or a structured protocol message such as a plan approval or shutdown request. When the write fails, for example because the disk is full or the mailbox directory isn't writable, the sending agent receives an error and nothing is sent. See [Failed to write to a teammate's inbox](https://code.claude.com/docs/en/errors.md#failed-to-write-to-a-teammate-inbox) for the error messages and recovery steps.
+Claude Code reports a message as sent only when the write to the recipient's mailbox file succeeds, whether the message is plain text or a structured protocol message such as a plan approval or shutdown request. When the write fails, for example because the disk is full or the mailbox directory isn't writable, the sending agent receives an error and nothing is sent. See [Failed to write to a teammate's inbox](errors.md#failed-to-write-to-a-teammate-inbox) for the error messages and recovery steps.
 
 Claude Code manages task dependencies automatically: when a teammate completes a task that other tasks depend on, it unblocks the dependent tasks without any action from you.
 
@@ -280,7 +280,7 @@ Claude Code reads the subagent definition you named and applies these parts of i
 
 When Claude messages an in-process teammate that is no longer running, Claude Code brings it back in the same session, restores any conversation saved for it, and gives it the message as its next prompt. After you resume a session, teammates aren't brought back this way, per [the resume limitation](#limitations).
 
-For a teammate it brings back, Claude Code re-applies a definition that came from a project's `.claude/agents/` directory or an `--add-dir` directory only if you've [trusted the folder the agent file is in](permissions.md#what-runs-before-you-trust-a-folder). Trusting a parent folder doesn't count. Until then, the teammate comes back with none of the definition's tools or instructions, keeping only the tools Claude Code adds to every in-process teammate. See [the teammate's agent definition was not restored](https://code.claude.com/docs/en/errors.md#teammate-agent-definition-not-restored) for the notice text.
+For a teammate it brings back, Claude Code re-applies a definition that came from a project's `.claude/agents/` directory or an `--add-dir` directory only if you've [trusted the folder the agent file is in](permissions.md#what-runs-before-you-trust-a-folder). Trusting a parent folder doesn't count. Until then, the teammate comes back with none of the definition's tools or instructions, keeping only the tools Claude Code adds to every in-process teammate. See [the teammate's agent definition was not restored](errors.md#teammate-agent-definition-not-restored) for the notice text.
 
 ### Permissions
 
