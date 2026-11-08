@@ -3,15 +3,24 @@ import { deny } from "../core/decision.ts";
 import { firstUnitHit, type Policy } from "../core/policy.ts";
 import commandList from "../mutable-commands.txt";
 
+/**
+ * @deprecated
+ */
 const ALIASES: Record<string, string> = {
   bundler: "bundle",
   yarnpkg: "yarn",
 };
 
+/**
+ * @deprecated
+ */
 function isUrl(value: string): boolean {
   return URL.canParse(value);
 }
 
+/**
+ * @deprecated
+ */
 function isModuleRef(value: string): boolean {
   const at = value.lastIndexOf("@");
   if (at <= 0) {
@@ -25,6 +34,9 @@ function isModuleRef(value: string): boolean {
   return host !== "" && host !== ".";
 }
 
+/**
+ * @deprecated
+ */
 const FETCH_FORMS: readonly [
   string,
   readonly string[],
@@ -34,9 +46,19 @@ const FETCH_FORMS: readonly [
   ["deno", ["run"], isUrl],
 ];
 
+/**
+ * @deprecated
+ */
 type Pattern = readonly string[];
 
+/**
+ * @deprecated
+ */
 const toolCache = new Map<string, string>();
+
+/**
+ * @deprecated
+ */
 function toolOf(name: string): string {
   const cached = toolCache.get(name);
   if (cached !== undefined) {
@@ -48,8 +70,19 @@ function toolOf(name: string): string {
   return tool;
 }
 
+/**
+ * @deprecated
+ */
 const RUNNERS = new Set<string>();
+
+/**
+ * @deprecated
+ */
 const source = new Map<string, Set<string>>();
+
+/**
+ * @deprecated
+ */
 const lines = commandList
   .split("\n")
   .map((line) => line.trim().toLowerCase())
@@ -65,6 +98,9 @@ for (const line of lines) {
     source.set(tool, joined);
   }
 }
+/**
+ * @deprecated
+ */
 const DENY = new Map<string, readonly Pattern[]>(
   [...source].map(([tool, joined]) => [
     tool,
@@ -72,6 +108,9 @@ const DENY = new Map<string, readonly Pattern[]>(
   ]),
 );
 
+/**
+ * @deprecated
+ */
 function startsWithTokens(tokens: readonly string[], args: string[]): boolean {
   return (
     tokens.length <= args.length &&
@@ -79,6 +118,9 @@ function startsWithTokens(tokens: readonly string[], args: string[]): boolean {
   );
 }
 
+/**
+ * @deprecated
+ */
 function fetches(tool: string, args: string[]): boolean {
   return FETCH_FORMS.some(([prefix, tokens, isFetch]) => {
     if (prefix !== tool) {
@@ -91,6 +133,9 @@ function fetches(tool: string, args: string[]): boolean {
   });
 }
 
+/**
+ * @deprecated
+ */
 function denies(name: string, args: string[]): boolean {
   const tool = toolOf(name);
   if (RUNNERS.has(tool)) {
@@ -103,6 +148,9 @@ function denies(name: string, args: string[]): boolean {
   return fetches(tool, args);
 }
 
+/**
+ * @deprecated
+ */
 export const REASON =
   "Dependency install/update blocked: do not install, update, or remove packages (pip/uv/pipx/poetry, npm/npx/pnpm/pnpx/yarn, bun/bunx, cargo/rustup, composer, gem/bundler, go, swift package, brew, nix) or run one-shot package runners.";
 
