@@ -19,9 +19,9 @@ compiler actually use.
 |---|---|---|
 | `sandbox-exec` binary | `/usr/bin/sandbox-exec` | every compile probe; link list via `otool -L` |
 | `libsandbox.1.dylib` | inside the dyld shared cache, `/System/Volumes/Preboot/Cryptexes/OS/System/Library/dyld/dyld_shared_cache_arm64e.01` | the operation/filter vocabulary |
-| `sandbox-exec(1)` man page | `/usr/share/man/man1/sandbox-exec.1` | [legacy/man-sandbox-exec.md](legacy/man-sandbox-exec.md) |
-| `sandbox_init(3)` man page | `…/MacOSX.sdk/usr/share/man/man3/sandbox_init.3` | [legacy/man-sandbox_init.md](legacy/man-sandbox_init.md); the SDK ≥ 27 kill notice |
-| `sandbox.h` | `…/MacOSX.sdk/usr/include/sandbox.h` | [legacy/sandbox.h](legacy/sandbox.h); deprecation annotations |
+| `sandbox-exec(1)` man page | `/usr/share/man/man1/sandbox-exec.1` | quoted verbatim in [02](02-sandbox-exec-cli.md) |
+| `sandbox_init(3)` man page | `…/MacOSX.sdk/usr/share/man/man3/sandbox_init.3` | quoted in [02](02-sandbox-exec-cli.md); the SDK ≥ 27 kill notice |
+| `sandbox.h` | `…/MacOSX.sdk/usr/include/sandbox.h` | quoted in [02](02-sandbox-exec-cli.md); deprecation annotations |
 | Apple's SBPL profiles | `/System/Library/Sandbox/Profiles/*.sb` (555) and `/usr/share/sandbox/*.sb` (56) | frequency tables, op→filter matrix, idioms |
 | Unified log | `log stream` / `log show` | denial format, log sender, `libsandbox` compile messages |
 
@@ -34,22 +34,17 @@ Absent, and their absence is itself documented in
 
 ## 2. Documents retrieved
 
-### Converted in full and kept verbatim
+### Converted from PDF
 
 | Document | Origin | Status |
 |---|---|---|
-| **Apple's Sandbox Guide v1.0** — Pedro Vilaça (fG!), 2011-09-13, 48 pp. | <https://reverse.put.as/wp-content/uploads/2011/09/Apple-Sandbox-Guide-v1.0.pdf> | [legacy/apple-sandbox-guide-v1.0.md](legacy/apple-sandbox-guide-v1.0.md) |
-| **The Apple Sandbox** — Dionysus Blazakis, Black Hat DC 2011, 2011-01-11 | mirror: <https://dl.packetstormsecurity.net/papers/general/apple-sandbox.pdf> | [legacy/blazakis-the-apple-sandbox-2011.md](legacy/blazakis-the-apple-sandbox-2011.md) |
+| **The Apple Sandbox** — Dionysus Blazakis, Black Hat DC 2011, 2011-01-11 | mirror: <https://dl.packetstormsecurity.net/papers/general/apple-sandbox.pdf> | kept: [legacy/BlackHat_DC_2011_Blazakis_Apple_Sandbox-wp.md](legacy/BlackHat_DC_2011_Blazakis_Apple_Sandbox-wp.md) |
+| **Apple's Sandbox Guide v1.0** — Pedro Vilaça (fG!), 2011-09-13, 48 pp. | <https://reverse.put.as/wp-content/uploads/2011/09/Apple-Sandbox-Guide-v1.0.pdf> | **not retained.** Converted, mined for the parts that are still true, then deleted: per-operation semantics and kernel entry points now live in [04 § Operation semantics](04-operations-reference.md#operation-semantics), and everything stale is catalogued in [12](12-changes-since-2011.md). The extraction script is `tmp/apple-sandbox/extract-fg-semantics.py` |
 
 The Blazakis original at
 `https://media.blackhat.com/bh-dc-11/Blazakis/BlackHat_DC_2011_Blazakis_Apple_Sandbox-wp.pdf`
 returns **HTTP 403** behind a Cloudflare challenge; the packetstorm mirror (linked from
 ubrigens.com) served the same paper.
-
-The fG! PDF text layer was extracted with Apple's own PDFKit via a 20-line Swift script
-(`tmp/apple-sandbox/pdf2md.swift`), because `pdftotext`/poppler is not installed on this machine and
-installing it would have required `brew`/`sudo`. The Markdown conversion of that text was produced
-separately and is the version kept here.
 
 ### Used as secondary sources
 
@@ -118,7 +113,6 @@ cd tmp/apple-sandbox
 ### Extract the vocabulary from libsandbox
 
 ```bash
-swift pdf2md.swift <file.pdf> > out.txt        # PDF text via PDFKit (used for both legacy papers)
 python3 mine-libsandbox.py > mined/libsandbox-strings.tsv
 ```
 
@@ -177,21 +171,24 @@ Re-running these on another macOS version is the fastest way to find out what Ap
 diff <(cut -f1,3 mined/op-probe.tsv) <(cut -f1,3 mined/op-probe-$(sw_vers -productVersion).tsv)
 ```
 
-### Converting the legacy PDFs
+### Extracting operation semantics from the fG! guide
 
 ```bash
-swift pdf2md.swift Apple-Sandbox-Guide-v1.0.pdf   > guide-raw.txt
-swift pdf2md.swift blazakis-apple-sandbox.pdf     > blazakis-raw.txt
-./convert-pdf-text.sh converted                  # text cleanup + headings
-./convert-blazakis.sh ../../docs/sanbox-doc/legacy/blazakis-the-apple-sandbox-2011.md
+python3 extract-fg-semantics.py <guide-as-markdown> mined/fg-semantics.tsv
 ```
 
-The man pages and header were dumped with `mandoc`, which ships with macOS:
+`extract-fg-semantics.py` parses the guide's regular `#### <Operation>` blocks and pulls out
+**Syntax / Actions / Filters / Modifiers / Description / Applies to** into a TSV, which
+`gen-reference.py` folds into the *Operation semantics* section of
+[04-operations-reference.md](04-operations-reference.md#operation-semantics). It also rewrites the
+one claim in that prose which measurement disproved — the "first explicit match wins" sentence under
+`default`. That is why the guide could be dropped from this directory without losing anything that
+was still true in it.
 
-```bash
-mandoc -T markdown /usr/share/man/man1/sandbox-exec.1 > man-sandbox-exec.md
-mandoc -T markdown "$SDKROOT/usr/share/man/man3/sandbox_init.3" > man-sandbox_init.md
-```
+The `sandbox-exec(1)` man page, the `sandbox_init(3)` man page and `sandbox.h` are not kept as
+separate files either; they are quoted verbatim inside
+[02-sandbox-exec-cli.md](02-sandbox-exec-cli.md), with their on-disk paths listed in section 1
+above.
 
 ---
 
