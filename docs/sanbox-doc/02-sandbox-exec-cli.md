@@ -98,7 +98,7 @@ Guard optional parameters the way Firefox and Chromium do:
 (if (param-true? "ENABLE_LOGGING") (debug deny))
 ```
 
-### `-n profile-name` — dead
+### `-n profile-name` is dead
 
 Loads one of five built-in profiles. **All of them now kill the process.**
 
@@ -162,12 +162,27 @@ Mandatory, and the first thing in every profile.
 
 | Input | Result |
 |---|---|
-| `(version 1)` | accepted |
-| `(version 2)` | **accepted** (no behavioural difference observed) |
+| `(version 1)` | accepted — **compatibility mode** |
+| `(version 2)` | accepted |
+| `(version 3)` | accepted — the current language version |
+| `(version 4)` | `exit 65`: `invalid version number 4` |
 | `(version 0)` | `exit 65`: `invalid version number 0 at <input string>, line 1, column 10` |
 | `(version -1)` | `exit 65`: `invalid version number -1` |
 | `(version 1.5)` | `exit 65`: `version number must be integer (1.5)` |
 | omitted entirely | `exit 65`: `no version specified` |
+
+The version changes the language, not just a label. Every compile logs this (**verified**):
+
+```
+sandbox-exec[94239] (libsandbox.1.dylib) sandbox compile: using compatibility definitions
+                    for version 1 (latest version is 3)
+```
+
+Write `(version 1)` — it is what Apple's 570 mainstream profiles, Chromium, Firefox and
+`sandbox-runtime` all use, and it is the only version where `(debug deny)` works. Versions 2 and 3
+add raw-syscall allowlists and drop names such as `debug`, `trace`, `iokit-open` and
+`ipc-posix-shm`. Full analysis, with the measured diffs:
+[03-sbpl-language.md](03-sbpl-language.md#version-1-vs-2-vs-3).
 
 ---
 
