@@ -5,7 +5,7 @@
 Seatbelt is Apple's kernel-level **mandatory access control** (MAC) system. It first shipped in Mac
 OS X 10.5 Leopard under the name Seatbelt and was later folded into what Apple now simply calls
 *the sandbox*. It is built on the **TrustedBSD MAC framework**, a port of which lives in XNU
-(**sourced**: Blazakis 2011, [legacy](legacy/blazakis-the-apple-sandbox-2011.md); ubrigens 2020).
+(**sourced**: Blazakis 2011, [§1](legacy/BlackHat_DC_2011_Blazakis_Apple_Sandbox-wp.md#1-introduction); ubrigens 2020).
 
 Where traditional UNIX permissions ask *who is this process running as* (discretionary access
 control), Seatbelt asks *what is this process allowed to do*, per process, regardless of uid. A
@@ -272,5 +272,9 @@ profiles for Safari's renderer processes.
 
 * Language and rule semantics → [03-sbpl-language.md](03-sbpl-language.md)
 * Which rule wins → [06-rule-ordering-and-precedence.md](06-rule-ordering-and-precedence.md)
-* Kernel-level detail from the original reverse-engineering → [legacy/blazakis-the-apple-sandbox-2011.md](legacy/blazakis-the-apple-sandbox-2011.md)
-* Per-operation prose descriptions → [legacy/apple-sandbox-guide-v1.0.md](legacy/apple-sandbox-guide-v1.0.md)
+* Kernel-level detail from the original reverse-engineering →
+  [legacy/BlackHat_DC_2011_Blazakis_Apple_Sandbox-wp.md](legacy/BlackHat_DC_2011_Blazakis_Apple_Sandbox-wp.md),
+  especially §4 (the `*rules*` bytecode format), §5.1 (`Sandbox.kext` and its syscalls) and §5.2
+  (`AppleMatch.kext`, the kernel regex engine)
+* Per-operation prose descriptions → the *Operation semantics* section of
+  [04-operations-reference.md](04-operations-reference.md#operation-semantics)
