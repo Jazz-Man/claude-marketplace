@@ -1,0 +1,132 @@
+# Apple's Sandbox (Seatbelt) — complete reference for `sandbox-exec`
+
+Everything needed to write, debug and maintain macOS Seatbelt profiles (SBPL), assembled from
+Apple's own on-disk profiles, the `libsandbox` binary, the man pages, the published research, and
+direct probing of the compiler on a live machine.
+
+There is **no official Apple documentation for SBPL**. `sandbox-exec(1)` is seven lines of options
+and explicitly deprecated; the App Sandbox Design Guide describes entitlements, not profiles. So
+this directory is built from primary evidence instead, and every non-obvious claim is marked with
+how it was established.
+
+**Verification target:** macOS 27.2, build 26B123, arm64e — verified 2026-11-08.
+
+---
+
+## Evidence legend
+
+Used throughout these documents:
+
+| Mark | Meaning |
+|---|---|
+| **verified** | Observed directly on the target machine (compiler output, program behaviour, file on disk) |
+| **mined** | Extracted mechanically from a binary or from Apple's own profile files |
+| **sourced** | Taken from a third-party document; URL and retrieval date in [13-sources-and-provenance.md](13-sources-and-provenance.md) |
+| **contradicted** | A claim found in a public source that testing on macOS 27.2 disproves |
+| **unverified** | Plausible, repeated across sources, but not confirmed here |
+
+---
+
+## Reading order
+
+### Start here
+
+| Document | What it gives you |
+|---|---|
+| [01-overview-and-architecture.md](01-overview-and-architecture.md) | What Seatbelt is, how a profile becomes an enforcement decision, where each piece lives, and how `sandbox-exec` relates to the App Sandbox |
+| [02-sandbox-exec-cli.md](02-sandbox-exec-cli.md) | The command itself: every flag, every exit code, profile search paths, what is broken on current macOS |
+| [03-sbpl-language.md](03-sbpl-language.md) | The language: rule anatomy, the Scheme layer, directives, how to structure a profile |
+
+### Reference
+
+| Document | What it gives you |
+|---|---|
+| [04-operations-reference.md](04-operations-reference.md) | All **217** operations the compiler accepts, by category, with Apple-profile usage counts and the diff against the 2011 list |
+| [05-filters-reference.md](05-filters-reference.md) | All filters and matchers, built-in vs Apple-macro vs Scheme, path-matcher semantics, modifiers |
+| [06-rule-ordering-and-precedence.md](06-rule-ordering-and-precedence.md) | Which rule wins when several match — settled by experiment, and three published sources get it wrong |
+| [07-modifiers-and-predicates.md](07-modifiers-and-predicates.md) | Attribute predicates (`is-platform-binary`, `app-container`, …), keyword atoms, the TinyScheme layer |
+
+### Practice
+
+| Document | What it gives you |
+|---|---|
+| [08-debugging-and-troubleshooting.md](08-debugging-and-troubleshooting.md) | Reading denials, the complete compiler-error catalogue, why a process aborts instead of failing, the workflow for building a profile from nothing |
+| [09-recipes.md](09-recipes.md) | Ready-to-adapt profiles: read-only filesystem, no network, allowlisted network via proxy, CLI/agent sandbox, per-command wrappers |
+| [10-real-world-profiles.md](10-real-world-profiles.md) | How Chromium, Firefox, Anthropic's sandbox-runtime and Apple's own daemons actually write SBPL, with the techniques worth stealing |
+| [11-app-sandbox-and-entitlements.md](11-app-sandbox-and-entitlements.md) | The entitlement-based App Sandbox: containers, extensions, how entitlements become SBPL rules, and when to use which |
+| [12-changes-since-2011.md](12-changes-since-2011.md) | Everything that moved or broke since the classic guides: removed operations, moved paths, dead flags, dead tools |
+| [13-sources-and-provenance.md](13-sources-and-provenance.md) | Every source with its retrieval date, plus the exact commands that reproduce each machine-generated table |
+
+### Historical primary sources
+
+Kept verbatim because they are still the best prose explanations of what operations *mean*.
+
+| Document | Note |
+|---|---|
+| [legacy/apple-sandbox-guide-v1.0.md](legacy/apple-sandbox-guide-v1.0.md) | fG! (Pedro Vilaça), 2011 — 48 pages, per-operation semantics with examples and `sandboxd` log output. Snow Leopard era; read with [12-changes-since-2011.md](12-changes-since-2011.md) |
+| [legacy/blazakis-the-apple-sandbox-2011.md](legacy/blazakis-the-apple-sandbox-2011.md) | Dionysus Blazakis, Black Hat DC 2011 — the reverse-engineering of `libsandbox`, TinyScheme, bytecode compilation and `Sandbox.kext` |
+| [legacy/man-sandbox-exec.md](legacy/man-sandbox-exec.md) | `sandbox-exec(1)` as shipped on macOS 27.2 |
+| [legacy/man-sandbox_init.md](legacy/man-sandbox_init.md) | `sandbox_init(3)` from the Command Line Tools SDK |
+| [legacy/sandbox.h](legacy/sandbox.h) | The SDK header, carrying Apple's deprecation notice verbatim |
+
+---
+
+## The sixty-second version
+
+```scheme
+(version 1)
+(deny default)
+
+(allow process-exec)
+(allow process-fork)
+(allow sysctl-read)
+(allow mach-lookup)
+(allow file-read*)
+(allow file-write*
+  (subpath (param "PROJECT_DIR"))
+  (subpath "/private/tmp"))
+(allow network-outbound
+  (remote tcp "localhost:8080"))
+```
+
+```bash
+sandbox-exec -D PROJECT_DIR="$PWD" -f profile.sb ./build.sh
+```
+
+Six things that will bite you, each documented in detail:
+
+1. **Write physical paths in filters.** `(subpath "/tmp/x")` never matches; `/tmp` is a symlink and
+   the filter string is not canonicalised. Use `/private/tmp/x`. → [05](05-filters-reference.md)
+2. **The last matching rule wins**, among rules naming the same operation. Most published guides
+   say first-match. → [06](06-rule-ordering-and-precedence.md)
+3. **A specific operation beats a wildcard regardless of order**: `(deny file-write*)` cannot
+   override an earlier `(allow file-write-mode …)`. → [06](06-rule-ordering-and-precedence.md)
+4. **`(deny default)` does not deny everything.** Firefox explicitly denies `process-info*`,
+   `nvram*`, `iokit-get-properties` and `file-map-executable` on top of it. → [03](03-sbpl-language.md)
+5. **A bare wildcard aborts the compiler.** `(allow process-exec*)` with no filter kills
+   `sandbox-exec` with `Abort trap: 6`. → [08](08-debugging-and-troubleshooting.md)
+6. **The `-n` predefined profiles are dead.** `no-internet`, `pure-computation` and friends now
+   `Killed: 9`. → [12](12-changes-since-2011.md)
+
+---
+
+## Reproducing the machine-generated parts
+
+The tables in [04](04-operations-reference.md), [05](05-filters-reference.md) and
+[07](07-modifiers-and-predicates.md) are generated, not typed. The scripts live in
+`tmp/apple-sandbox/` (gitignored) and need only a Mac, `python3` and `swift`:
+
+```bash
+cd tmp/apple-sandbox
+python3 mine-libsandbox.py > mined/libsandbox-strings.tsv   # op/filter names from the dyld shared cache
+./probe-ops.sh mined/candidates-union.txt mined/op-probe.tsv # compile every candidate, record the error
+python3 parse-profiles.py mined/profile-ast.json             # s-expression parse of all Apple .sb files
+python3 gen-reference.py ../../docs/sanbox-doc               # emit the reference tables
+./probe-ordering.sh mined/ordering.txt                       # rule-precedence experiment
+./probe-precedence.sh mined/precedence.txt                   # wildcard vs specific experiment
+./probe-paths.sh mined/paths.txt                             # symlink resolution matrix
+./probe-semantics.sh mined/semantics.txt                     # version stmt, modifiers, directives, errors
+./probe-default-allowed.sh mined/default-allowed.txt          # what survives (deny default)
+```
+
+Re-running them on a different macOS version is the fastest way to find out what Apple changed.
