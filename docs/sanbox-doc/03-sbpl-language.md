@@ -74,7 +74,7 @@ Both `regex-quote` and `string-append` are **verified** working.
 
 ## Directives
 
-### `(version N)` — 1, 2 or 3, and it changes the language
+### Version 1 vs 2 vs 3
 
 Mandatory and first. Integer only — see the measured table in
 [02-sandbox-exec-cli.md](02-sandbox-exec-cli.md#the-version-n-statement). Valid values are **1, 2
