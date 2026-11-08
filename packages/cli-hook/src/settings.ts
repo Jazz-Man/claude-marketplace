@@ -2,6 +2,8 @@
 import process from "node:process";
 import { debug } from "./debug.ts";
 
+const bothForms = (name: string): string[] => [`~/${name}`, `~/**/${name}`];
+
 const envVars = [
   "GITHUB_TOKEN",
   "GITHUB_AUTH_TOKEN",
@@ -32,9 +34,39 @@ const keyNames = [
   "id_rsa",
 ];
 
-const keyFiles = [
-  ...keySuffixes.flatMap((suffix) => [`~/*.${suffix}`, `~/**/*.${suffix}`]),
-  ...keyNames.flatMap((name) => [`~/${name}`, `~/**/${name}`]),
+const secretNestedNames = [".netrc", ".npmrc", ".pypirc", ".htpasswd*"];
+
+const secretFileNames = ["credentials.json", "token.json"];
+
+const homeStateFiles = [
+  "~/.*rc*",
+  "~/.*login*",
+  "~/.*logout*",
+  "~/.*history*",
+  "~/.*profile*",
+  "~/.zshenv*",
+  "~/.zcompdump*",
+  "~/.zsh_sessions*",
+  "~/.v8flags*",
+  "~/.mutagen*",
+  "~/.wget-hsts*",
+  "~/.viminfo*",
+  "~/.tmux*",
+  "~/.git-credentials*",
+  "~/.gitconfig*",
+  "~/.htpasswd*",
+  "~/.bunfig.toml",
+  "~/.gdbinit",
+];
+
+const credentialDirs = [
+  "~/.ssh",
+  "~/.aws",
+  "~/.gnupg",
+  "~/.gcloud",
+  "~/.config",
+  "~/.docker",
+  "~/.kube",
 ];
 
 const secretStateDirs = [
@@ -67,51 +99,7 @@ const secretStateDirs = [
   "~/.claude.json.backup",
 ];
 
-const secretNamesAnywhere = [
-  "~/**/.netrc",
-  "~/**/.npmrc",
-  "~/**/.pypirc",
-  "~/**/.htpasswd*",
-  "~/credentials.json",
-  "~/**/credentials.json",
-  "~/token.json",
-  "~/**/token.json",
-];
-
-const protectedFiles = [
-  ...keyFiles,
-  ...secretStateDirs,
-  ...secretNamesAnywhere,
-  "~/.gitconfig*",
-  "~/.bunfig.toml",
-  "~/.gdbinit",
-  "**/.DS_Store*",
-  "**/.env",
-  "**/.env.*",
-  "~/.ssh",
-  "~/.aws",
-  "~/.gnupg",
-  "~/.gcloud",
-  "~/.config",
-  "~/.docker",
-  "~/.kube",
-  "~/.htpasswd*",
-  "~/.zshenv*",
-  "~/.*rc*",
-  "~/.v8flags*",
-  "~/.mutagen*",
-  "~/.*login*",
-  "~/.*logout*",
-  "~/.*history*",
-  "~/.zcompdump*",
-  "~/.zsh_sessions*",
-  "~/.*profile*",
-  "~/.wget-hsts*",
-  "~/.viminfo*",
-  "~/.tmux*",
-  "~/.git-credentials*",
-  "**/Brewfile*",
-  "~/Brewfile*",
+const macOSDirs = [
   "~/Library",
   "~/Documents",
   "~/Downloads",
@@ -122,6 +110,22 @@ const protectedFiles = [
   "~/Applications",
   "~/Sites",
   "~/Desktop",
+];
+
+const protectedFiles = [
+  ...keySuffixes.flatMap((suffix) => bothForms(`*.${suffix}`)),
+  ...keyNames.flatMap(bothForms),
+  ...secretFileNames.flatMap(bothForms),
+  ...secretNestedNames.map((name) => `~/**/${name}`),
+  ...homeStateFiles,
+  ...credentialDirs,
+  ...secretStateDirs,
+  ...macOSDirs,
+  "**/.DS_Store*",
+  "**/.env",
+  "**/.env.*",
+  "**/Brewfile*",
+  "~/Brewfile*",
 ];
 
 const memoryPaths = [
@@ -203,39 +207,33 @@ const dependencyCacheRoots = ["~/.cargo/registry/src", "~/go/pkg/mod"];
 
 const dependencyPrefixes = ["/opt/homebrew"];
 
+const memoryEntries = [
+  ...dependencyMemoryNames,
+  ...dependencyMemoryDirs.map((dir) => `${dir}/**`),
+];
+
 const dependencyMemoryFiles = [
-  ...dependencyFolders.flatMap((folder) => [
-    ...dependencyMemoryNames.map((name) => `~/**/${folder}/**/${name}`),
-    ...dependencyMemoryDirs.map((dir) => `~/**/${folder}/**/${dir}/**`),
-  ]),
-  ...dependencyPrefixes.flatMap((prefix) => [
-    ...dependencyMemoryNames.flatMap((name) => [
-      `${prefix}/${name}`,
-      `${prefix}/**/${name}`,
+  ...dependencyFolders.flatMap((folder) =>
+    memoryEntries.map((entry) => `~/**/${folder}/**/${entry}`),
+  ),
+  ...dependencyPrefixes.flatMap((prefix) =>
+    [...dependencyMemoryNames, ...dependencyMemoryDirs].flatMap((entry) => [
+      `${prefix}/${entry}`,
+      `${prefix}/**/${entry}`,
     ]),
-    ...dependencyMemoryDirs.flatMap((dir) => [
-      `${prefix}/${dir}`,
-      `${prefix}/**/${dir}`,
-    ]),
-  ]),
-  ...dependencyCacheRoots.flatMap((root) => [
-    ...dependencyMemoryNames.map((name) => `${root}/**/${name}`),
-    ...dependencyMemoryDirs.map((dir) => `${root}/**/${dir}/**`),
-  ]),
+  ),
+  ...dependencyCacheRoots.flatMap((root) =>
+    memoryEntries.map((entry) => `${root}/**/${entry}`),
+  ),
 ];
 
 const gitHistoryWriteOnly = ["/**/.git"];
 
 const gitHistoryDenyRules = ["Edit(**/.git/*)", "Write(**/.git)"];
 
-const configWriteOnly = [
-  "~/.gitmodules",
-  "~/**/.gitmodules",
-  "~/.mcp.json",
-  "~/**/.mcp.json",
-  "~/.lsp.json",
-  "~/**/.lsp.json",
-];
+const configWriteOnly = [".gitmodules", ".mcp.json", ".lsp.json"].flatMap(
+  bothForms,
+);
 
 const dependencyWriteOnly = [
   ...dependencyFolders.flatMap((folder) => [`**/${folder}`, `**/${folder}/**`]),
