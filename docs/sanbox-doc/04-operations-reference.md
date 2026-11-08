@@ -622,3 +622,295 @@ user-preference-read
 user-preference-write
 xpc-message-send
 ```
+
+## Operation semantics
+
+What each operation actually controls, and the kernel entry points it hooks. Ported from Pedro Vilaca's *Apple's Sandbox Guide* v1.0 (2011), which was reverse-engineered from `Sandbox.kext`. The semantics and hook lists are still accurate on macOS 27, but the **Filters** and **Modifiers** lines use 2011 vocabulary: `path` there means the family of path matchers that is now `literal` / `subpath` / `prefix` / `path` / `regex`. Use [05-filters-reference.md](05-filters-reference.md) for current names.
+
+Operations absent from this section did not exist in 2011; infer their meaning from the name plus how Apple's profiles use them (the *Filters seen with it* column above).
+
+### `default`
+
+As the name implies, this is the default action if no other operation matches. It doesn’t matter where this operation is configured, either at the beginning or the end of the profile. The engine will only hit the default operation if no explicit match can be found. The 2011 guide goes on to claim that the first explicit match wins, so that a `deny` followed by an `allow` on the same target always denies. That is **wrong** on current macOS and is the most dangerous sentence in the whole guide: precedence has three dimensions, and among rules of equal specificity the **last** one wins. Measured model and experiments: [06-rule-ordering-and-precedence.md](06-rule-ordering-and-precedence.md).
+
+**Modifiers:** send-signal, no-log · **Kernel entry points:** `All operations that Sandbox module supports/implements.`
+
+### `file*`
+
+This operation will control file related operations such as reads, writes, extended attributes, etc.
+
+**Filters (2011):** path, file-mode · **Modifiers:** send-signal, no-log · **Kernel entry points:** `All file operations described in detail below.`
+
+### `file-chroot`
+
+Control whether the target should be allowed or not to `chroot()` into the specified directory.
+
+**Filters (2011):** path, file-mode · **Modifiers:** send-signal, no-log · **Kernel entry points:** `chroot`, `link`
+
+### `file-ioctl`
+
+Determine whether the target can perform the `ioctl` operation. *Warning: Since ioctl data is opaque from the standpoint of the MAC framework, and since ioctls can affect many aspects of system operation, policies must exercise extreme care when implementing access control checks.*
+
+**Filters (2011):** path, file-mode · **Modifiers:** send-signal, no-log · **Kernel entry points:** `vn_ioctl`, `link`
+
+### `file-read*`
+
+Controls all available read operations described below.
+
+**Filters (2011):** path, file-mode · **Modifiers:** send-signal, no-log · **Kernel entry points:** `exchangedata`, `link`
+
+### `file-read-data`
+
+Give or refuse read access to target file contents.
+
+**Filters (2011):** path, file-mode · **Modifiers:** send-signal, no-log · **Kernel entry points:** `access1`, `getvolattrlist`, `link`, `__mac_mount`, `vn_open_auth`, `union_dircheck`
+
+### `file-read-metadata`
+
+Control read access to the files-system metadata. For example `ls` will not work against the target (if action is deny) while a `cat` will (because it is accessing the contents, not the metadata).
+
+**Filters (2011):** path, file-mode · **Modifiers:** send-signal, no-log · **Kernel entry points:** `getattrlist_internal`, `link`, `namei`, `readlink`, `CheckAccess`, `vn_stat`
+
+### `file-read-xattr`
+
+This operation will control read access to file’s extended attributes.
+
+**Filters (2011):** path, file-mode, xattr · **Modifiers:** send-signal, no-log · **Kernel entry points:** `vn_getxattr`, `link`, `vn_listxattr`
+
+### `file-revoke`
+
+Controls access to `revoke` (void all references to file by ripping underlying filesystem away from vnode).
+
+**Filters (2011):** path, file-mode · **Modifiers:** send-signal, no-log · **Kernel entry points:** `revoke`, `link`
+
+### `file-write*`
+
+Controls all available write operations described below.
+
+**Filters (2011):** path, file-mode · **Modifiers:** send-signal, no-log · **Kernel entry points:** `unp_bind`, `mknod`, `mkfifo1`, `symlink`, `mkdir1`, `vn_open_auth`, `exchangedata`, `link`, `rename`, `setattrlist_internal`, `unlink1`, `rmdir`
+
+### `file-write-data`
+
+Give or refuse write access to the contents of the target file. *Warning: this doesn’t seem to work as expected if action is deny! `file-read-data` works as expected – content can’t be read – but for some reason this one doesn’t deny write contents to the target file (only `file-write*` works).* For example this works (data is written): (allow file-write-data (literal "/private/tmp/test3")) (deny file-write* (literal "/private/tmp/test3")) While this doesn’t work (data is written when it shouldn’t): (deny file-write-data (literal "/private/tmp/test3")) (allow file-write* (literal "/private/tmp/test3")) Or this also doesn’t work (data is written when it shouldn’t): (allow default) (deny file-write-data (literal "/private/tmp/test3"))
+
+**Filters (2011):** path, file-mode · **Modifiers:** send-signal, no-log · **Kernel entry points:** `getvolattrlist`, `access1`, `link`, `__mac_mount`, `vn_open_auth`, `union_dircheck`, `fcntl_nocancel`, `truncate`, `ftruncate`
+
+### `file-write-flags`
+
+Control access to file flags (check manpage for `chflags`).
+
+**Filters (2011):** path, file-mode · **Modifiers:** send-signal, no-log · **Kernel entry points:** `chflags1`, `link`
+
+### `file-write-mode`
+
+Control access to file modes.
+
+**Filters (2011):** path, file-mode · **Modifiers:** send-signal, no-log · **Kernel entry points:** `chmod2`, `link`
+
+### `file-write-owner`
+
+Control access to file ownership changes.
+
+**Filters (2011):** path, file-mode · **Modifiers:** send-signal, no-log · **Kernel entry points:** `chown1`, `fchown`, `link`
+
+### `file-write-setugid`
+
+Access control check for setting file mode. It (seems to) apply only to suid and sgid bits.
+
+**Filters (2011):** path, file-mode · **Modifiers:** send-signal, no-log · **Kernel entry points:** `chmod2`, `link`
+
+### `file-write-times`
+
+Control set the access and modification times of a file.
+
+**Filters (2011):** path, file-mode · **Modifiers:** send-signal, no-log · **Kernel entry points:** `setutimes`, `link`
+
+### `file-write-xattr`
+
+This operation will control write access to the file extended attributes.
+
+**Filters (2011):** path, file-mode, xattr · **Modifiers:** send-signal, no-log · **Kernel entry points:** `vn_removexattr`, `link`, `vn_setxattr`
+
+### `ipc*`
+
+This operation will IPC related operations described below.
+
+**Modifiers:** send-signal, no-log · **Kernel entry points:** `All IPC operations described below.`
+
+### `ipc-posix*`
+
+This operation will IPC POSIX related operations described below.
+
+**Modifiers:** send-signal, no-log · **Kernel entry points:** `All IPC-Posix operations described below.`
+
+### `ipc-posix-sem`
+
+Controls access to POSIX semaphores functions (create, open, post, unlink, wait).
+
+**Modifiers:** send-signal, no-log · **Kernel entry points:** `sem_open`, `sem_post`, `sem_unlink`, `sem_wait_nocancel`, `sem_trywait`
+
+### `ipc-posix-shm`
+
+Controls access to POSIX shared memory region functions (create, mmap, open, stat, truncate, unlink).
+
+**Modifiers:** send-signal, no-log · **Kernel entry points:** `shm_open`, `pshm_mmap`, `pshm_stat`, `pshm_truncate`, `shm_unlink`
+
+### `ipc-sysv*`
+
+This operation will control all IPC SysV related operations described below.
+
+**Modifiers:** send-signal, no-log · **Kernel entry points:** `All IPC SysV operations described below.`
+
+### `ipc-sysv-msg`
+
+**Modifiers:** send-signal, no-log · **Kernel entry points:** `msgsnd_nocancel`, `msgrcv_nocancel`, `msgctl`, `msgget`
+
+### `ipc-sysv-sem`
+
+**Modifiers:** send-signal, no-log · **Kernel entry points:** `semctl`, `semget`, `semop`
+
+### `ipc-sysv-shm`
+
+**Modifiers:** send-signal, no-log · **Kernel entry points:** `shmat`, `shmctl`, `shmdt`, `shmget_existing`
+
+### `job-creation`
+
+Not implemented???
+
+**Filters (2011):** path · **Modifiers:** send-signal, no-log
+
+### `mach*`
+
+**Modifiers:** send-signal, no-log · **Kernel entry points:** `All Mach operations described below.`
+
+### `mach-bootstrap`
+
+**Modifiers:** send-signal, no-log
+
+### `mach-lookup`
+
+**Filters (2011):** mach · **Modifiers:** send-signal, no-log
+
+### `mach-per-user-lookup`
+
+??? ### 5.3 – Filters Filters can be applied to the operations that support them, allowing better control and granularity. The filters can be path names, file names, IP addresses, extended attributes, file modes. Regular expressions are supported where described. The following table resumes the existing filters: `path`, `network`, `file-mode`, `xattr`, `mach`, `signal`. Anything included in square braces `[]` is optional.
+
+**Modifiers:** send-signal, no-log
+
+### `mach-priv*`
+
+**Modifiers:** send-signal, no-log · **Kernel entry points:** `set_security_token`, `task_for_pid`
+
+### `mach-priv-host-port`
+
+**Modifiers:** send-signal, no-log · **Kernel entry points:** `set_security_token`
+
+### `mach-priv-task-port`
+
+**Modifiers:** send-signal, no-log · **Kernel entry points:** `task_for_pid`
+
+### `mach-task-name`
+
+**Modifiers:** send-signal, no-log · **Kernel entry points:** `task_name_for_pid`
+
+### `network*`
+
+**Filters (2011):** network, path, file-mode · **Modifiers:** send-signal, no-log · **Kernel entry points:** `soo_read`, `soreceive`, `recvit`, `listen`, `bind`, `unp_bind`, `connect_nocancel`, `sendit`, `soo_write`, `unp_connect`
+
+### `network-bind`
+
+**Filters (2011):** network, path, file-mode · **Modifiers:** send-signal, no-log · **Kernel entry points:** `bind`, `unp_bind`
+
+### `network-inbound`
+
+**Filters (2011):** network, path, file-mode · **Modifiers:** send-signal, no-log · **Kernel entry points:** `soo_read`, `soreceive`, `recvit`, `listen`
+
+### `network-outbound`
+
+**Filters (2011):** network, path, file-mode · **Modifiers:** send-signal, no-log · **Kernel entry points:** `connect_nocancel`, `sendit`, `soo_write`, `unp_connect`
+
+### `process*`
+
+**Modifiers:** send-signal, no-log · **Kernel entry points:** `link`, `exec_check_permissions`, `getvolattrlist`, `access1`, `fork1`
+
+### `process-exec`
+
+**Filters (2011):** path, file-mode · **Modifiers:** send-signal, no-log, no-sandbox · **Kernel entry points:** `link`, `exec_check_permissions`, `getvolattrlist`, `access1`
+
+### `process-fork`
+
+**Modifiers:** send-signal, no-log · **Kernel entry points:** `fork1`
+
+### `signal`
+
+**Filters (2011):** signal · **Modifiers:** send-signal, no-log · **Kernel entry points:** `cansignal`
+
+### `sysctl*`
+
+**Modifiers:** send-signal, no-log · **Kernel entry points:** `sysctl`, `sysctlbyname`, `sysctlnametomib`
+
+### `sysctl-read`
+
+**Modifiers:** send-signal, no-log · **Kernel entry points:** `sysctl`, `sysctlbyname`, `sysctlnametomib`
+
+### `sysctl-write`
+
+**Modifiers:** send-signal, no-log
+
+### `system*`
+
+**Modifiers:** send-signal, no-log · **Kernel entry points:** `acct`, `setaudit`, `setauid`, `audit`, `auditon`, `auditctl`, `fsctl`, `setlcid`, `nfssvc`, `reboot`, `settimeofday`, `adjtime`, `socket`, `macx_swapoff`, `macx_swapon`, `fcntl`
+
+### `system-acct`
+
+Determine whether the target should be allowed to enable accounting, based on its label and the label of the accounting log file. See `acct(5)` for more information.
+
+**Modifiers:** send-signal, no-log
+
+### `system-audit`
+
+Determine whether the target can submit an audit record for inclusion in the audit log via the `audit()` system call.
+
+**Modifiers:** send-signal, no-log
+
+### `system-fsctl`
+
+Control access to `fsctl()`. *Warning: The `fsctl()` system call is directly analogous to `ioctl()`; since the associated data is opaque from the standpoint of the MAC framework and since these operations can affect many aspects of system operation, policies must exercise extreme care when implementing access control checks.*
+
+**Modifiers:** send-signal, no-log
+
+### `system-mac-label`
+
+Determine whether the target can perform the `mac_set_fd` operation. The `mac_set_fd` operation is used to associate a MAC label with a file.
+
+**Modifiers:** send-signal, no-log
+
+### `system-nfssvc`
+
+Determine whether the target should be allowed to call `nfssrv(2)`.
+
+**Modifiers:** send-signal, no-log
+
+### `system-reboot`
+
+Controls if target can reboot system. *Note: doesn’t seem to work!*
+
+**Modifiers:** send-signal, no-log
+
+### `system-set-time`
+
+Controls access to the system clock.
+
+**Modifiers:** send-signal, no-log · **Kernel entry points:** `settimeofday`, `adjtime`
+
+### `system-socket`
+
+Control access to create sockets.
+
+**Modifiers:** send-signal, no-log
+
+### `system-swap`
+
+Access control check for swap devices (`swapon`/`swapoff`).
+
+**Modifiers:** send-signal, no-log
