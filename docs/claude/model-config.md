@@ -1,7 +1,3 @@
-> ## Documentation Index
-> Fetch the complete documentation index at: https://code.claude.com/docs/llms.txt
-> Use this file to discover all available pages before exploring further.
-
 # Model configuration
 
 > Configure which model Claude Code uses, effort levels, extended context, and the auto-compact window
@@ -77,7 +73,7 @@ Requests that a Fable model's safety classifiers flag, most often in cybersecuri
 
 To get the most from Fable:
 
-* **Describe the outcome, not the steps**: hand it the result you want and let it plan the path. To keep it working toward that outcome, [set a goal](https://code.claude.com/docs/en/goal.md).
+* **Describe the outcome, not the steps**: hand it the result you want and let it plan the path. To keep it working toward that outcome, [set a goal](goal.md).
 * **Hand it ambiguous problems**: root-cause investigations, outage debugging, and architecture decisions are where the extra investigation and verification pay off.
 * **Skip the verification reminders**: it verifies its own work with less prompting, so reminders to test or check are usually unnecessary.
 * **Size up larger tasks**: give it work you would normally break into pieces. It holds long sessions without losing the thread.
@@ -99,7 +95,7 @@ In interactive sessions, Claude Code can show a Fable usage-credits consent prom
 
 After you choose to continue on Fable using usage credits, Claude Code doesn't show the prompt again.
 
-In a session with [Remote Control](https://code.claude.com/docs/en/remote-control.md) connected, a [background session](https://code.claude.com/docs/en/agent-view.md), or an [agent team](https://code.claude.com/docs/en/agent-teams.md) teammate's session, nobody may be at the terminal, so Claude Code holds the mid-session consent prompt for the [`dialogExpiry`](https://code.claude.com/docs/en/settings-reference#dialogexpiry) deadline, five minutes by default. If nobody has answered by the deadline, Claude Code ends the turn without sending the request and adds a notice to the transcript, which the Remote Control client also shows. Your model selection is unchanged, and Claude Code asks for consent again on your next message.
+In a session with [Remote Control](https://code.claude.com/docs/en/remote-control.md) connected, a [background session](agent-view.md), or an [agent team](agent-teams.md) teammate's session, nobody may be at the terminal, so Claude Code holds the mid-session consent prompt for the [`dialogExpiry`](settings-reference.md#dialogexpiry) deadline, five minutes by default. If nobody has answered by the deadline, Claude Code ends the turn without sending the request and adds a notice to the transcript, which the Remote Control client also shows. Your model selection is unchanged, and Claude Code asks for consent again on your next message.
 
 What you can do while the prompt is waiting depends on the session:
 
@@ -107,7 +103,7 @@ What you can do while the prompt is waiting depends on the session:
 * In a background session, answer before the deadline.
 * If you send a new message from the remote client before anyone has typed at the terminal, Claude Code ends the turn the same way, and your new message starts the next turn. After someone types at the terminal, Claude Code keeps waiting for the answer and queues your new message behind it.
 
-In a session another application hosts through the [Agent SDK](https://code.claude.com/docs/en/agent-sdk/overview.md), whether the prompt appears is up to that application. If it appears and nobody answers before the same [`dialogExpiry`](https://code.claude.com/docs/en/settings-reference#dialogexpiry) deadline, Claude Code ends the turn without sending the request.
+In a session another application hosts through the [Agent SDK](https://code.claude.com/docs/en/agent-sdk/overview.md), whether the prompt appears is up to that application. If it appears and nobody answers before the same [`dialogExpiry`](settings-reference.md#dialogexpiry) deadline, Claude Code ends the turn without sending the request.
 
 In [non-interactive mode](https://code.claude.com/docs/en/headless.md) with the `-p` flag, and in an Agent SDK application that doesn't show the prompt, Claude Code never asks for consent. When a Fable request there would bill to usage credits, Claude Code bills it without asking.
 
@@ -134,7 +130,7 @@ On an Enterprise plan, when you're logged in with your claude.ai account and sav
 * If [model restrictions](#restrict-model-selection) exclude the recorded model or it isn't available to your account, and your admin hasn't set an organization default model, the Default option resolves as if nothing were recorded.
 * If you choose Default or `opusplan` in `/model`, the recorded choice doesn't change.
 
-If you switch models with `/model`, the switch also reaches [subagents that inherit the main conversation's model](https://code.claude.com/docs/en/sub-agents.md#choose-a-model), because Claude Code resolves their model from the one your session is using when Claude starts them. Switch to Opus before Claude delegates research or test runs to one of them, and that work runs on Opus too. To keep a custom subagent on a smaller model, set `model` in its definition.
+If you switch models with `/model`, the switch also reaches [subagents that inherit the main conversation's model](sub-agents.md#choose-a-model), because Claude Code resolves their model from the one your session is using when Claude starts them. Switch to Opus before Claude delegates research or test runs to one of them, and that work runs on Opus too. To keep a custom subagent on a smaller model, set `model` in its definition.
 
 If you set a model with `/model` in [non-interactive mode](https://code.claude.com/docs/en/headless.md), with the `-p` flag, your choice applies to the current session only and isn't saved as your default; `/model` in that mode requires Claude Code v2.1.205 or later. Project and managed settings still take precedence and reapply on the next launch. An [organization default model](#organization-default-model) that your admin has configured to override user selection also reapplies on the next launch.
 
@@ -150,11 +146,11 @@ If your `model` setting is `haiku`, a session saved on a Haiku model resumes on 
 
 A model you pick for the new launch with `--model` or `ANTHROPIC_MODEL` still takes precedence over the restored model. As of v2.1.195, so does an [`ANTHROPIC_DEFAULT_OPUS_MODEL`](#environment-variables) family variable. [`ANTHROPIC_DEFAULT_MODEL`](#set-a-default-model-for-new-sessions) can too, under the conditions listed in its section.
 
-When the active model at startup comes from project or managed settings rather than your own selection, the startup header shows which settings file set it. Run `/model` to override; the project or managed setting reapplies on the next launch. On platforms that embed Claude Code and set [`CLAUDE_CODE_PROVIDER_MANAGED_BY_HOST`](https://code.claude.com/docs/en/env-vars), the host's model configuration takes precedence over managed model settings, while a managed `availableModels` allowlist stays in force unless the host supplies its own; [Exceptions to managed settings precedence](https://code.claude.com/docs/en/settings.md#exceptions-to-managed-settings-precedence) says which keys and variables the host overrides.
+When the active model at startup comes from project or managed settings rather than your own selection, the startup header shows which settings file set it. Run `/model` to override; the project or managed setting reapplies on the next launch. On platforms that embed Claude Code and set [`CLAUDE_CODE_PROVIDER_MANAGED_BY_HOST`](env-vars.md), the host's model configuration takes precedence over managed model settings, while a managed `availableModels` allowlist stays in force unless the host supplies its own; [Exceptions to managed settings precedence](settings.md#exceptions-to-managed-settings-precedence) says which keys and variables the host overrides.
 
-If you or your organization configure [PreModelSwitch hooks](https://code.claude.com/docs/en/hooks.md#premodelswitch), they run before a requested switch applies and can block it or ask you to confirm.
+If you or your organization configure [PreModelSwitch hooks](hooks.md#premodelswitch), they run before a requested switch applies and can block it or ask you to confirm.
 
-When Claude Code can't tell which PreModelSwitch hooks your organization's [managed plugins](https://code.claude.com/docs/en/settings-reference.md#enabledplugins) deliver, for example because a managed plugin failed to load, it refuses the switch rather than apply it unchecked, and it checks again on each new attempt. See [Model switch was blocked by a PreModelSwitch hook](https://code.claude.com/docs/en/errors.md#model-switch-was-blocked-by-a-premodelswitch-hook) for the message and recovery.
+When Claude Code can't tell which PreModelSwitch hooks your organization's [managed plugins](settings-reference.md#enabledplugins) deliver, for example because a managed plugin failed to load, it refuses the switch rather than apply it unchecked, and it checks again on each new attempt. See [Model switch was blocked by a PreModelSwitch hook](https://code.claude.com/docs/en/errors.md#model-switch-was-blocked-by-a-premodelswitch-hook) for the message and recovery.
 
 When you switch models through the [Agent SDK](https://code.claude.com/docs/en/agent-sdk/overview.md) `setModel()` method, through an app such as the [Desktop app](https://code.claude.com/docs/en/desktop.md), or from a device connected through [Remote Control](https://code.claude.com/docs/en/remote-control.md), Claude Code checks the value at the switch:
 
@@ -165,7 +161,7 @@ See [Model is not a recognized model id](https://code.claude.com/docs/en/errors.
 
 If you set the model with the `--model` flag, the `ANTHROPIC_MODEL` environment variable, or the `model` setting, Claude Code doesn't check it up front, and a mistyped value produces [There's an issue with the selected model](https://code.claude.com/docs/en/errors.md#theres-an-issue-with-the-selected-model) on the first request.
 
-When the requested model has a scheduled retirement date or is automatically remapped to a newer version, Claude Code shows a warning that names the requested model. Interactive sessions show it as a startup notice. From v2.1.182, the same warning is written to stderr in [non-interactive mode](https://code.claude.com/docs/en/headless.md) when using the default text output format. The check also covers a `model` set in [subagent frontmatter](https://code.claude.com/docs/en/sub-agents.md). The stderr warning is suppressed for `--output-format json` and `stream-json`; read the actual model from the `modelUsage` field of the [result message](https://code.claude.com/docs/en/headless.md#get-structured-output) instead.
+When the requested model has a scheduled retirement date or is automatically remapped to a newer version, Claude Code shows a warning that names the requested model. Interactive sessions show it as a startup notice. From v2.1.182, the same warning is written to stderr in [non-interactive mode](https://code.claude.com/docs/en/headless.md) when using the default text output format. The check also covers a `model` set in [subagent frontmatter](sub-agents.md). The stderr warning is suppressed for `--output-format json` and `stream-json`; read the actual model from the `modelUsage` field of the [result message](https://code.claude.com/docs/en/headless.md#get-structured-output) instead.
 
 For example, start a session on Opus:
 
@@ -220,24 +216,24 @@ When you pick a model with `/model` and your next session starts on something el
 
 * **You chose it for one session.** Pressing `s` in the picker, launching with `--model`, and running `/model` in non-interactive mode all apply to the current session and leave your saved default alone.
 * **Something with higher priority sets the model.** A `model` value in project or managed settings, `ANTHROPIC_MODEL` in your shell, or an [organization default](#organization-default-model) your admin set to override user choices applies again at every launch. Your `/model` choice is still saved; it's outranked. When project or managed settings set the model, the startup header names the file.
-* **Claude Code couldn't save your choice.** `/model` writes `model` to `~/.claude/settings.json`. If you can't write to that file, for example because another tool generates it or links it to a read-only copy, the model you chose lasts for the session and the next launch reads the old value. Set `model` in the tool that generates the file, or make the file writable. See [A change you made in Claude Code is lost in new sessions](https://code.claude.com/docs/en/settings.md#a-change-you-made-in-claude-code-is-lost-in-new-sessions).
+* **Claude Code couldn't save your choice.** `/model` writes `model` to `~/.claude/settings.json`. If you can't write to that file, for example because another tool generates it or links it to a read-only copy, the model you chose lasts for the session and the next launch reads the old value. Set `model` in the tool that generates the file, or make the file writable. See [A change you made in Claude Code is lost in new sessions](settings.md#a-change-you-made-in-claude-code-is-lost-in-new-sessions).
 * **You resumed a session.** A session you resume with `claude --resume` or `--continue` usually [keeps the model it was using](#setting-your-model) rather than your current default.
 
 ## Restrict model selection
 
 Administrators can use `availableModels` in [managed or policy settings](https://code.claude.com/docs/en/managed-settings.md) to restrict which models users can select. Entries match a model family such as `sonnet`, a version prefix such as `claude-sonnet-4-5`, or a full model ID such as `claude-sonnet-4-5-20250929`. A version prefix also matches later model IDs that extend it with another segment, so `claude-fable-5` permits both Fable 5 and Fable 5.1, while `claude-fable-5-1` permits Fable 5.1 only. To block a model the list permits, or to make each model ID entry permit only the version it names, see [Block specific models or versions](#block-specific-models-or-versions).
 
-On platforms that embed Claude Code and set [`CLAUDE_CODE_PROVIDER_MANAGED_BY_HOST`](https://code.claude.com/docs/en/env-vars), the host's model configuration takes precedence over managed model settings, while a managed `availableModels` allowlist stays in force unless the host supplies its own; [Exceptions to managed settings precedence](https://code.claude.com/docs/en/settings.md#exceptions-to-managed-settings-precedence) says which keys and variables the host overrides.
+On platforms that embed Claude Code and set [`CLAUDE_CODE_PROVIDER_MANAGED_BY_HOST`](env-vars.md), the host's model configuration takes precedence over managed model settings, while a managed `availableModels` allowlist stays in force unless the host supplies its own; [Exceptions to managed settings precedence](settings.md#exceptions-to-managed-settings-precedence) says which keys and variables the host overrides.
 
 When `availableModels` is set, the allowlist applies everywhere a user can specify a model:
 
 * **Main session model**: `/model`, the `--model` flag, the `ANTHROPIC_MODEL` environment variable, the `model` setting, [`ANTHROPIC_DEFAULT_MODEL`](#set-a-default-model-for-new-sessions), and the model restored when [resuming a session](#setting-your-model)
 * **Alias resolution**: the `ANTHROPIC_DEFAULT_OPUS_MODEL`, `ANTHROPIC_DEFAULT_SONNET_MODEL`, `ANTHROPIC_DEFAULT_HAIKU_MODEL`, and `ANTHROPIC_DEFAULT_FABLE_MODEL` environment variables cannot redirect an allowed alias to a model outside the list
 * **Fast mode**: `/fast` refuses to toggle when it would implicitly switch to an Opus model outside the list, with the message "is not in your organization's allowed models"
-* **Subagent and teammate models**: the `model` field in [subagent](https://code.claude.com/docs/en/sub-agents.md#choose-a-model) frontmatter, the Agent tool's `model` parameter, [agent team](https://code.claude.com/docs/en/agent-teams.md#specify-teammates-and-models) teammate models, `CLAUDE_CODE_SUBAGENT_MODEL`, and, on v2.1.197 and earlier, the model picker in the `/agents` wizard&#x20;
-* **Skill and command models**: the `model` frontmatter in [skills and commands](https://code.claude.com/docs/en/skills.md)
-* **Advisor model**: the configured [`advisorModel`](https://code.claude.com/docs/en/advisor) setting and the `--advisor` flag
-* **Background agent model**: the model selected in the [dispatch picker](https://code.claude.com/docs/en/agent-view.md)
+* **Subagent and teammate models**: the `model` field in [subagent](sub-agents.md#choose-a-model) frontmatter, the Agent tool's `model` parameter, [agent team](agent-teams.md#specify-teammates-and-models) teammate models, `CLAUDE_CODE_SUBAGENT_MODEL`, and, on v2.1.197 and earlier, the model picker in the `/agents` wizard&#x20;
+* **Skill and command models**: the `model` frontmatter in [skills and commands](skills.md)
+* **Advisor model**: the configured [`advisorModel`](advisor.md) setting and the `--advisor` flag
+* **Background agent model**: the model selected in the [dispatch picker](agent-view.md)
 
 On the Anthropic API and [Claude Platform on AWS](https://code.claude.com/docs/en/claude-platform-on-aws.md), a model family alias, `opus`, `sonnet`, `haiku`, or `fable`, resolves to its usual model when the allowlist permits that model. When the allowlist blocks that model, Claude Code substitutes the newest version of the family that the allowlist permits and shows a notice naming both the requested and substituted models. With `["sonnet", "claude-opus-4-6"]`, for example, both `/model opus` and `--model opus` select Claude Opus 4.6, the newest permitted Opus. Before v2.1.205, an alias whose newest released version was outside the list was rejected or replaced like any other blocked selection, even when the list permitted an older version.
 
@@ -248,28 +244,28 @@ Claude Code handles any other blocked selection according to where the model was
 * **`/model`**: Claude Code rejects the switch with an error
 * **`--model` flag, `ANTHROPIC_MODEL`, or the `model` setting**: Claude Code replaces the value at startup with a warning naming both the requested and substituted models, and the session starts on the default model
 * **[`ANTHROPIC_DEFAULT_MODEL`](#set-a-default-model-for-new-sessions)**: Claude Code ignores the variable
-* **Subagent or teammate override**: Claude Code runs the subagent or teammate on a fallback model rather than failing the request. See [Choose a model](https://code.claude.com/docs/en/sub-agents.md#choose-a-model) for the subagent fallback and [Specify teammates and models](https://code.claude.com/docs/en/agent-teams.md#specify-teammates-and-models) for the teammate fallback.
+* **Subagent or teammate override**: Claude Code runs the subagent or teammate on a fallback model rather than failing the request. See [Choose a model](sub-agents.md#choose-a-model) for the subagent fallback and [Specify teammates and models](agent-teams.md#specify-teammates-and-models) for the teammate fallback.
 
   In interactive sessions, Claude Code warns you when it substitutes a subagent's model, by this fallback or by the newest-permitted-version substitution above, naming the requested and substituted models; it doesn't report a teammate's fallback.
 
   Where the newest-permitted-version substitution above operates, a blocked family alias follows it instead. Before v2.1.222, an alias fell back like any other blocked value on every provider
-* **Skill or command override**: Claude Code ignores the override, including a blocked family alias, and the skill or command runs on the session model. A skill or command that [runs in a subagent](https://code.claude.com/docs/en/skills.md#run-skills-in-a-subagent) follows the subagent behavior above instead
+* **Skill or command override**: Claude Code ignores the override, including a blocked family alias, and the skill or command runs on the session model. A skill or command that [runs in a subagent](skills.md#run-skills-in-a-subagent) follows the subagent behavior above instead
 * **`advisorModel` setting**: the advisor is disabled for the session
-* **`--advisor` flag**: Claude Code exits with an error at launch. In a [background session](https://code.claude.com/docs/en/agent-view.md), it starts the session without the advisor instead of exiting
-* **`CLAUDE_CODE_AUTO_MODE_MODEL`**: Claude Code ignores the variable and picks the model for its [auto mode classifier requests](https://code.claude.com/docs/en/permission-modes.md#default-classifier-model) as if you hadn't set it
+* **`--advisor` flag**: Claude Code exits with an error at launch. In a [background session](agent-view.md), it starts the session without the advisor instead of exiting
+* **`CLAUDE_CODE_AUTO_MODE_MODEL`**: Claude Code ignores the variable and picks the model for its [auto mode classifier requests](permission-modes.md#default-classifier-model) as if you hadn't set it
 
 Claude Code hides excluded models from the `/model` picker. Whether a model ID you list also gets a row of its own differs by provider:
 
-* **Anthropic API, [Claude Platform on AWS](https://code.claude.com/docs/en/claude-platform-on-aws.md), [Claude apps gateway](https://code.claude.com/docs/en/claude-apps-gateway), or an [LLM gateway](https://code.claude.com/docs/en/llm-gateway) set through `ANTHROPIC_BASE_URL`**: an Anthropic model ID you list that has no built-in picker row appears as its own labeled row. Claude Code adds such a row for Opus, Sonnet, and Haiku versions, such as an older version that the list pins. If you set `replaceBuiltInOptions` in a [`modelPicker`](https://code.claude.com/docs/en/settings-reference#modelpicker) lineup, that row doesn't appear. Before v2.1.199, such an ID was selectable only by typing `/model <id>`.
-* **Amazon Bedrock, Google Cloud's Agent Platform, or Microsoft Foundry**: unless a model ID you list starts with `anthropic.`, Claude Code doesn't add a row for it, whether it's an Anthropic model ID or a provider-specific one. [Mantle model IDs](#mantle-model-ids) carry that prefix. To show a listed version that has no built-in row, also add it to a [`modelPicker`](https://code.claude.com/docs/en/settings-reference#modelpicker) lineup, which accepts IDs in your provider's format.
+* **Anthropic API, [Claude Platform on AWS](https://code.claude.com/docs/en/claude-platform-on-aws.md), [Claude apps gateway](https://code.claude.com/docs/en/claude-apps-gateway), or an [LLM gateway](https://code.claude.com/docs/en/llm-gateway) set through `ANTHROPIC_BASE_URL`**: an Anthropic model ID you list that has no built-in picker row appears as its own labeled row. Claude Code adds such a row for Opus, Sonnet, and Haiku versions, such as an older version that the list pins. If you set `replaceBuiltInOptions` in a [`modelPicker`](settings-reference.md#modelpicker) lineup, that row doesn't appear. Before v2.1.199, such an ID was selectable only by typing `/model <id>`.
+* **Amazon Bedrock, Google Cloud's Agent Platform, or Microsoft Foundry**: unless a model ID you list starts with `anthropic.`, Claude Code doesn't add a row for it, whether it's an Anthropic model ID or a provider-specific one. [Mantle model IDs](#mantle-model-ids) carry that prefix. To show a listed version that has no built-in row, also add it to a [`modelPicker`](settings-reference.md#modelpicker) lineup, which accepts IDs in your provider's format.
 
 Model changes that Claude Code makes on your behalf are checked the same way:
 
 * **[Fallback model chains](#fallback-model-chains)**: entries outside the allowlist are dropped
 * **Plan-mode upgrades**: on the Anthropic API and Claude Platform on AWS, an upgrade such as [`opusplan`](#opusplan-model-setting) to an excluded model uses the newest permitted version of the upgrade family. On providers with provider-specific model IDs, and when no version is permitted, the upgrade is skipped and planning continues on the session's model
 * **[Automatic model fallback](#automatic-model-fallback)**: a fallback whose target is excluded does not run, so the flagged request ends with a refusal instead
-* **[Auto mode classifier](https://code.claude.com/docs/en/permission-modes.md#eliminate-prompts-with-auto-mode)**: when the allowlist excludes the [default classifier model](https://code.claude.com/docs/en/permission-modes.md#default-classifier-model), classifier requests that would use that model run on the session model, or an Opus model in [Fable](#work-with-fable) sessions. On providers other than the Anthropic API, that Opus fallback runs on the model you set in `ANTHROPIC_DEFAULT_OPUS_MODEL` or otherwise on Opus 5, without consulting the allowlist. Requires Claude Code v2.1.210 or later
-* **[Fast mode](https://code.claude.com/docs/en/fast-mode.md)**: enabling fast mode is refused when the model the session would run on afterward is outside the allowlist
+* **[Auto mode classifier](permission-modes.md#eliminate-prompts-with-auto-mode)**: when the allowlist excludes the [default classifier model](permission-modes.md#default-classifier-model), classifier requests that would use that model run on the session model, or an Opus model in [Fable](#work-with-fable) sessions. On providers other than the Anthropic API, that Opus fallback runs on the model you set in `ANTHROPIC_DEFAULT_OPUS_MODEL` or otherwise on Opus 5, without consulting the allowlist. Requires Claude Code v2.1.210 or later
+* **[Fast mode](fast-mode.md)**: enabling fast mode is refused when the model the session would run on afterward is outside the allowlist
 * **Availability fallback on Amazon Bedrock and Google Cloud's Agent Platform**: when your account loses access to a model mid-session, the switch to another model skips excluded models. The startup model checks on [Amazon Bedrock](https://code.claude.com/docs/en/amazon-bedrock.md#when-your-organization-enforces-a-model-allowlist) and [Google Cloud's Agent Platform](https://code.claude.com/docs/en/google-vertex-ai.md#when-your-organization-enforces-a-model-allowlist) skip excluded models only when managed settings also set [`enforceAvailableModels`](#enforce-the-allowlist-for-the-default-model)
 
 ```json theme={null}
@@ -291,7 +287,7 @@ Every surface enforces the allowlist it receives. Which delivery mechanism reach
 * [Claude Tag](https://claude.com/docs/claude-tag/overview) sessions run in cloud environments but don't receive server-managed settings; in a [self-hosted environment](https://code.claude.com/docs/en/self-hosted-environments), they still read the managed settings file in the runner image. To set the model for those sessions, see [Choose the model for a scope](https://claude.com/docs/claude-tag/admins/customize#choose-the-model-for-a-scope) in the Claude Tag admin guide.
 * Cowork, the agentic-work tab in the Claude Desktop app, runs its sessions on Claude Code but, by design, does not receive server-managed settings from the claude.ai admin console. When the `availableModels` list in your server-managed settings is non-empty and a user picks a model outside it, the server rejects that model for a remote Cowork session. A managed settings file applies to Cowork sessions when it is present where the session runs; remote Cowork sessions run on Anthropic-managed VMs, where a device-deployed file is not present.
 * Sessions on [third-party providers](https://code.claude.com/docs/en/server-managed-settings.md#platform-availability) such as Amazon Bedrock, Google Cloud's Agent Platform, Microsoft Foundry, and [Claude Platform on AWS](https://code.claude.com/docs/en/claude-platform-on-aws.md) do not receive server-managed settings, so deliver the allowlist through MDM or managed settings files there.
-* Delivery from the admin console also requires the session to fetch with an [eligible login](https://code.claude.com/docs/en/server-managed-settings.md#platform-availability) to your organization or an OAuth token issued for it. For fleets that authenticate with API keys, whether configured directly or generated by an [`apiKeyHelper`](https://code.claude.com/docs/en/settings-reference#apikeyhelper) script, deliver the allowlist through MDM or managed settings files.
+* Delivery from the admin console also requires the session to fetch with an [eligible login](https://code.claude.com/docs/en/server-managed-settings.md#platform-availability) to your organization or an OAuth token issued for it. For fleets that authenticate with API keys, whether configured directly or generated by an [`apiKeyHelper`](settings-reference.md#apikeyhelper) script, deliver the allowlist through MDM or managed settings files.
 * The Desktop Code tab also hosts [SSH sessions](https://code.claude.com/docs/en/desktop.md#ssh-sessions), which read the managed settings file from the remote host they run on. See [Desktop managed settings](https://code.claude.com/docs/en/desktop.md#managed-settings).
 * The model pickers on claude.ai and in the Desktop app hide or grey out models excluded by your organization's allowlist. The picker state is a convenience for users; it doesn't enforce the allowlist.
 
@@ -347,7 +343,7 @@ Without `enforceAvailableModels` or the `env` block, a user who selects Default 
 
 ### Merge behavior
 
-When the managed settings Claude Code applies define `availableModels`, that list alone applies, apart from a [host platform that supplies its own](https://code.claude.com/docs/en/settings.md#exceptions-to-managed-settings-precedence): entries in user, project, or local settings cannot extend it, and Claude Code never merges `availableModels` across managed sources either; [how Claude Code combines managed sources](https://code.claude.com/docs/en/managed-settings.md#how-claude-code-combines-managed-sources) says which source's list applies. Otherwise, lists from user, project, and local settings are [concatenated and deduplicated](https://code.claude.com/docs/en/settings.md#settings-precedence) like other array settings. Before Claude Code v2.1.175, entries from lower-precedence scopes merged into the managed list instead of being replaced by it.
+When the managed settings Claude Code applies define `availableModels`, that list alone applies, apart from a [host platform that supplies its own](settings.md#exceptions-to-managed-settings-precedence): entries in user, project, or local settings cannot extend it, and Claude Code never merges `availableModels` across managed sources either; [how Claude Code combines managed sources](https://code.claude.com/docs/en/managed-settings.md#how-claude-code-combines-managed-sources) says which source's list applies. Otherwise, lists from user, project, and local settings are [concatenated and deduplicated](settings.md#settings-precedence) like other array settings. Before Claude Code v2.1.175, entries from lower-precedence scopes merged into the managed list instead of being replaced by it.
 
 Within the effective list, an entry naming a specific model in a family, whether a version prefix or a full model ID, disables that family's wildcard entry. For example, with `["sonnet", "claude-sonnet-4-5"]`, users can pick only the model IDs that `claude-sonnet-4-5` [matches](#restrict-model-selection), not every Sonnet model.
 
@@ -359,10 +355,10 @@ Entries in `availableModels` that start with `anthropic.` are added to the `/mod
 
 An `availableModels` entry such as `claude-opus-5` also permits later releases that extend it, such as Opus 5.5, as soon as Claude Code supports them. Two managed settings let you hold a release back, and both require Claude Code v2.1.283 or later:
 
-* [`deniedModels`](https://code.claude.com/docs/en/settings-reference#deniedmodels): list the models to block. A listed model is blocked even when `availableModels` permits it, and the key also works with no allowlist at all. A release that no entry blocks stays permitted
-* [`availableModelsMatch`](https://code.claude.com/docs/en/settings-reference#availablemodelsmatch): set it to `"exact"` so that each model ID in `availableModels` permits only the version it names. A newer version of a listed model ID then stays blocked until you add it to the list
+* [`deniedModels`](settings-reference.md#deniedmodels): list the models to block. A listed model is blocked even when `availableModels` permits it, and the key also works with no allowlist at all. A release that no entry blocks stays permitted
+* [`availableModelsMatch`](settings-reference.md#availablemodelsmatch): set it to `"exact"` so that each model ID in `availableModels` permits only the version it names. A newer version of a listed model ID then stays blocked until you add it to the list
 
-Earlier versions ignore both keys, so also set [`requiredMinimumVersion`](https://code.claude.com/docs/en/settings-reference#requiredminimumversion) to keep those versions from starting.
+Earlier versions ignore both keys, so also set [`requiredMinimumVersion`](settings-reference.md#requiredminimumversion) to keep those versions from starting.
 
 This example permits Opus and Sonnet models and blocks Opus 5.5 in every spelling, including dated and provider-specific IDs:
 
@@ -373,7 +369,7 @@ This example permits Opus and Sonnet models and blocks Opus 5.5 in every spellin
 }
 ```
 
-A blocked model, whether `deniedModels` names it or an `"exact"` list omits it, is treated as a blocked selection everywhere [the allowlist applies](#restrict-model-selection). It is hidden from the `/model` picker, and `/model <name>` rejects it. If you name a blocked model ID with `--model`, `ANTHROPIC_MODEL`, or the `model` setting, Claude Code drops it at startup and resolves the Default option instead. If a [hook](https://code.claude.com/docs/en/hooks.md) or background request names a model that `deniedModels` blocks, such as an agent hook's `model` field, that request runs on the session's model instead.
+A blocked model, whether `deniedModels` names it or an `"exact"` list omits it, is treated as a blocked selection everywhere [the allowlist applies](#restrict-model-selection). It is hidden from the `/model` picker, and `/model <name>` rejects it. If you name a blocked model ID with `--model`, `ANTHROPIC_MODEL`, or the `model` setting, Claude Code drops it at startup and resolves the Default option instead. If a [hook](hooks.md) or background request names a model that `deniedModels` blocks, such as an agent hook's `model` field, that request runs on the session's model instead.
 
 The Default option follows both keys too, whether or not you set [`enforceAvailableModels`](#enforce-the-allowlist-for-the-default-model). If you set it with a non-empty `availableModels`, a blocked default counts as a model outside the allowlist. Otherwise, a Default option that would resolve to a blocked model steps down in this order:
 
@@ -439,7 +435,7 @@ The organization default reaches only sessions authenticated with the Anthropic 
 
 ## Organization effort limits
 
-Your organization can cap the [effort level](#adjust-effort-level) in two ways. On a Claude Enterprise plan, organization admins set per-role effort limits, described below. On any plan and any provider, including Amazon Bedrock, Google Cloud's Agent Platform, and Microsoft Foundry, the [`maxEffortLevel`](https://code.claude.com/docs/en/settings-reference#maxeffortlevel) managed setting caps effort on the client instead. When both apply to a model, the lower cap applies.
+Your organization can cap the [effort level](#adjust-effort-level) in two ways. On a Claude Enterprise plan, organization admins set per-role effort limits, described below. On any plan and any provider, including Amazon Bedrock, Google Cloud's Agent Platform, and Microsoft Foundry, the [`maxEffortLevel`](settings-reference.md#maxeffortlevel) managed setting caps effort on the client instead. When both apply to a model, the lower cap applies.
 
 Organization admins on Claude Enterprise plans can set a maximum [effort level](#adjust-effort-level) per model for each custom role, alongside role-level [organization model restrictions](#organization-model-restrictions). Requires Claude Code v2.1.195 or later.
 
@@ -482,7 +478,7 @@ When [`availableModels`](#restrict-model-selection) excludes the newest Opus but
 
 The substitution of an older permitted version applies on the Anthropic API and [Claude Platform on AWS](https://code.claude.com/docs/en/claude-platform-on-aws.md). On Amazon Bedrock, Google Cloud's Agent Platform, Microsoft Foundry, and Mantle, whose deployments use provider-specific model IDs, plan mode stays on the session's model whenever the upgrade model is excluded.
 
-For a hybrid approach where Claude decides mid-task when to consult a second model rather than switching at the plan boundary, see the [advisor tool](https://code.claude.com/docs/en/advisor.md).
+For a hybrid approach where Claude decides mid-task when to consult a second model rather than switching at the plan boundary, see the [advisor tool](advisor.md).
 
 ### Fallback model chains
 
@@ -496,7 +492,7 @@ Set a chain for one session with the `--fallback-model` flag, which accepts a co
 claude --fallback-model sonnet,haiku
 ```
 
-To persist a chain across sessions, set `fallbackModel` in [settings](https://code.claude.com/docs/en/settings.md) as an array:
+To persist a chain across sessions, set `fallbackModel` in [settings](settings.md) as an array:
 
 ```json theme={null}
 {
@@ -513,7 +509,7 @@ When a request fails over, Claude Code tries each entry in order until one accep
 * **Outside the allowlist**: Claude Code drops any entry not permitted by [`availableModels`](#restrict-model-selection) when it reads the chain.
 * **Smaller context window during compaction**: the chain also covers [compaction](https://code.claude.com/docs/en/context-window.md#what-survives-compaction), but Claude Code won't fall back to a model with a smaller context window than the primary's, since summarizing there would cut off part of the conversation first. If every fallback is smaller, compaction shows the original error and you can retry.
 
-Claude Code also applies the chain to [subagents](https://code.claude.com/docs/en/sub-agents.md). When a subagent's request fails over, Claude Code tries your configured fallback models in order, and the subagent continues on the model that accepts the request. Your session's model is unchanged. Before v2.1.247, a failure the chain covers ended the subagent instead.
+Claude Code also applies the chain to [subagents](sub-agents.md). When a subagent's request fails over, Claude Code tries your configured fallback models in order, and the subagent continues on the model that accepts the request. Your session's model is unchanged. Before v2.1.247, a failure the chain covers ended the subagent instead.
 
 ### Automatic model fallback
 
@@ -554,7 +550,7 @@ To check whether customizations are the trigger, start a session with `claude --
 
 #### Ask before switching
 
-To decide what happens each time a request is flagged, run `/config`, select **Switch models when a message is flagged**, and choose **Ask each time**. You can also set [`switchModelsOnFlag`](https://code.claude.com/docs/en/settings-reference#switchmodelsonflag) to `false` in your settings file. Claude Code then pauses at a flagged request that would switch models and gives you two options: switch to the fallback model, or edit the prompt and retry.
+To decide what happens each time a request is flagged, run `/config`, select **Switch models when a message is flagged**, and choose **Ask each time**. You can also set [`switchModelsOnFlag`](settings-reference.md#switchmodelsonflag) to `false` in your settings file. Claude Code then pauses at a flagged request that would switch models and gives you two options: switch to the fallback model, or edit the prompt and retry.
 
 The first time a flagged request would switch models in an interactive session, Claude Code may ask whether to switch automatically from then on. It asks only if you haven't set `switchModelsOnFlag`, and it saves your choice as that key in your user settings.
 
@@ -565,13 +561,13 @@ When you've chosen **Ask each time**, some cases behave differently:
 * When the flagged category has no fallback model, such as a biology flag on Opus 5 or Sonnet 5.5, Claude Code doesn't show the prompt and the request ends with the refusal.
 * If both models flag the same request, you can edit the prompt and retry, or start a new session.
 * In [cloud sessions](https://code.claude.com/docs/en/claude-code-on-the-web.md) on the mobile app, editing and retrying is not supported. Switch models, or continue the session from a desktop browser or the desktop app.
-* In [non-interactive mode](https://code.claude.com/docs/en/cli-reference.md#cli-flags) and SDK integrations that can't show the prompt, a flagged request ends the turn with a refusal instead.
-* In a subagent that Claude starts with the [Agent tool](https://code.claude.com/docs/en/tools-reference.md#agent-tool-behavior), Claude Code doesn't pause to ask, and the subagent fails instead of switching models. See [Subagents switch or fail without asking](#subagents-switch-or-fail-without-asking).
+* In [non-interactive mode](cli-reference.md#cli-flags) and SDK integrations that can't show the prompt, a flagged request ends the turn with a refusal instead.
+* In a subagent that Claude starts with the [Agent tool](tools-reference.md#agent-tool-behavior), Claude Code doesn't pause to ask, and the subagent fails instead of switching models. See [Subagents switch or fail without asking](#subagents-switch-or-fail-without-asking).
 * When the fallback target is blocked by [`availableModels`](#restrict-model-selection), Claude Code doesn't show the prompt. The flagged request ends with the refusal, the same as automatic fallback when the target is blocked.
 
 #### Subagents switch or fail without asking
 
-In a built-in or custom [subagent](https://code.claude.com/docs/en/sub-agents.md) that Claude starts with the [Agent tool](https://code.claude.com/docs/en/tools-reference.md#agent-tool-behavior), Claude Code doesn't [pause to ask](#ask-before-switching) at a flagged request. If a fallback model is available, the request re-runs on it or the subagent fails, according to your **Switch models when a message is flagged** choice in `/config`:
+In a built-in or custom [subagent](sub-agents.md) that Claude starts with the [Agent tool](tools-reference.md#agent-tool-behavior), Claude Code doesn't [pause to ask](#ask-before-switching) at a flagged request. If a fallback model is available, the request re-runs on it or the subagent fails, according to your **Switch models when a message is flagged** choice in `/config`:
 
 * **Switch automatically**, or no choice yet: the request re-runs on the fallback model, and your session's model is unchanged
 * **Ask each time**: the subagent fails with [`Agent terminated early due to an API error`](https://code.claude.com/docs/en/errors#agent-terminated-early-due-to-an-api-error) and the refusal message. Claude receives that error and decides what to do about the unfinished task. To let subagents switch models, choose **Switch automatically**. Your main conversation then switches without asking too.
@@ -616,10 +612,10 @@ If you set a level the active model does not support, Claude Code falls back to 
 
 Claude Code resolves the session's effort level in this order, taking the first that applies:
 
-1. The [`CLAUDE_CODE_EFFORT_LEVEL`](https://code.claude.com/docs/en/env-vars#variables) environment variable
+1. The [`CLAUDE_CODE_EFFORT_LEVEL`](env-vars.md#variables) environment variable
 2. A level you pick in the session, such as with `/effort`, the `/model` picker, or [`applyFlagSettings()`](https://code.claude.com/docs/en/agent-sdk/typescript#applyflagsettings)
 3. Launching with `--effort`
-4. Your settings: the level you saved for the model or an [`effortLevel`](https://code.claude.com/docs/en/settings-reference#effortlevel) key, with the precedence between them and across settings files stated at [`modelSettings`](https://code.claude.com/docs/en/settings-reference#modelsettings)
+4. Your settings: the level you saved for the model or an [`effortLevel`](settings-reference.md#effortlevel) key, with the precedence between them and across settings files stated at [`modelSettings`](settings-reference.md#modelsettings)
 5. The model's default effort: `high` on every model that supports effort, except that Opus 5.5, Sonnet 5.5, and Haiku 5.5 default to `medium` and Opus 4.7 defaults to `xhigh`. If your organization sets a default effort level for its [organization default model](#organization-default-model), that level is the default when you run that model.
 
 After an automatic model fallback, see [Effort level after a fallback](#effort-level-after-a-fallback) for the level that applies. For subagents and teammates, see [Effort level of subagents and teammates](#effort-level-of-subagents-and-teammates).
@@ -631,7 +627,7 @@ When you set `low`, `medium`, `high`, or `xhigh` in an interactive session on yo
 * `Enter` in the `/effort` slider or the `/model` picker, or a level typed after `/effort`: save the level as your default and apply it in later sessions
 * `s` in the `/effort` slider or the `/model` picker: apply the level to this session only. Requires Claude Code v2.1.257 or later
 
-Claude Code saves the level per model, under the [`modelSettings`](https://code.claude.com/docs/en/settings-reference#modelsettings) key in your user settings, so each model keeps its own saved level.
+Claude Code saves the level per model, under the [`modelSettings`](settings-reference.md#modelsettings) key in your user settings, so each model keeps its own saved level.
 
 `max` is the deepest reasoning level. Unless you set it through the `CLAUDE_CODE_EFFORT_LEVEL` environment variable, Claude Code applies `max` to the current session only.
 
@@ -641,7 +637,7 @@ Claude Code saves the level per model, under the [`modelSettings`](https://code.
 
 When you set a level with `/effort` in a [`-p` run](https://code.claude.com/docs/en/headless), Claude Code applies it to that session only and doesn't save it as your default.
 
-The `/effort` slider also has an **Ultracode** toggle. Ultracode is a Claude Code setting rather than a model effort level: with it on, Claude orchestrates [dynamic workflows](https://code.claude.com/docs/en/workflows.md) for substantive tasks, at whichever effort level the session runs at. For where it can be set persistently, see the [`ultracode`](https://code.claude.com/docs/en/settings-reference#ultracode) setting.
+The `/effort` slider also has an **Ultracode** toggle. Ultracode is a Claude Code setting rather than a model effort level: with it on, Claude orchestrates [dynamic workflows](workflows.md) for substantive tasks, at whichever effort level the session runs at. For where it can be set persistently, see the [`ultracode`](settings-reference.md#ultracode) setting.
 
 Turning ultracode on or off with `/effort` or the `ultracode` setting leaves the effort level unchanged. The `--effort ultracode` flag and the Agent SDK `effortLevel: "ultracode"` value turn it on and also set the level to `xhigh`. Picking a level in the `/effort` slider or the `/model` picker leaves ultracode as it was.
 
@@ -649,7 +645,7 @@ You can turn on ultracode through any of the following:
 
 * **`/effort`**: run `/effort ultracode` to turn it on for the current session or `/effort ultracode off` to turn it off. In the `/effort` slider, press `Tab` to flip the **Ultracode** toggle, then `Enter` to apply it
 * **`--effort` flag**: launch with `claude --effort ultracode`, which starts the session at `xhigh` effort with ultracode on
-* **`ultracode` setting**: set [`"ultracode": true`](https://code.claude.com/docs/en/settings-reference#ultracode) in a settings file, with `--settings`, or in an Agent SDK control request. An [`applyFlagSettings()`](https://code.claude.com/docs/en/agent-sdk/typescript#applyflagsettings) request also accepts `effortLevel: "ultracode"`, which turns it on and sets the effort level to `xhigh`
+* **`ultracode` setting**: set [`"ultracode": true`](settings-reference.md#ultracode) in a settings file, with `--settings`, or in an Agent SDK control request. An [`applyFlagSettings()`](https://code.claude.com/docs/en/agent-sdk/typescript#applyflagsettings) request also accepts `effortLevel: "ultracode"`, which turns it on and sets the effort level to `xhigh`
 
 The `/effort ultracode off` form, the slider toggle, and keeping ultracode on at effort levels other than `xhigh` require Claude Code v2.1.284 or later. Before v2.1.284, turning on ultracode set the session to `xhigh` effort, picking another level turned it off, and an effort cap below `xhigh` made it unavailable.
 
@@ -659,7 +655,7 @@ The persisted `effortLevel` setting and the `CLAUDE_CODE_EFFORT_LEVEL` environme
 
 Ultracode is unavailable when:
 
-* [Workflows are turned off](https://code.claude.com/docs/en/workflows.md#turn-workflows-off)
+* [Workflows are turned off](workflows.md#turn-workflows-off)
 * The model doesn't support `xhigh` effort
 
 In those cases `--effort ultracode` starts the session with ultracode off, at the highest effort level the model and any cap allow, up to `xhigh`.
@@ -675,7 +671,7 @@ Each level trades token spend against capability. The default suits most coding 
 | `high` | Work where verification matters or edge cases are likely, such as fixing a bug in an existing codebase. The default on every model except Opus 5.5, Sonnet 5.5, Haiku 5.5, and Opus 4.7 |
 | `xhigh` | Deeper reasoning at higher token spend. The default on Opus 4.7 |
 | `max` | Hard problems you want Claude to work through without you, such as finding security vulnerabilities. `max` may show diminishing returns and is prone to overthinking, so test before adopting it broadly |
-| `ultracode` | A Claude Code setting rather than a level: plans a [dynamic workflow](https://code.claude.com/docs/en/workflows.md) for each substantive task at any effort level |
+| `ultracode` | A Claude Code setting rather than a level: plans a [dynamic workflow](workflows.md) for each substantive task at any effort level |
 
 In tests on Opus 5.5 and Fable 5.1, Claude at a higher level tested more edge cases and verified more of its work before answering. It also made more choices on its own. At a lower level, Claude returned a starting point sooner, which fits work where you review each result and steer the next step. To see the same tasks run at each level, read [Using Claude Code: Spending your effort](https://claude.dev/blog/spending-your-effort/) on the blog.
 
@@ -690,7 +686,7 @@ Include `ultrathink` anywhere in your prompt to request deeper reasoning on that
 Typed in the terminal prompt, the word can also raise that turn to `xhigh` effort. When it can, the word shows in rainbow colors. Requires Claude Code v2.1.311 or later. If the word isn't rainbow when you start a new turn, try one of these:
 
 * Retype it outside anything such as quotes, brackets, a path, or a command, in a prompt that doesn't start with `/`
-* Unset `CLAUDE_CODE_EFFORT_LEVEL` if it's set below `xhigh`, raise your own [`maxEffortLevel`](https://code.claude.com/docs/en/settings-reference#maxeffortlevel) to `xhigh` or above, or ask an organization admin to raise your [organization's limit](#organization-effort-limits)
+* Unset `CLAUDE_CODE_EFFORT_LEVEL` if it's set below `xhigh`, raise your own [`maxEffortLevel`](settings-reference.md#maxeffortlevel) to `xhigh` or above, or ask an organization admin to raise your [organization's limit](#organization-effort-limits)
 * Run `/model` in your session to switch to an Opus 5.5, Sonnet 5.5, Haiku 5.5, or Fable 5.1 model. Where the word can't raise a turn, such as on Amazon Bedrock, [set the effort level](#set-the-effort-level) instead
 
 #### Set the effort level
@@ -701,17 +697,17 @@ You can change effort through any of the following:
 * **In `/model`**: use left/right arrow keys to adjust the effort slider when selecting a model. The new level starts with your next message at the latest. Until then, Claude can keep working at the old level, even on a new model. While a [source that outranks your pick](#adjust-effort-level) applies, such as `CLAUDE_CODE_EFFORT_LEVEL`, Claude works at that source's level instead.
 * **`--effort` flag**: pass a level name to set it for a single session when launching Claude Code
 * **Environment variable**: set `CLAUDE_CODE_EFFORT_LEVEL` to a level name. To have Claude Code [send no effort level](#send-no-effort-level), set it to `auto` or `unset` instead
-* **Settings**: set a per-model level in [`modelSettings`](https://code.claude.com/docs/en/settings-reference#modelsettings), or set [`effortLevel`](https://code.claude.com/docs/en/settings-reference#effortlevel) to `low`, `medium`, `high`, or `xhigh` as the default for models without one. `max` isn't accepted as a level in either key, and `ultracode` has its own [`ultracode`](https://code.claude.com/docs/en/settings-reference#ultracode) key
+* **Settings**: set a per-model level in [`modelSettings`](settings-reference.md#modelsettings), or set [`effortLevel`](settings-reference.md#effortlevel) to `low`, `medium`, `high`, or `xhigh` as the default for models without one. `max` isn't accepted as a level in either key, and `ultracode` has its own [`ultracode`](settings-reference.md#ultracode) key
 * **From a connected device**: in a [Remote Control](https://code.claude.com/docs/en/remote-control.md#what-connected-devices-see) session, pick a level from the effort control on your phone or in your browser. The level applies to the current session only. Requires Claude Code v2.1.234 or later
-* **Skill and subagent frontmatter**: set `effort` in a [skill](https://code.claude.com/docs/en/skills.md#frontmatter-reference) or [subagent](https://code.claude.com/docs/en/sub-agents.md#supported-frontmatter-fields) markdown file to override the effort level when that skill or subagent runs
+* **Skill and subagent frontmatter**: set `effort` in a [skill](skills.md#frontmatter-reference) or [subagent](sub-agents.md#supported-frontmatter-fields) markdown file to override the effort level when that skill or subagent runs
 
-A skill's `effort` applies until the end of the turn it runs in, or for the forked subagent's run with `context: fork`. A subagent's `effort` applies while the subagent runs, unless [its invocation overrides it](https://code.claude.com/docs/en/sub-agents.md#choose-an-effort-level). While either one applies, the skill or subagent runs at its level, whatever level you launch with, save, or pick. If `CLAUDE_CODE_EFFORT_LEVEL` is set, that level applies instead.
+A skill's `effort` applies until the end of the turn it runs in, or for the forked subagent's run with `context: fork`. A subagent's `effort` applies while the subagent runs, unless [its invocation overrides it](sub-agents.md#choose-an-effort-level). While either one applies, the skill or subagent runs at its level, whatever level you launch with, save, or pick. If `CLAUDE_CODE_EFFORT_LEVEL` is set, that level applies instead.
 
-A [`maxEffortLevel`](https://code.claude.com/docs/en/settings-reference#maxeffortlevel) or [organization effort cap](#organization-effort-limits) still limits the level the skill or subagent runs at. If you set `effortLevel` in [managed settings](https://code.claude.com/docs/en/managed-settings.md), Claude Code applies it at the settings step of the [effort resolution order](#adjust-effort-level), and users can still change the level with `/effort` or `--effort`. To keep users at or below a level, set [`maxEffortLevel`](https://code.claude.com/docs/en/settings-reference#maxeffortlevel).
+A [`maxEffortLevel`](settings-reference.md#maxeffortlevel) or [organization effort cap](#organization-effort-limits) still limits the level the skill or subagent runs at. If you set `effortLevel` in [managed settings](https://code.claude.com/docs/en/managed-settings.md), Claude Code applies it at the settings step of the [effort resolution order](#adjust-effort-level), and users can still change the level with `/effort` or `--effort`. To keep users at or below a level, set [`maxEffortLevel`](settings-reference.md#maxeffortlevel).
 
 #### Effort level of subagents and teammates
 
-On the main conversation's model, a [subagent](https://code.claude.com/docs/en/sub-agents.md#choose-an-effort-level) or [teammate](https://code.claude.com/docs/en/agent-teams.md#specify-teammates-and-models) with no `effort` of its own runs at the level you pick in the session or set with `--effort`. On another model, that level doesn't apply. To pick a subagent's level, set `effort` in its definition.
+On the main conversation's model, a [subagent](sub-agents.md#choose-an-effort-level) or [teammate](agent-teams.md#specify-teammates-and-models) with no `effort` of its own runs at the level you pick in the session or set with `--effort`. On another model, that level doesn't apply. To pick a subagent's level, set `effort` in its definition.
 
 #### Check the effort level you set
 
@@ -724,7 +720,7 @@ In a terminal session, once `/effort` confirms the new level, the next message y
 * **After the turn ends**: you don't have to do anything until then, and it's expected if the turn finishes at the old level
 * **While Claude is still working**: type a message, such as `keep going`, and press `Enter` to queue it without interrupting the turn. Claude gets it when its current tool calls finish, or when the turn ends at the latest, and works at the new level from then on.
 
-Before v2.1.242, Claude Code could queue `/effort` itself until the turn finished, and always did in a session that doesn't [fetch feature flags](https://code.claude.com/docs/en/env-vars.md#features-that-need-feature-flag-fetching), such as on a [third-party provider](https://code.claude.com/docs/en/third-party-integrations.md).
+Before v2.1.242, Claude Code could queue `/effort` itself until the turn finished, and always did in a session that doesn't [fetch feature flags](env-vars.md#features-that-need-feature-flag-fetching), such as on a [third-party provider](https://code.claude.com/docs/en/third-party-integrations.md).
 
 #### Send no effort level
 
@@ -737,7 +733,7 @@ export CLAUDE_CODE_EFFORT_LEVEL=auto
 The session header and footer show no effort level while none is sent. To confirm that none is sent, run `/effort status` at the Claude Code prompt:
 
 * **`Effort level: auto`**: no effort level is sent.
-* **`Effort level: auto (currently <level>)`**: a level is still sent. If a [`maxEffortLevel`](https://code.claude.com/docs/en/settings-reference#maxeffortlevel) setting below `max` applies to the active model, Claude Code sends its own default for the model, lowered to that cap. Remove the setting or set it to `max`.
+* **`Effort level: auto (currently <level>)`**: a level is still sent. If a [`maxEffortLevel`](settings-reference.md#maxeffortlevel) setting below `max` applies to the active model, Claude Code sends its own default for the model, lowered to that cap. Remove the setting or set it to `max`.
 
 > [!NOTE]
 >
@@ -749,7 +745,7 @@ Adaptive reasoning makes thinking optional on each step, so Claude can respond f
 
 Fable models, Sonnet 5 and later, Haiku 5.5, and Opus 4.7 and later always use adaptive reasoning. The fixed thinking budget mode and `CLAUDE_CODE_DISABLE_ADAPTIVE_THINKING` don't apply to them.
 
-On Opus 4.6 and Sonnet 4.6, you can set `CLAUDE_CODE_DISABLE_ADAPTIVE_THINKING=1` to revert to the previous fixed thinking budget controlled by `MAX_THINKING_TOKENS`. See [environment variables](https://code.claude.com/docs/en/env-vars.md).
+On Opus 4.6 and Sonnet 4.6, you can set `CLAUDE_CODE_DISABLE_ADAPTIVE_THINKING=1` to revert to the previous fixed thinking budget controlled by `MAX_THINKING_TOKENS`. See [environment variables](env-vars.md).
 
 ### Extended thinking
 
@@ -759,11 +755,11 @@ Extended thinking is the reasoning Claude emits before responding. On models tha
 | :- | :- |
 | Toggle for the current session | Press `Option+T` on macOS or `Alt+T` on Windows and Linux |
 | Set the global default | Run `/config` and toggle thinking mode. Saved as `alwaysThinkingEnabled` in `~/.claude/settings.json` |
-| Disable through an environment variable | Set [`MAX_THINKING_TOKENS=0`](https://code.claude.com/docs/en/env-vars), which turns thinking off on the Anthropic API except on Opus 5.5, Sonnet 5.5, Haiku 5.5, and Fable models. On [third-party providers](https://code.claude.com/docs/en/third-party-integrations.md), Claude Code omits the `thinking` parameter instead, and adaptive-reasoning models may still think |
+| Disable through an environment variable | Set [`MAX_THINKING_TOKENS=0`](env-vars.md), which turns thinking off on the Anthropic API except on Opus 5.5, Sonnet 5.5, Haiku 5.5, and Fable models. On [third-party providers](https://code.claude.com/docs/en/third-party-integrations.md), Claude Code omits the `thinking` parameter instead, and adaptive-reasoning models may still think |
 
 You can't turn thinking off on Opus 5.5, Sonnet 5.5, Haiku 5.5, or the Fable models. The session toggle and the `/config` row show `Thinking can't be turned off` for these models instead of offering the switch, and a saved `alwaysThinkingEnabled: false` or `MAX_THINKING_TOKENS=0` has no effect there. On these models, the model decides per step how much to think based on the effort level. The saved setting applies again when you switch to a model that accepts it.
 
-Claude Code collapses thinking output by default. Press `Ctrl+O` to toggle verbose mode and see the reasoning as gray italic text. Interactive sessions on the Anthropic API receive redacted thinking blocks by default, so set `showThinkingSummaries: true` in [settings](https://code.claude.com/docs/en/settings.md) if you want the full summaries available when you expand. You are charged for all thinking tokens generated, even when collapsed or redacted.
+Claude Code collapses thinking output by default. Press `Ctrl+O` to toggle verbose mode and see the reasoning as gray italic text. Interactive sessions on the Anthropic API receive redacted thinking blocks by default, so set `showThinkingSummaries: true` in [settings](settings.md) if you want the full summaries available when you expand. You are charged for all thinking tokens generated, even when collapsed or redacted.
 
 ### Extended context
 
@@ -798,11 +794,11 @@ To select a 1M variant by name, append the `[1m]` suffix to a model alias or a f
 
 #### Context window behind an LLM gateway
 
-If you set `ANTHROPIC_BASE_URL` to an [LLM gateway](https://code.claude.com/docs/en/llm-gateway) or another proxy, Claude Code gives each model it recognizes the same context window the model has on the Anthropic API. Fable 5.1, Fable 5, Sonnet 5 and later, Haiku 5.5, and Opus 4.7 and later get the 1M window with no `[1m]` variant to select, and a model that reaches 1M only through its `[1m]` variant, such as Opus 4.6, runs at 200K without it. Claude Code can't detect a lower limit that the gateway or the server behind it enforces. If your gateway rejects requests above 200K tokens, set [`CLAUDE_CODE_AUTO_COMPACT_WINDOW=200000`](https://code.claude.com/docs/en/env-vars) in the environment that starts Claude Code, so sessions on every model [compact at that boundary](#set-the-auto-compact-window).
+If you set `ANTHROPIC_BASE_URL` to an [LLM gateway](https://code.claude.com/docs/en/llm-gateway) or another proxy, Claude Code gives each model it recognizes the same context window the model has on the Anthropic API. Fable 5.1, Fable 5, Sonnet 5 and later, Haiku 5.5, and Opus 4.7 and later get the 1M window with no `[1m]` variant to select, and a model that reaches 1M only through its `[1m]` variant, such as Opus 4.6, runs at 200K without it. Claude Code can't detect a lower limit that the gateway or the server behind it enforces. If your gateway rejects requests above 200K tokens, set [`CLAUDE_CODE_AUTO_COMPACT_WINDOW=200000`](env-vars.md) in the environment that starts Claude Code, so sessions on every model [compact at that boundary](#set-the-auto-compact-window).
 
 #### Turn off 1M context
 
-To keep sessions at a 200K window, set `CLAUDE_CODE_DISABLE_1M_CONTEXT=1` in your shell or in a [settings file](https://code.claude.com/docs/en/env-vars.md#set-environment-variables). Claude Code removes the `[1m]` model variants from the model picker. On models that run with the 1M window by default, such as the Fable models, Sonnet 5 and later, and Opus 4.7 and later, it also treats the model as having a 200K context window:
+To keep sessions at a 200K window, set `CLAUDE_CODE_DISABLE_1M_CONTEXT=1` in your shell or in a [settings file](env-vars.md#set-environment-variables). Claude Code removes the `[1m]` model variants from the model picker. On models that run with the 1M window by default, such as the Fable models, Sonnet 5 and later, and Opus 4.7 and later, it also treats the model as having a 200K context window:
 
 * With auto-compaction on, sessions compact at the 200K boundary through [auto-compaction](#set-the-auto-compact-window). Setting the auto-compact window above 200K doesn't lift the hold, because Claude Code caps that window at the model's context window.
 * With auto-compaction off, sessions stop at the 200K boundary with the [context-limit error](https://code.claude.com/docs/en/errors.md#prompt-is-too-long) instead of compacting.
@@ -827,11 +823,11 @@ The auto-compact window is how full the context window can get before Claude Cod
 
 You can set the auto-compact window in these places:
 
-* **For the current model, in this session and later ones**: run `/autocompact` with a value, like `/autocompact 500k`. Claude Code saves it to your user settings under the current model in [`modelSettings`](https://code.claude.com/docs/en/settings-reference#modelsettings) and applies it to the current session. If a higher-priority [settings scope](https://code.claude.com/docs/en/settings.md#settings-precedence) such as managed settings sets its own window for that model or for every model, the command saves your value but the session keeps that scope's window, and the command says so. Run `/autocompact auto` to return to the window tuned for your model. Before v2.1.288, the command saved one window for every model, as the top-level `autoCompactWindow`.
-* **For every model**: set [`autoCompactWindow`](https://code.claude.com/docs/en/settings-reference#autocompactwindow) in a settings file, such as `"autoCompactWindow": 200000` in `~/.claude/settings.json`. A window you saved for a model with `/autocompact` takes precedence over this key in the same file for that model.
-* **For one launch**: pass [`--autocompact`](https://code.claude.com/docs/en/cli-reference#cli-flags) when starting Claude Code. The flag overrides your saved setting for that launch without changing it, and `claude --autocompact auto` runs the session at the tuned window even if your saved setting has a value. Unlike `/autocompact`, the flag isn't preempted by a higher-priority settings scope such as managed settings.
-* **In scripts and cloud environments**: set [`CLAUDE_CODE_AUTO_COMPACT_WINDOW`](https://code.claude.com/docs/en/env-vars) to a token count such as `200000`. Unless Claude Code [ignores the value](#claude_code_auto_compact_window-values), the variable takes precedence over the command, the flag, and the `autoCompactWindow` setting. `/autocompact` then reports the override without saving. The status line's `used_percentage` measures against the model's full context window, so while the variable is set, that percentage doesn't indicate when compaction will run.
-* **For one subagent**: see [Set the auto-compact window for one subagent](https://code.claude.com/docs/en/sub-agents.md#subagent-auto-compact-window).
+* **For the current model, in this session and later ones**: run `/autocompact` with a value, like `/autocompact 500k`. Claude Code saves it to your user settings under the current model in [`modelSettings`](settings-reference.md#modelsettings) and applies it to the current session. If a higher-priority [settings scope](settings.md#settings-precedence) such as managed settings sets its own window for that model or for every model, the command saves your value but the session keeps that scope's window, and the command says so. Run `/autocompact auto` to return to the window tuned for your model. Before v2.1.288, the command saved one window for every model, as the top-level `autoCompactWindow`.
+* **For every model**: set [`autoCompactWindow`](settings-reference.md#autocompactwindow) in a settings file, such as `"autoCompactWindow": 200000` in `~/.claude/settings.json`. A window you saved for a model with `/autocompact` takes precedence over this key in the same file for that model.
+* **For one launch**: pass [`--autocompact`](cli-reference.md#cli-flags) when starting Claude Code. The flag overrides your saved setting for that launch without changing it, and `claude --autocompact auto` runs the session at the tuned window even if your saved setting has a value. Unlike `/autocompact`, the flag isn't preempted by a higher-priority settings scope such as managed settings.
+* **In scripts and cloud environments**: set [`CLAUDE_CODE_AUTO_COMPACT_WINDOW`](env-vars.md) to a token count such as `200000`. Unless Claude Code [ignores the value](#claude_code_auto_compact_window-values), the variable takes precedence over the command, the flag, and the `autoCompactWindow` setting. `/autocompact` then reports the override without saving. The status line's `used_percentage` measures against the model's full context window, so while the variable is set, that percentage doesn't indicate when compaction will run.
+* **For one subagent**: see [Set the auto-compact window for one subagent](sub-agents.md#subagent-auto-compact-window).
 
 The command and the flag accept a window size from 100K to 1M tokens, in any of these forms:
 
@@ -861,11 +857,11 @@ If you don't set an auto-compact window, Claude Code compacts when the conversat
 
 * [Cloud sessions](https://code.claude.com/docs/en/claude-code-on-the-web.md) compact as the conversation approaches the model's limit
 * Sonnet 4.6 and Opus 4.6 without [extended context](#extended-context) compact at the 200K boundary
-* When you set [`CLAUDE_CODE_DISABLE_1M_CONTEXT=1`](https://code.claude.com/docs/en/env-vars), models with a native 1M window, such as Sonnet 5 and the Fable models, compact at the 200K boundary
+* When you set [`CLAUDE_CODE_DISABLE_1M_CONTEXT=1`](env-vars.md), models with a native 1M window, such as Sonnet 5 and the Fable models, compact at the 200K boundary
 * Models running with a native 1M window compact before the window fills, at about 967K tokens by default. These include the Fable models, Sonnet 5 and later, Haiku 5.5, and Opus 4.7 and later. Behind a custom `ANTHROPIC_BASE_URL`, see [the context window behind a gateway](#context-window-behind-a-gateway)
 * Sessions on a model ID Claude Code doesn't recognize, such as an [LLM gateway](https://code.claude.com/docs/en/llm-gateway) alias, compact at the context window Claude Code assumes for the ID; see [Correct the window for a gateway or custom model ID](#correct-the-window-for-a-gateway-or-custom-model-id)
 
-See the [`idleCompaction`](https://code.claude.com/docs/en/settings-reference#idlecompaction) setting for when Claude Code also compacts a conversation you leave idle.
+See the [`idleCompaction`](settings-reference.md#idlecompaction) setting for when Claude Code also compacts a conversation you leave idle.
 
 ### Correct the window for a gateway or custom model ID
 
@@ -873,35 +869,35 @@ Either of these startup warnings means Claude Code doesn't recognize your sessio
 
 ```text theme={null}
 ⚠ Model "my-gateway-opus" isn't recognized · context assumed to be 200k tokens · ...
-Claude Code doesn't recognize the model "my-gateway-opus", so it assumes a context window of 200k tokens. Update Claude Code, or see https://code.claude.com/docs/en/model-config#correct-the-window-for-a-gateway-or-custom-model-id to set the window.
+Claude Code doesn't recognize the model "my-gateway-opus", so it assumes a context window of 200k tokens. Update Claude Code, or see model-config.md#correct-the-window-for-a-gateway-or-custom-model-id to set the window.
 ```
 
 Claude Code [auto-compacts](#default-auto-compact-thresholds) the conversation at the assumed 200K, so if the model's real context window is 200K, there is nothing to correct. Otherwise, give Claude Code the real window in whichever of these ways fits your ID:
 
 * **A model newer than your Claude Code version**: run `claude update` in your shell. If Claude Code recognizes the ID after the update, you don't need to configure anything else.
-* **Your gateway's or provider's name for a model Claude Code knows**: add a [`modelOverrides`](#override-model-ids-per-version) entry that maps the Anthropic model ID to your ID, such as `"claude-opus-4-8": "my-gateway-opus"`. You can instead list your ID in a [`modelPicker`](https://code.claude.com/docs/en/settings-reference#fields-for-modelpicker) row with `behavesAs` set to that model. Either way, Claude Code then treats the ID as that model.
+* **Your gateway's or provider's name for a model Claude Code knows**: add a [`modelOverrides`](#override-model-ids-per-version) entry that maps the Anthropic model ID to your ID, such as `"claude-opus-4-8": "my-gateway-opus"`. You can instead list your ID in a [`modelPicker`](settings-reference.md#fields-for-modelpicker) row with `behavesAs` set to that model. Either way, Claude Code then treats the ID as that model.
 * **A model with a 1M window**: append `[1m]` to the ID where you set the model, such as `claude --model 'my-gateway-opus[1m]'` in your shell. If you [turned off 1M context](#turn-off-1m-context), you get the same window with or without the suffix.
-* **Any other window**: set [`CLAUDE_CODE_MAX_CONTEXT_TOKENS`](https://code.claude.com/docs/en/env-vars) to the window size in tokens in the environment that starts Claude Code, such as `CLAUDE_CODE_MAX_CONTEXT_TOKENS=400000`. For an unrecognized ID that doesn't start with `claude-` and has no `[1m]` suffix, the variable takes effect on its own. For any other ID, check [which IDs it applies to](#which-ids-claude_code_max_context_tokens-applies-to) first.
+* **Any other window**: set [`CLAUDE_CODE_MAX_CONTEXT_TOKENS`](env-vars.md) to the window size in tokens in the environment that starts Claude Code, such as `CLAUDE_CODE_MAX_CONTEXT_TOKENS=400000`. For an unrecognized ID that doesn't start with `claude-` and has no `[1m]` suffix, the variable takes effect on its own. For any other ID, check [which IDs it applies to](#which-ids-claude_code_max_context_tokens-applies-to) first.
 
 Once Claude Code recognizes the ID or uses the window you gave it, the warning no longer appears when you start a session on that ID.
 
 #### Which IDs `CLAUDE_CODE_MAX_CONTEXT_TOKENS` applies to
 
-On an [LLM gateway](https://code.claude.com/docs/en/llm-gateway) or other custom deployment, Claude Code can assume a context window for the model ID that differs from the model's real window, whether or not it resolves the ID to a Claude model. Set [`CLAUDE_CODE_MAX_CONTEXT_TOKENS`](https://code.claude.com/docs/en/env-vars) to the window Claude Code should assume instead.
+On an [LLM gateway](https://code.claude.com/docs/en/llm-gateway) or other custom deployment, Claude Code can assume a context window for the model ID that differs from the model's real window, whether or not it resolves the ID to a Claude model. Set [`CLAUDE_CODE_MAX_CONTEXT_TOKENS`](env-vars.md) to the window Claude Code should assume instead.
 
 How the variable applies depends on the ID. Claude Code treats an ID as a provider or custom spelling when it doesn't start with `claude-`, in any casing, or when it carries a suffix that Claude Code strips when reading the ID, such as the `@YYYYMMDD` date used on Google Cloud's Agent Platform. Before v2.1.259, Claude Code didn't count a stripped suffix, so an unrecognized `claude-` ID with a date suffix was treated as a bare `claude-` name.
 
 An unrecognized provider or custom spelling, the same spelling with `[1m]`, and every other ID are three separate cases:
 
 * If Claude Code can't resolve a provider or custom spelling to a model it recognizes and the ID doesn't contain `[1m]`, the variable applies directly and proactive compaction continues at the declared window.
-* If Claude Code can't resolve a provider or custom spelling to a model it recognizes and the ID contains `[1m]`, in any casing, Claude Code assumes a 1M window for it and the variable doesn't apply on its own. To correct the window while keeping proactive compaction, also set [`CLAUDE_CODE_DISABLE_1M_CONTEXT=1`](https://code.claude.com/docs/en/env-vars). With that variable set, Claude Code sizes the ID like the same spelling without `[1m]`, so `CLAUDE_CODE_MAX_CONTEXT_TOKENS` applies when it would apply to that untagged spelling.
+* If Claude Code can't resolve a provider or custom spelling to a model it recognizes and the ID contains `[1m]`, in any casing, Claude Code assumes a 1M window for it and the variable doesn't apply on its own. To correct the window while keeping proactive compaction, also set [`CLAUDE_CODE_DISABLE_1M_CONTEXT=1`](env-vars.md). With that variable set, Claude Code sizes the ID like the same spelling without `[1m]`, so `CLAUDE_CODE_MAX_CONTEXT_TOKENS` applies when it would apply to that untagged spelling.
 
   With a declared window above 200K, the warning that [the 200K limit isn't enforced](https://code.claude.com/docs/en/errors.md#the-200k-limit-isnt-enforced) is expected in this configuration.
-* If the ID resolves to a model Claude Code recognizes, or the ID is a bare `claude-` name with no suffix for Claude Code to strip, in any casing, the variable takes effect only when you also set [`DISABLE_COMPACT`](https://code.claude.com/docs/en/env-vars), which disables all compaction.
+* If the ID resolves to a model Claude Code recognizes, or the ID is a bare `claude-` name with no suffix for Claude Code to strip, in any casing, the variable takes effect only when you also set [`DISABLE_COMPACT`](env-vars.md), which disables all compaction.
 
   For example, an ID that contains a Claude model name that Claude Code knows, such as `anthropic/claude-opus-4-8`, `us.anthropic.claude-…-v1:0`, or the dated `claude-sonnet-4-5@20250929`, resolves to that model. This includes IDs that also contain `[1m]`: Claude Code resolves `claude-opus-4-8[1m]` to Opus 4.8 even with `CLAUDE_CODE_DISABLE_1M_CONTEXT` set.
 
-For a model ID Claude Code doesn't recognize, set [`CLAUDE_CODE_DISABLE_UNKNOWN_MODEL_WINDOW_ENFORCEMENT=1`](https://code.claude.com/docs/en/env-vars) to have Claude Code compact only after the API rejects the conversation with a [too-long error Claude Code recognizes](https://code.claude.com/docs/en/errors.md#prompt-is-too-long). Claude Code doesn't run that recovery when a gateway [rewrites the error](https://code.claude.com/docs/en/llm-gateway-connect.md#troubleshoot-gateway-errors) to wording Claude Code doesn't recognize.
+For a model ID Claude Code doesn't recognize, set [`CLAUDE_CODE_DISABLE_UNKNOWN_MODEL_WINDOW_ENFORCEMENT=1`](env-vars.md) to have Claude Code compact only after the API rejects the conversation with a [too-long error Claude Code recognizes](https://code.claude.com/docs/en/errors.md#prompt-is-too-long). Claude Code doesn't run that recovery when a gateway [rewrites the error](https://code.claude.com/docs/en/llm-gateway-connect.md#troubleshoot-gateway-errors) to wording Claude Code doesn't recognize.
 
 ## Checking your current model
 
@@ -914,7 +910,7 @@ You can see which model you're currently using in two places:
 
 Use `ANTHROPIC_CUSTOM_MODEL_OPTION` to add a single custom entry to the `/model` picker without replacing the built-in aliases. This is useful for testing model IDs that Claude Code does not list by default. For LLM gateway deployments, Claude Code can populate the picker from the gateway's `/v1/models` endpoint when `CLAUDE_CODE_ENABLE_GATEWAY_MODEL_DISCOVERY=1` is set, so this variable is needed only when discovery is disabled or does not return the model you want. See [gateway model discovery](https://code.claude.com/docs/en/llm-gateway-protocol.md#model-discovery).
 
-To list several models instead, in your own order and under labels you choose, set [`modelPicker`](https://code.claude.com/docs/en/settings-reference#modelpicker). Its entry says which rows the picker keeps when that lineup replaces the built-in one.
+To list several models instead, in your own order and under labels you choose, set [`modelPicker`](settings-reference.md#modelpicker). Its entry says which rows the picker keeps when that lineup replaces the built-in one.
 
 This example sets all three variables to make a gateway-routed Opus deployment selectable. Claude Code reads environment variables at startup, so run the exports before launching `claude`, or restart an existing session to pick them up:
 
@@ -929,7 +925,7 @@ export ANTHROPIC_CUSTOM_MODEL_OPTION_DESCRIPTION="Custom deployment routed throu
 * If you omit the name, the entry shows the model's name when Claude Code [recognizes the ID](#customize-pinned-model-display-and-capabilities), and the model ID otherwise.
 * If you omit the description, Claude Code uses `Custom model (<model-id>)`.
 
-Claude Code lists the custom entry after the built-in entries, and any [`modelPicker`](https://code.claude.com/docs/en/settings-reference#modelpicker) rows you append come after it.
+Claude Code lists the custom entry after the built-in entries, and any [`modelPicker`](settings-reference.md#modelpicker) rows you append come after it.
 
 Claude Code skips validation for the model ID set in `ANTHROPIC_CUSTOM_MODEL_OPTION`, so you can use any string your API endpoint accepts.
 
@@ -947,7 +943,7 @@ Use the following environment variables to control the model names that the alia
 | `ANTHROPIC_DEFAULT_OPUS_MODEL` | The model to use for `opus`, or for `opusplan` when Plan Mode is active. |
 | `ANTHROPIC_DEFAULT_SONNET_MODEL` | The model to use for `sonnet`, or for `opusplan` when Plan Mode is not active. |
 | `ANTHROPIC_DEFAULT_HAIKU_MODEL` | The model to use for `haiku`, or background functionality |
-| `CLAUDE_CODE_SUBAGENT_MODEL` | The default model for [subagents](https://code.claude.com/docs/en/sub-agents.md#choose-a-model), [agent team](https://code.claude.com/docs/en/agent-teams.md#specify-teammates-and-models) teammates, and [workflow](https://code.claude.com/docs/en/workflows.md) agents that aren't assigned a model another way. Accepts an alias such as `haiku` or a full model name. A per-invocation model or a definition's `model` field, including `inherit`, takes precedence. To change that, set [`CLAUDE_CODE_SUBAGENT_MODEL_FORCE`](https://code.claude.com/docs/en/sub-agents#run-every-subagent-on-one-model) |
+| `CLAUDE_CODE_SUBAGENT_MODEL` | The default model for [subagents](sub-agents.md#choose-a-model), [agent team](agent-teams.md#specify-teammates-and-models) teammates, and [workflow](workflows.md) agents that aren't assigned a model another way. Accepts an alias such as `haiku` or a full model name. A per-invocation model or a definition's `model` field, including `inherit`, takes precedence. To change that, set [`CLAUDE_CODE_SUBAGENT_MODEL_FORCE`](sub-agents.md#run-every-subagent-on-one-model) |
 
 On third-party providers, [Customize pinned model display and capabilities](#customize-pinned-model-display-and-capabilities) describes what a pinned model's row in the `/model` picker shows.
 
@@ -984,7 +980,7 @@ For a model that reaches 1M through its `[1m]` variant, such as Opus 4.6 or Sonn
 export ANTHROPIC_DEFAULT_OPUS_MODEL='claude-opus-4-6[1m]'
 ```
 
-With the `[1m]` suffix, the 1M context window applies to all usage of the pinned alias, including the plan-mode Opus phase of [`opusplan`](#opusplan-model-setting) and [subagents](https://code.claude.com/docs/en/sub-agents.md#choose-a-model) whose `model` frontmatter names the alias.
+With the `[1m]` suffix, the 1M context window applies to all usage of the pinned alias, including the plan-mode Opus phase of [`opusplan`](#opusplan-model-setting) and [subagents](sub-agents.md#choose-a-model) whose `model` frontmatter names the alias.
 
 * Claude Code strips the suffix before sending the model ID to your provider.
 * Only append `[1m]` when the underlying model [supports 1M context](https://platform.claude.com/docs/en/build-with-claude/context-windows#context-window-sizes-by-model).
@@ -998,7 +994,7 @@ When you set an `ANTHROPIC_DEFAULT_*_MODEL` variable, the `/model` picker shows 
 >
 > Filtering matches on a model alias such as `opus`, a version prefix such as `claude-opus-4-8`, or the full provider-form model ID. Provider-specific prefixes such as `us.anthropic.` are not stripped, so to allow a specific model, map it through [`modelOverrides`](#override-model-ids-per-version) or list its full provider-form ID:
 >
-> * **Google Cloud's Agent Platform**: when the ID Claude Code requests carries an `@` date, such as `claude-sonnet-4-5@20250929`, include the date in your allowlist entry. On its own, `claude-sonnet-4-5` doesn't match that ID under either [`availableModelsMatch`](https://code.claude.com/docs/en/settings-reference#availablemodelsmatch) setting.
+> * **Google Cloud's Agent Platform**: when the ID Claude Code requests carries an `@` date, such as `claude-sonnet-4-5@20250929`, include the date in your allowlist entry. On its own, `claude-sonnet-4-5` doesn't match that ID under either [`availableModelsMatch`](settings-reference.md#availablemodelsmatch) setting.
 > * **Pinned models**: list the value you set in the model's `ANTHROPIC_DEFAULT_*_MODEL` variable
 >
 > Any `[1m]` suffix is stripped from both the allowlist entry and the requested model before matching.
@@ -1048,7 +1044,7 @@ export ANTHROPIC_DEFAULT_OPUS_MODEL_SUPPORTED_CAPABILITIES='effort,xhigh_effort,
 
 ### Override model IDs per version
 
-On platforms that embed Claude Code and set [`CLAUDE_CODE_PROVIDER_MANAGED_BY_HOST`](https://code.claude.com/docs/en/env-vars), the host's model configuration takes precedence over managed model settings, while a managed `availableModels` allowlist stays in force unless the host supplies its own; [Exceptions to managed settings precedence](https://code.claude.com/docs/en/settings.md#exceptions-to-managed-settings-precedence) says which keys and variables the host overrides.
+On platforms that embed Claude Code and set [`CLAUDE_CODE_PROVIDER_MANAGED_BY_HOST`](env-vars.md), the host's model configuration takes precedence over managed model settings, while a managed `availableModels` allowlist stays in force unless the host supplies its own; [Exceptions to managed settings precedence](settings.md#exceptions-to-managed-settings-precedence) says which keys and variables the host overrides.
 
 The family-level environment variables above configure one model ID per family alias. If you need to map several versions within the same family to distinct provider IDs, use the `modelOverrides` setting instead.
 
@@ -1056,7 +1052,7 @@ The family-level environment variables above configure one model ID per family a
 
 This lets enterprise administrators route each model version to a specific Amazon Bedrock inference profile ARN, Google Cloud's Agent Platform version name, or Microsoft Foundry deployment name for governance, cost allocation, or regional routing.
 
-Set `modelOverrides` in your [settings file](https://code.claude.com/docs/en/settings.md#where-settings-live):
+Set `modelOverrides` in your [settings file](settings.md#where-settings-live):
 
 ```json theme={null}
 {
