@@ -68,10 +68,29 @@ const memoryPaths = [
   ".claude/agent-memory-local",
 ];
 
+const dependencyFolders = ["node_modules"];
+
+const list: string[] = [];
+
+dependencyFolders.forEach((folder) => {
+  list.push(`**/${folder}/**/CLAUDE.md`);
+});
+
+console.log(list);
+
 const dependencyMemoryFiles = [
   "**/node_modules/**/CLAUDE.md",
   "**/node_modules/**/AGENTS.md",
+  "**/node_modules/**/QWEN.md",
+  "**/node_modules/**/GEMINI.md",
+  "**/node_modules/**/COPILOT.md",
+  "**/node_modules/**/CONVENTIONAL.md",
+  "**/node_modules/**/copilot-instructions.md",
+  "**/node_modules/**/.cursorrules",
+  "**/node_modules/**/.clinerules",
+  "**/node_modules/**/.windsurfrules",
   "**/node_modules/**/.claude/**",
+  "**/node_modules/**/.cursor/**",
 ];
 
 const gitHistoryWriteOnly = ["/**/.git"];
@@ -168,9 +187,9 @@ try {
     JSON.stringify(newConfig, null, 2),
   );
 
-  debug(newConfig, {
-    depth: 10,
-  });
+  // debug(newConfig, {
+  //   depth: 10,
+  // });
 } catch (error) {
   console.error(error);
   process.exit(1);

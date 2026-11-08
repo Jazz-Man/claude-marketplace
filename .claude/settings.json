@@ -3,7 +3,16 @@
   "claudeMdExcludes": [
     "**/node_modules/**/CLAUDE.md",
     "**/node_modules/**/AGENTS.md",
-    "**/node_modules/**/.claude/**"
+    "**/node_modules/**/QWEN.md",
+    "**/node_modules/**/GEMINI.md",
+    "**/node_modules/**/COPILOT.md",
+    "**/node_modules/**/CONVENTIONAL.md",
+    "**/node_modules/**/copilot-instructions.md",
+    "**/node_modules/**/.cursorrules",
+    "**/node_modules/**/.clinerules",
+    "**/node_modules/**/.windsurfrules",
+    "**/node_modules/**/.claude/**",
+    "**/node_modules/**/.cursor/**"
   ],
   "enabledPlugins": {
     "plugin-dev@claude-plugins-official": true,
@@ -136,7 +145,16 @@
       "Write(.claude/agent-memory-local)",
       "Read(**/node_modules/**/CLAUDE.md)",
       "Read(**/node_modules/**/AGENTS.md)",
+      "Read(**/node_modules/**/QWEN.md)",
+      "Read(**/node_modules/**/GEMINI.md)",
+      "Read(**/node_modules/**/COPILOT.md)",
+      "Read(**/node_modules/**/CONVENTIONAL.md)",
+      "Read(**/node_modules/**/copilot-instructions.md)",
+      "Read(**/node_modules/**/.cursorrules)",
+      "Read(**/node_modules/**/.clinerules)",
+      "Read(**/node_modules/**/.windsurfrules)",
       "Read(**/node_modules/**/.claude/**)",
+      "Read(**/node_modules/**/.cursor/**)",
       "Edit(**/.git/*)",
       "Write(**/.git)",
       "Bash(git add*)",
@@ -400,7 +418,9 @@
       ]
     },
     "enabled": true,
-    "enabledPlatforms": ["macos"],
+    "enabledPlatforms": [
+      "macos"
+    ],
     "enableWeakerNetworkIsolation": true,
     "failIfUnavailable": true,
     "filesystem": {
@@ -448,7 +468,16 @@
         ".claude/agent-memory-local",
         "**/node_modules/**/CLAUDE.md",
         "**/node_modules/**/AGENTS.md",
-        "**/node_modules/**/.claude/**"
+        "**/node_modules/**/QWEN.md",
+        "**/node_modules/**/GEMINI.md",
+        "**/node_modules/**/COPILOT.md",
+        "**/node_modules/**/CONVENTIONAL.md",
+        "**/node_modules/**/copilot-instructions.md",
+        "**/node_modules/**/.cursorrules",
+        "**/node_modules/**/.clinerules",
+        "**/node_modules/**/.windsurfrules",
+        "**/node_modules/**/.claude/**",
+        "**/node_modules/**/.cursor/**"
       ],
       "denyWrite": [
         "**/.DS_Store*",
