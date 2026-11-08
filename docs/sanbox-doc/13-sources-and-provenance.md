@@ -98,6 +98,7 @@ reproduction are in the linked documents.
 | `-n no-internet` blocks TCP/IP | fG! (2011) | SIGKILL, exit 137 → [02](02-sandbox-exec-cli.md) |
 | `-f` accepts a bare profile name found in the three system directories | fG! (2011) | `No such file or directory` → [02](02-sandbox-exec-cli.md) |
 | `(trace "file.sb")` records denied operations | fG! (2011) | compiles, writes nothing → [03](03-sbpl-language.md), [12](12-changes-since-2011.md) |
+| "you can extract a compiled profile with `sbutil` and disassemble it" | macinternals.app (2026) | no such binary exists: absent from `PATH`, `/usr/bin`, `/usr/sbin`, `/usr/libexec`, Spotlight, a filesystem search and the `libsandbox` string table. The only sandbox binaries are `/usr/bin/sandbox-exec` and `/usr/libexec/sandboxd`. The documented decompiler is SandBlaster → [01](01-overview-and-architecture.md) |
 
 ---
 
@@ -196,6 +197,16 @@ above.
 
 Surfaced during searching and not used above, in rough order of expected value:
 
+* Deaconescu, Deshotels, Bucicoiu, Enck, Davi, Sadeghi — *SandBlaster: Reversing the Apple Sandbox*
+  (2016), <https://arxiv.org/abs/1608.04303>. Decompiles Apple's **compiled binary** sandbox profiles
+  back to human-readable SBPL; the authors used it to recover every built-in iOS 7, 8 and 9 profile.
+  This — not `sbutil` — is the documented answer to "how do I read a compiled profile". Retrieved:
+  title, authors and abstract only; the tool was not run for this documentation.
+* <https://www.8ksec.io/reading-ios-sandbox-profiles/> — practical walkthrough of extracting and
+  reading iOS sandbox profiles
+* <https://github.com/0xbf00/simbple> — SBPL internals and plaintext profiles, by the author of the
+  `libsystem_secinit` reimplementation cited in section 2
+* <https://github.com/Lessica/iOS-Sandbox-Profiles> — collection of extracted iOS profiles
 * <https://sigreturn.com/blog/ios-sandbox/> — iOS sandbox internals, overlaps heavily with macOS
 * <https://saagarjha.com/blog/2020-05-20/mac-app-store-sandbox-escape/> — a real escape, useful for
   calibrating what the boundary does and does not stop
@@ -233,5 +244,9 @@ Stated plainly, so nobody trusts it past its evidence:
   macinternals.app and is marked **unverified**.
 * **Single-machine, single-version.** Everything is macOS 27.2 arm64e. Intel behaviour, and
   behaviour on 15.x/26.x, is not covered — though the probe scripts make that easy to check.
-* **`sbutil` was not found** on this machine, so compiled-profile disassembly is documented as a
-  claim from macinternals.app rather than demonstrated.
+* **No compiled-profile decompilation was attempted.** The tool macinternals.app names for this,
+  `sbutil`, does not exist on macOS 27.2 (**verified**: absent from `PATH`, `/usr/bin`, `/usr/sbin`,
+  `/usr/libexec`, Spotlight, a filesystem search, and the `libsandbox` string table), and that one
+  sentence is the only mention of the name in any source consulted. The real, citable tool is
+  SandBlaster ([arXiv:1608.04303](https://arxiv.org/abs/1608.04303)); it was not run here, and is
+  largely unnecessary on macOS because the shipped profiles are plaintext SBPL.

@@ -185,8 +185,19 @@ output is opaque bytecode. Practical consequences:
 * `(defined? 'some-operation)` lets a single profile work across macOS versions, which is exactly
   what Firefox does (**verified** in
   [`SandboxPolicyContent.h`](https://github.com/mozilla-firefox/firefox/blob/main/security/sandbox/mac/SandboxPolicyContent.h)).
-* Tools like `sbutil` can extract and disassemble a compiled profile (**sourced**: macinternals.app
-  2026, **unverified** — not present on this machine).
+* The compiled bytecode can in principle be decompiled back to SBPL. **SandBlaster** (Deaconescu,
+  Deshotels, Bucicoiu, Enck, Davi, Sadeghi, 2016 — [arXiv:1608.04303](https://arxiv.org/abs/1608.04303))
+  does exactly that, and was used to recover every built-in iOS 7/8/9 profile. It matters mainly on
+  iOS, where profiles ship pre-compiled; on macOS the 611 profiles in
+  `/System/Library/Sandbox/Profiles/` and `/usr/share/sandbox/` are **plaintext SBPL** (**verified**),
+  so you can simply read them. No decompiler was run for this documentation.
+
+> **contradicted — `sbutil` does not appear to exist.** macinternals.app (2026) states *"you can
+> extract a compiled profile with `sbutil` and disassemble it for inspection"*. That is the only
+> mention of the name anywhere: no path, no author, no repository, no man page. On macOS 27.2 there is
+> no such binary (**verified**: absent from `PATH`, `/usr/bin`, `/usr/sbin`, `/usr/libexec`, Spotlight
+> and a filesystem search; the string does not occur in `libsandbox` either). The only sandbox
+> binaries on this machine are `/usr/bin/sandbox-exec` (135 KB) and `/usr/libexec/sandboxd` (1.3 MB).
 
 ---
 
