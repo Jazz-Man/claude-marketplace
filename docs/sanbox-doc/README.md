@@ -57,17 +57,19 @@ Used throughout these documents:
 | [12-changes-since-2011.md](12-changes-since-2011.md) | Everything that moved or broke since the classic guides: removed operations, moved paths, dead flags, dead tools |
 | [13-sources-and-provenance.md](13-sources-and-provenance.md) | Every source with its retrieval date, plus the exact commands that reproduce each machine-generated table |
 
-### Historical primary sources
-
-Kept verbatim because they are still the best prose explanations of what operations *mean*.
+### Historical primary source
 
 | Document | Note |
 |---|---|
-| [legacy/apple-sandbox-guide-v1.0.md](legacy/apple-sandbox-guide-v1.0.md) | fG! (Pedro Vilaça), 2011 — 48 pages, per-operation semantics with examples and `sandboxd` log output. Snow Leopard era; read with [12-changes-since-2011.md](12-changes-since-2011.md) |
-| [legacy/blazakis-the-apple-sandbox-2011.md](legacy/blazakis-the-apple-sandbox-2011.md) | Dionysus Blazakis, Black Hat DC 2011 — the reverse-engineering of `libsandbox`, TinyScheme, bytecode compilation and `Sandbox.kext` |
-| [legacy/man-sandbox-exec.md](legacy/man-sandbox-exec.md) | `sandbox-exec(1)` as shipped on macOS 27.2 |
-| [legacy/man-sandbox_init.md](legacy/man-sandbox_init.md) | `sandbox_init(3)` from the Command Line Tools SDK |
-| [legacy/sandbox.h](legacy/sandbox.h) | The SDK header, carrying Apple's deprecation notice verbatim |
+| [legacy/BlackHat_DC_2011_Blazakis_Apple_Sandbox-wp.md](legacy/BlackHat_DC_2011_Blazakis_Apple_Sandbox-wp.md) | Dionysus Blazakis, *The Apple Sandbox*, Black Hat DC 2011 — the reverse-engineering of `libsandbox`, the embedded TinyScheme, the compiled `*rules*` bytecode format (§4), `Sandbox.kext` and its syscalls (§5.1) and the `AppleMatch.kext` regex engine (§5.2). Appendix B preserves the 2011 `sandbox-exec(1)` and `sandbox_init(3)` man pages, which is useful for seeing how far the official documentation has *not* moved. Kept because the architecture it describes is still how the sandbox works; it is the basis of chapter 01 |
+
+Two other historical sources were consulted and then **deliberately not kept**, because most of
+their content had gone stale. What was still true in them was folded into the current chapters:
+
+| Removed source | Where its still-valid content now lives |
+|---|---|
+| fG! (Pedro Vilaça), *Apple's Sandbox Guide* v1.0, 2011 — 48 pp. | Per-operation semantics and kernel entry points → the *Operation semantics* section of [04-operations-reference.md](04-operations-reference.md#operation-semantics). Everything that had gone stale (operation list, profile paths, `-n` profiles, `trace`, `system.log`, and above all the "first match wins" precedence claim) is catalogued in [12-changes-since-2011.md](12-changes-since-2011.md) |
+| `sandbox-exec(1)`, `sandbox_init(3)`, `sandbox.h` as shipped | Quoted verbatim inline in [02-sandbox-exec-cli.md](02-sandbox-exec-cli.md) |
 
 ---
 
