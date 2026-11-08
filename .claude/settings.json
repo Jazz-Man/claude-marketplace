@@ -135,8 +135,14 @@
       "Read(~/**/*.p12)",
       "Read(~/*.pfx)",
       "Read(~/**/*.pfx)",
+      "Read(~/*.p8)",
+      "Read(~/**/*.p8)",
       "Read(~/*.ppk)",
       "Read(~/**/*.ppk)",
+      "Read(~/*.jks)",
+      "Read(~/**/*.jks)",
+      "Read(~/*.keystore)",
+      "Read(~/**/*.keystore)",
       "Read(~/*.secret)",
       "Read(~/**/*.secret)",
       "Read(~/*.secrets)",
@@ -151,6 +157,123 @@
       "Read(~/**/id_ed25519)",
       "Read(~/id_rsa)",
       "Read(~/**/id_rsa)",
+      "Read(~/credentials.json)",
+      "Read(~/**/credentials.json)",
+      "Read(~/token.json)",
+      "Read(~/**/token.json)",
+      "Read(~/.vault-token)",
+      "Read(~/**/.vault-token)",
+      "Read(~/.netrc)",
+      "Read(~/**/.netrc)",
+      "Read(~/_netrc)",
+      "Read(~/**/_netrc)",
+      "Read(~/.npmrc)",
+      "Read(~/**/.npmrc)",
+      "Read(~/.yarnrc)",
+      "Read(~/**/.yarnrc)",
+      "Read(~/.yarnrc.yml)",
+      "Read(~/**/.yarnrc.yml)",
+      "Read(~/.pypirc)",
+      "Read(~/**/.pypirc)",
+      "Read(~/.gemrc)",
+      "Read(~/**/.gemrc)",
+      "Read(~/.curlrc)",
+      "Read(~/**/.curlrc)",
+      "Read(~/.wgetrc)",
+      "Read(~/**/.wgetrc)",
+      "Read(~/.condarc)",
+      "Read(~/**/.condarc)",
+      "Read(~/.pearrc)",
+      "Read(~/**/.pearrc)",
+      "Read(~/.dockercfg)",
+      "Read(~/**/.dockercfg)",
+      "Read(~/.authrc)",
+      "Read(~/**/.authrc)",
+      "Read(~/.ldaprc)",
+      "Read(~/**/.ldaprc)",
+      "Read(~/.sentryclirc)",
+      "Read(~/**/.sentryclirc)",
+      "Read(~/.mongorc.js)",
+      "Read(~/**/.mongorc.js)",
+      "Read(~/.hgrc)",
+      "Read(~/**/.hgrc)",
+      "Read(~/.msmtprc)",
+      "Read(~/**/.msmtprc)",
+      "Read(~/.mbsyncrc)",
+      "Read(~/**/.mbsyncrc)",
+      "Read(~/.offlineimaprc)",
+      "Read(~/**/.offlineimaprc)",
+      "Read(~/.fetchmailrc)",
+      "Read(~/**/.fetchmailrc)",
+      "Read(~/.muttrc)",
+      "Read(~/**/.muttrc)",
+      "Read(~/.mailrc)",
+      "Read(~/**/.mailrc)",
+      "Read(~/.lftprc)",
+      "Read(~/**/.lftprc)",
+      "Read(~/.screenrc)",
+      "Read(~/**/.screenrc)",
+      "Read(~/.my.cnf)",
+      "Read(~/**/.my.cnf)",
+      "Read(~/.mariadb.cnf)",
+      "Read(~/**/.mariadb.cnf)",
+      "Read(~/.mylogin.cnf)",
+      "Read(~/**/.mylogin.cnf)",
+      "Read(~/.pgpass)",
+      "Read(~/**/.pgpass)",
+      "Read(~/.pg_service.conf)",
+      "Read(~/**/.pg_service.conf)",
+      "Read(~/.rclone.conf)",
+      "Read(~/**/.rclone.conf)",
+      "Read(~/.s3cfg)",
+      "Read(~/**/.s3cfg)",
+      "Read(~/.boto)",
+      "Read(~/**/.boto)",
+      "Read(~/.ansible.cfg)",
+      "Read(~/**/.ansible.cfg)",
+      "Read(~/.envrc)",
+      "Read(~/**/.envrc)",
+      "Read(~/.*login*)",
+      "Read(~/**/.*login*)",
+      "Read(~/.*logout*)",
+      "Read(~/**/.*logout*)",
+      "Read(~/.*history*)",
+      "Read(~/**/.*history*)",
+      "Read(~/.*profile*)",
+      "Read(~/**/.*profile*)",
+      "Read(~/.htpasswd*)",
+      "Read(~/**/.htpasswd*)",
+      "Read(~/.DS_Store*)",
+      "Read(~/**/.DS_Store*)",
+      "Read(~/.env)",
+      "Read(~/**/.env)",
+      "Read(~/.env.*)",
+      "Read(~/**/.env.*)",
+      "Read(~/Brewfile*)",
+      "Read(~/**/Brewfile*)",
+      "Read(~/.zshenv*)",
+      "Read(~/.zcompdump*)",
+      "Read(~/.zsh_sessions*)",
+      "Read(~/.v8flags*)",
+      "Read(~/.mutagen*)",
+      "Read(~/.wget-hsts*)",
+      "Read(~/.viminfo*)",
+      "Read(~/.tmux*)",
+      "Read(~/.git-credentials*)",
+      "Read(~/.gitconfig*)",
+      "Read(~/.bunfig.toml)",
+      "Read(~/.gdbinit)",
+      "Read(~/.ssh)",
+      "Read(~/.aws)",
+      "Read(~/.gnupg)",
+      "Read(~/.gcloud)",
+      "Read(~/.config)",
+      "Read(~/.docker)",
+      "Read(~/.kube)",
+      "Read(~/.azure)",
+      "Read(~/.keychain)",
+      "Read(~/.appstoreconnect)",
+      "Read(~/private_keys)",
       "Read(~/.cloudflared)",
       "Read(~/.gsutil)",
       "Read(~/.mcp-auth)",
@@ -178,44 +301,6 @@
       "Read(~/.zed)",
       "Read(~/.claude.json)",
       "Read(~/.claude.json.backup)",
-      "Read(~/**/.netrc)",
-      "Read(~/**/.npmrc)",
-      "Read(~/**/.pypirc)",
-      "Read(~/**/.htpasswd*)",
-      "Read(~/credentials.json)",
-      "Read(~/**/credentials.json)",
-      "Read(~/token.json)",
-      "Read(~/**/token.json)",
-      "Read(~/.gitconfig*)",
-      "Read(~/.bunfig.toml)",
-      "Read(~/.gdbinit)",
-      "Read(**/.DS_Store*)",
-      "Read(**/.env)",
-      "Read(**/.env.*)",
-      "Read(~/.ssh)",
-      "Read(~/.aws)",
-      "Read(~/.gnupg)",
-      "Read(~/.gcloud)",
-      "Read(~/.config)",
-      "Read(~/.docker)",
-      "Read(~/.kube)",
-      "Read(~/.htpasswd*)",
-      "Read(~/.zshenv*)",
-      "Read(~/.*rc*)",
-      "Read(~/.v8flags*)",
-      "Read(~/.mutagen*)",
-      "Read(~/.*login*)",
-      "Read(~/.*logout*)",
-      "Read(~/.*history*)",
-      "Read(~/.zcompdump*)",
-      "Read(~/.zsh_sessions*)",
-      "Read(~/.*profile*)",
-      "Read(~/.wget-hsts*)",
-      "Read(~/.viminfo*)",
-      "Read(~/.tmux*)",
-      "Read(~/.git-credentials*)",
-      "Read(**/Brewfile*)",
-      "Read(~/Brewfile*)",
       "Read(~/Library)",
       "Read(~/Documents)",
       "Read(~/Downloads)",
@@ -357,8 +442,14 @@
       "Edit(~/**/*.p12)",
       "Edit(~/*.pfx)",
       "Edit(~/**/*.pfx)",
+      "Edit(~/*.p8)",
+      "Edit(~/**/*.p8)",
       "Edit(~/*.ppk)",
       "Edit(~/**/*.ppk)",
+      "Edit(~/*.jks)",
+      "Edit(~/**/*.jks)",
+      "Edit(~/*.keystore)",
+      "Edit(~/**/*.keystore)",
       "Edit(~/*.secret)",
       "Edit(~/**/*.secret)",
       "Edit(~/*.secrets)",
@@ -373,6 +464,123 @@
       "Edit(~/**/id_ed25519)",
       "Edit(~/id_rsa)",
       "Edit(~/**/id_rsa)",
+      "Edit(~/credentials.json)",
+      "Edit(~/**/credentials.json)",
+      "Edit(~/token.json)",
+      "Edit(~/**/token.json)",
+      "Edit(~/.vault-token)",
+      "Edit(~/**/.vault-token)",
+      "Edit(~/.netrc)",
+      "Edit(~/**/.netrc)",
+      "Edit(~/_netrc)",
+      "Edit(~/**/_netrc)",
+      "Edit(~/.npmrc)",
+      "Edit(~/**/.npmrc)",
+      "Edit(~/.yarnrc)",
+      "Edit(~/**/.yarnrc)",
+      "Edit(~/.yarnrc.yml)",
+      "Edit(~/**/.yarnrc.yml)",
+      "Edit(~/.pypirc)",
+      "Edit(~/**/.pypirc)",
+      "Edit(~/.gemrc)",
+      "Edit(~/**/.gemrc)",
+      "Edit(~/.curlrc)",
+      "Edit(~/**/.curlrc)",
+      "Edit(~/.wgetrc)",
+      "Edit(~/**/.wgetrc)",
+      "Edit(~/.condarc)",
+      "Edit(~/**/.condarc)",
+      "Edit(~/.pearrc)",
+      "Edit(~/**/.pearrc)",
+      "Edit(~/.dockercfg)",
+      "Edit(~/**/.dockercfg)",
+      "Edit(~/.authrc)",
+      "Edit(~/**/.authrc)",
+      "Edit(~/.ldaprc)",
+      "Edit(~/**/.ldaprc)",
+      "Edit(~/.sentryclirc)",
+      "Edit(~/**/.sentryclirc)",
+      "Edit(~/.mongorc.js)",
+      "Edit(~/**/.mongorc.js)",
+      "Edit(~/.hgrc)",
+      "Edit(~/**/.hgrc)",
+      "Edit(~/.msmtprc)",
+      "Edit(~/**/.msmtprc)",
+      "Edit(~/.mbsyncrc)",
+      "Edit(~/**/.mbsyncrc)",
+      "Edit(~/.offlineimaprc)",
+      "Edit(~/**/.offlineimaprc)",
+      "Edit(~/.fetchmailrc)",
+      "Edit(~/**/.fetchmailrc)",
+      "Edit(~/.muttrc)",
+      "Edit(~/**/.muttrc)",
+      "Edit(~/.mailrc)",
+      "Edit(~/**/.mailrc)",
+      "Edit(~/.lftprc)",
+      "Edit(~/**/.lftprc)",
+      "Edit(~/.screenrc)",
+      "Edit(~/**/.screenrc)",
+      "Edit(~/.my.cnf)",
+      "Edit(~/**/.my.cnf)",
+      "Edit(~/.mariadb.cnf)",
+      "Edit(~/**/.mariadb.cnf)",
+      "Edit(~/.mylogin.cnf)",
+      "Edit(~/**/.mylogin.cnf)",
+      "Edit(~/.pgpass)",
+      "Edit(~/**/.pgpass)",
+      "Edit(~/.pg_service.conf)",
+      "Edit(~/**/.pg_service.conf)",
+      "Edit(~/.rclone.conf)",
+      "Edit(~/**/.rclone.conf)",
+      "Edit(~/.s3cfg)",
+      "Edit(~/**/.s3cfg)",
+      "Edit(~/.boto)",
+      "Edit(~/**/.boto)",
+      "Edit(~/.ansible.cfg)",
+      "Edit(~/**/.ansible.cfg)",
+      "Edit(~/.envrc)",
+      "Edit(~/**/.envrc)",
+      "Edit(~/.*login*)",
+      "Edit(~/**/.*login*)",
+      "Edit(~/.*logout*)",
+      "Edit(~/**/.*logout*)",
+      "Edit(~/.*history*)",
+      "Edit(~/**/.*history*)",
+      "Edit(~/.*profile*)",
+      "Edit(~/**/.*profile*)",
+      "Edit(~/.htpasswd*)",
+      "Edit(~/**/.htpasswd*)",
+      "Edit(~/.DS_Store*)",
+      "Edit(~/**/.DS_Store*)",
+      "Edit(~/.env)",
+      "Edit(~/**/.env)",
+      "Edit(~/.env.*)",
+      "Edit(~/**/.env.*)",
+      "Edit(~/Brewfile*)",
+      "Edit(~/**/Brewfile*)",
+      "Edit(~/.zshenv*)",
+      "Edit(~/.zcompdump*)",
+      "Edit(~/.zsh_sessions*)",
+      "Edit(~/.v8flags*)",
+      "Edit(~/.mutagen*)",
+      "Edit(~/.wget-hsts*)",
+      "Edit(~/.viminfo*)",
+      "Edit(~/.tmux*)",
+      "Edit(~/.git-credentials*)",
+      "Edit(~/.gitconfig*)",
+      "Edit(~/.bunfig.toml)",
+      "Edit(~/.gdbinit)",
+      "Edit(~/.ssh)",
+      "Edit(~/.aws)",
+      "Edit(~/.gnupg)",
+      "Edit(~/.gcloud)",
+      "Edit(~/.config)",
+      "Edit(~/.docker)",
+      "Edit(~/.kube)",
+      "Edit(~/.azure)",
+      "Edit(~/.keychain)",
+      "Edit(~/.appstoreconnect)",
+      "Edit(~/private_keys)",
       "Edit(~/.cloudflared)",
       "Edit(~/.gsutil)",
       "Edit(~/.mcp-auth)",
@@ -400,44 +608,6 @@
       "Edit(~/.zed)",
       "Edit(~/.claude.json)",
       "Edit(~/.claude.json.backup)",
-      "Edit(~/**/.netrc)",
-      "Edit(~/**/.npmrc)",
-      "Edit(~/**/.pypirc)",
-      "Edit(~/**/.htpasswd*)",
-      "Edit(~/credentials.json)",
-      "Edit(~/**/credentials.json)",
-      "Edit(~/token.json)",
-      "Edit(~/**/token.json)",
-      "Edit(~/.gitconfig*)",
-      "Edit(~/.bunfig.toml)",
-      "Edit(~/.gdbinit)",
-      "Edit(**/.DS_Store*)",
-      "Edit(**/.env)",
-      "Edit(**/.env.*)",
-      "Edit(~/.ssh)",
-      "Edit(~/.aws)",
-      "Edit(~/.gnupg)",
-      "Edit(~/.gcloud)",
-      "Edit(~/.config)",
-      "Edit(~/.docker)",
-      "Edit(~/.kube)",
-      "Edit(~/.htpasswd*)",
-      "Edit(~/.zshenv*)",
-      "Edit(~/.*rc*)",
-      "Edit(~/.v8flags*)",
-      "Edit(~/.mutagen*)",
-      "Edit(~/.*login*)",
-      "Edit(~/.*logout*)",
-      "Edit(~/.*history*)",
-      "Edit(~/.zcompdump*)",
-      "Edit(~/.zsh_sessions*)",
-      "Edit(~/.*profile*)",
-      "Edit(~/.wget-hsts*)",
-      "Edit(~/.viminfo*)",
-      "Edit(~/.tmux*)",
-      "Edit(~/.git-credentials*)",
-      "Edit(**/Brewfile*)",
-      "Edit(~/Brewfile*)",
       "Edit(~/Library)",
       "Edit(~/Documents)",
       "Edit(~/Downloads)",
@@ -534,8 +704,14 @@
       "Write(~/**/*.p12)",
       "Write(~/*.pfx)",
       "Write(~/**/*.pfx)",
+      "Write(~/*.p8)",
+      "Write(~/**/*.p8)",
       "Write(~/*.ppk)",
       "Write(~/**/*.ppk)",
+      "Write(~/*.jks)",
+      "Write(~/**/*.jks)",
+      "Write(~/*.keystore)",
+      "Write(~/**/*.keystore)",
       "Write(~/*.secret)",
       "Write(~/**/*.secret)",
       "Write(~/*.secrets)",
@@ -550,6 +726,123 @@
       "Write(~/**/id_ed25519)",
       "Write(~/id_rsa)",
       "Write(~/**/id_rsa)",
+      "Write(~/credentials.json)",
+      "Write(~/**/credentials.json)",
+      "Write(~/token.json)",
+      "Write(~/**/token.json)",
+      "Write(~/.vault-token)",
+      "Write(~/**/.vault-token)",
+      "Write(~/.netrc)",
+      "Write(~/**/.netrc)",
+      "Write(~/_netrc)",
+      "Write(~/**/_netrc)",
+      "Write(~/.npmrc)",
+      "Write(~/**/.npmrc)",
+      "Write(~/.yarnrc)",
+      "Write(~/**/.yarnrc)",
+      "Write(~/.yarnrc.yml)",
+      "Write(~/**/.yarnrc.yml)",
+      "Write(~/.pypirc)",
+      "Write(~/**/.pypirc)",
+      "Write(~/.gemrc)",
+      "Write(~/**/.gemrc)",
+      "Write(~/.curlrc)",
+      "Write(~/**/.curlrc)",
+      "Write(~/.wgetrc)",
+      "Write(~/**/.wgetrc)",
+      "Write(~/.condarc)",
+      "Write(~/**/.condarc)",
+      "Write(~/.pearrc)",
+      "Write(~/**/.pearrc)",
+      "Write(~/.dockercfg)",
+      "Write(~/**/.dockercfg)",
+      "Write(~/.authrc)",
+      "Write(~/**/.authrc)",
+      "Write(~/.ldaprc)",
+      "Write(~/**/.ldaprc)",
+      "Write(~/.sentryclirc)",
+      "Write(~/**/.sentryclirc)",
+      "Write(~/.mongorc.js)",
+      "Write(~/**/.mongorc.js)",
+      "Write(~/.hgrc)",
+      "Write(~/**/.hgrc)",
+      "Write(~/.msmtprc)",
+      "Write(~/**/.msmtprc)",
+      "Write(~/.mbsyncrc)",
+      "Write(~/**/.mbsyncrc)",
+      "Write(~/.offlineimaprc)",
+      "Write(~/**/.offlineimaprc)",
+      "Write(~/.fetchmailrc)",
+      "Write(~/**/.fetchmailrc)",
+      "Write(~/.muttrc)",
+      "Write(~/**/.muttrc)",
+      "Write(~/.mailrc)",
+      "Write(~/**/.mailrc)",
+      "Write(~/.lftprc)",
+      "Write(~/**/.lftprc)",
+      "Write(~/.screenrc)",
+      "Write(~/**/.screenrc)",
+      "Write(~/.my.cnf)",
+      "Write(~/**/.my.cnf)",
+      "Write(~/.mariadb.cnf)",
+      "Write(~/**/.mariadb.cnf)",
+      "Write(~/.mylogin.cnf)",
+      "Write(~/**/.mylogin.cnf)",
+      "Write(~/.pgpass)",
+      "Write(~/**/.pgpass)",
+      "Write(~/.pg_service.conf)",
+      "Write(~/**/.pg_service.conf)",
+      "Write(~/.rclone.conf)",
+      "Write(~/**/.rclone.conf)",
+      "Write(~/.s3cfg)",
+      "Write(~/**/.s3cfg)",
+      "Write(~/.boto)",
+      "Write(~/**/.boto)",
+      "Write(~/.ansible.cfg)",
+      "Write(~/**/.ansible.cfg)",
+      "Write(~/.envrc)",
+      "Write(~/**/.envrc)",
+      "Write(~/.*login*)",
+      "Write(~/**/.*login*)",
+      "Write(~/.*logout*)",
+      "Write(~/**/.*logout*)",
+      "Write(~/.*history*)",
+      "Write(~/**/.*history*)",
+      "Write(~/.*profile*)",
+      "Write(~/**/.*profile*)",
+      "Write(~/.htpasswd*)",
+      "Write(~/**/.htpasswd*)",
+      "Write(~/.DS_Store*)",
+      "Write(~/**/.DS_Store*)",
+      "Write(~/.env)",
+      "Write(~/**/.env)",
+      "Write(~/.env.*)",
+      "Write(~/**/.env.*)",
+      "Write(~/Brewfile*)",
+      "Write(~/**/Brewfile*)",
+      "Write(~/.zshenv*)",
+      "Write(~/.zcompdump*)",
+      "Write(~/.zsh_sessions*)",
+      "Write(~/.v8flags*)",
+      "Write(~/.mutagen*)",
+      "Write(~/.wget-hsts*)",
+      "Write(~/.viminfo*)",
+      "Write(~/.tmux*)",
+      "Write(~/.git-credentials*)",
+      "Write(~/.gitconfig*)",
+      "Write(~/.bunfig.toml)",
+      "Write(~/.gdbinit)",
+      "Write(~/.ssh)",
+      "Write(~/.aws)",
+      "Write(~/.gnupg)",
+      "Write(~/.gcloud)",
+      "Write(~/.config)",
+      "Write(~/.docker)",
+      "Write(~/.kube)",
+      "Write(~/.azure)",
+      "Write(~/.keychain)",
+      "Write(~/.appstoreconnect)",
+      "Write(~/private_keys)",
       "Write(~/.cloudflared)",
       "Write(~/.gsutil)",
       "Write(~/.mcp-auth)",
@@ -577,44 +870,6 @@
       "Write(~/.zed)",
       "Write(~/.claude.json)",
       "Write(~/.claude.json.backup)",
-      "Write(~/**/.netrc)",
-      "Write(~/**/.npmrc)",
-      "Write(~/**/.pypirc)",
-      "Write(~/**/.htpasswd*)",
-      "Write(~/credentials.json)",
-      "Write(~/**/credentials.json)",
-      "Write(~/token.json)",
-      "Write(~/**/token.json)",
-      "Write(~/.gitconfig*)",
-      "Write(~/.bunfig.toml)",
-      "Write(~/.gdbinit)",
-      "Write(**/.DS_Store*)",
-      "Write(**/.env)",
-      "Write(**/.env.*)",
-      "Write(~/.ssh)",
-      "Write(~/.aws)",
-      "Write(~/.gnupg)",
-      "Write(~/.gcloud)",
-      "Write(~/.config)",
-      "Write(~/.docker)",
-      "Write(~/.kube)",
-      "Write(~/.htpasswd*)",
-      "Write(~/.zshenv*)",
-      "Write(~/.*rc*)",
-      "Write(~/.v8flags*)",
-      "Write(~/.mutagen*)",
-      "Write(~/.*login*)",
-      "Write(~/.*logout*)",
-      "Write(~/.*history*)",
-      "Write(~/.zcompdump*)",
-      "Write(~/.zsh_sessions*)",
-      "Write(~/.*profile*)",
-      "Write(~/.wget-hsts*)",
-      "Write(~/.viminfo*)",
-      "Write(~/.tmux*)",
-      "Write(~/.git-credentials*)",
-      "Write(**/Brewfile*)",
-      "Write(~/Brewfile*)",
       "Write(~/Library)",
       "Write(~/Documents)",
       "Write(~/Downloads)",
@@ -857,11 +1112,35 @@
         },
         {
           "mode": "deny",
+          "path": "~/*.p8"
+        },
+        {
+          "mode": "deny",
+          "path": "~/**/*.p8"
+        },
+        {
+          "mode": "deny",
           "path": "~/*.ppk"
         },
         {
           "mode": "deny",
           "path": "~/**/*.ppk"
+        },
+        {
+          "mode": "deny",
+          "path": "~/*.jks"
+        },
+        {
+          "mode": "deny",
+          "path": "~/**/*.jks"
+        },
+        {
+          "mode": "deny",
+          "path": "~/*.keystore"
+        },
+        {
+          "mode": "deny",
+          "path": "~/**/*.keystore"
         },
         {
           "mode": "deny",
@@ -918,6 +1197,474 @@
         {
           "mode": "deny",
           "path": "~/**/id_rsa"
+        },
+        {
+          "mode": "deny",
+          "path": "~/credentials.json"
+        },
+        {
+          "mode": "deny",
+          "path": "~/**/credentials.json"
+        },
+        {
+          "mode": "deny",
+          "path": "~/token.json"
+        },
+        {
+          "mode": "deny",
+          "path": "~/**/token.json"
+        },
+        {
+          "mode": "deny",
+          "path": "~/.vault-token"
+        },
+        {
+          "mode": "deny",
+          "path": "~/**/.vault-token"
+        },
+        {
+          "mode": "deny",
+          "path": "~/.netrc"
+        },
+        {
+          "mode": "deny",
+          "path": "~/**/.netrc"
+        },
+        {
+          "mode": "deny",
+          "path": "~/_netrc"
+        },
+        {
+          "mode": "deny",
+          "path": "~/**/_netrc"
+        },
+        {
+          "mode": "deny",
+          "path": "~/.npmrc"
+        },
+        {
+          "mode": "deny",
+          "path": "~/**/.npmrc"
+        },
+        {
+          "mode": "deny",
+          "path": "~/.yarnrc"
+        },
+        {
+          "mode": "deny",
+          "path": "~/**/.yarnrc"
+        },
+        {
+          "mode": "deny",
+          "path": "~/.yarnrc.yml"
+        },
+        {
+          "mode": "deny",
+          "path": "~/**/.yarnrc.yml"
+        },
+        {
+          "mode": "deny",
+          "path": "~/.pypirc"
+        },
+        {
+          "mode": "deny",
+          "path": "~/**/.pypirc"
+        },
+        {
+          "mode": "deny",
+          "path": "~/.gemrc"
+        },
+        {
+          "mode": "deny",
+          "path": "~/**/.gemrc"
+        },
+        {
+          "mode": "deny",
+          "path": "~/.curlrc"
+        },
+        {
+          "mode": "deny",
+          "path": "~/**/.curlrc"
+        },
+        {
+          "mode": "deny",
+          "path": "~/.wgetrc"
+        },
+        {
+          "mode": "deny",
+          "path": "~/**/.wgetrc"
+        },
+        {
+          "mode": "deny",
+          "path": "~/.condarc"
+        },
+        {
+          "mode": "deny",
+          "path": "~/**/.condarc"
+        },
+        {
+          "mode": "deny",
+          "path": "~/.pearrc"
+        },
+        {
+          "mode": "deny",
+          "path": "~/**/.pearrc"
+        },
+        {
+          "mode": "deny",
+          "path": "~/.dockercfg"
+        },
+        {
+          "mode": "deny",
+          "path": "~/**/.dockercfg"
+        },
+        {
+          "mode": "deny",
+          "path": "~/.authrc"
+        },
+        {
+          "mode": "deny",
+          "path": "~/**/.authrc"
+        },
+        {
+          "mode": "deny",
+          "path": "~/.ldaprc"
+        },
+        {
+          "mode": "deny",
+          "path": "~/**/.ldaprc"
+        },
+        {
+          "mode": "deny",
+          "path": "~/.sentryclirc"
+        },
+        {
+          "mode": "deny",
+          "path": "~/**/.sentryclirc"
+        },
+        {
+          "mode": "deny",
+          "path": "~/.mongorc.js"
+        },
+        {
+          "mode": "deny",
+          "path": "~/**/.mongorc.js"
+        },
+        {
+          "mode": "deny",
+          "path": "~/.hgrc"
+        },
+        {
+          "mode": "deny",
+          "path": "~/**/.hgrc"
+        },
+        {
+          "mode": "deny",
+          "path": "~/.msmtprc"
+        },
+        {
+          "mode": "deny",
+          "path": "~/**/.msmtprc"
+        },
+        {
+          "mode": "deny",
+          "path": "~/.mbsyncrc"
+        },
+        {
+          "mode": "deny",
+          "path": "~/**/.mbsyncrc"
+        },
+        {
+          "mode": "deny",
+          "path": "~/.offlineimaprc"
+        },
+        {
+          "mode": "deny",
+          "path": "~/**/.offlineimaprc"
+        },
+        {
+          "mode": "deny",
+          "path": "~/.fetchmailrc"
+        },
+        {
+          "mode": "deny",
+          "path": "~/**/.fetchmailrc"
+        },
+        {
+          "mode": "deny",
+          "path": "~/.muttrc"
+        },
+        {
+          "mode": "deny",
+          "path": "~/**/.muttrc"
+        },
+        {
+          "mode": "deny",
+          "path": "~/.mailrc"
+        },
+        {
+          "mode": "deny",
+          "path": "~/**/.mailrc"
+        },
+        {
+          "mode": "deny",
+          "path": "~/.lftprc"
+        },
+        {
+          "mode": "deny",
+          "path": "~/**/.lftprc"
+        },
+        {
+          "mode": "deny",
+          "path": "~/.screenrc"
+        },
+        {
+          "mode": "deny",
+          "path": "~/**/.screenrc"
+        },
+        {
+          "mode": "deny",
+          "path": "~/.my.cnf"
+        },
+        {
+          "mode": "deny",
+          "path": "~/**/.my.cnf"
+        },
+        {
+          "mode": "deny",
+          "path": "~/.mariadb.cnf"
+        },
+        {
+          "mode": "deny",
+          "path": "~/**/.mariadb.cnf"
+        },
+        {
+          "mode": "deny",
+          "path": "~/.mylogin.cnf"
+        },
+        {
+          "mode": "deny",
+          "path": "~/**/.mylogin.cnf"
+        },
+        {
+          "mode": "deny",
+          "path": "~/.pgpass"
+        },
+        {
+          "mode": "deny",
+          "path": "~/**/.pgpass"
+        },
+        {
+          "mode": "deny",
+          "path": "~/.pg_service.conf"
+        },
+        {
+          "mode": "deny",
+          "path": "~/**/.pg_service.conf"
+        },
+        {
+          "mode": "deny",
+          "path": "~/.rclone.conf"
+        },
+        {
+          "mode": "deny",
+          "path": "~/**/.rclone.conf"
+        },
+        {
+          "mode": "deny",
+          "path": "~/.s3cfg"
+        },
+        {
+          "mode": "deny",
+          "path": "~/**/.s3cfg"
+        },
+        {
+          "mode": "deny",
+          "path": "~/.boto"
+        },
+        {
+          "mode": "deny",
+          "path": "~/**/.boto"
+        },
+        {
+          "mode": "deny",
+          "path": "~/.ansible.cfg"
+        },
+        {
+          "mode": "deny",
+          "path": "~/**/.ansible.cfg"
+        },
+        {
+          "mode": "deny",
+          "path": "~/.envrc"
+        },
+        {
+          "mode": "deny",
+          "path": "~/**/.envrc"
+        },
+        {
+          "mode": "deny",
+          "path": "~/.*login*"
+        },
+        {
+          "mode": "deny",
+          "path": "~/**/.*login*"
+        },
+        {
+          "mode": "deny",
+          "path": "~/.*logout*"
+        },
+        {
+          "mode": "deny",
+          "path": "~/**/.*logout*"
+        },
+        {
+          "mode": "deny",
+          "path": "~/.*history*"
+        },
+        {
+          "mode": "deny",
+          "path": "~/**/.*history*"
+        },
+        {
+          "mode": "deny",
+          "path": "~/.*profile*"
+        },
+        {
+          "mode": "deny",
+          "path": "~/**/.*profile*"
+        },
+        {
+          "mode": "deny",
+          "path": "~/.htpasswd*"
+        },
+        {
+          "mode": "deny",
+          "path": "~/**/.htpasswd*"
+        },
+        {
+          "mode": "deny",
+          "path": "~/.DS_Store*"
+        },
+        {
+          "mode": "deny",
+          "path": "~/**/.DS_Store*"
+        },
+        {
+          "mode": "deny",
+          "path": "~/.env"
+        },
+        {
+          "mode": "deny",
+          "path": "~/**/.env"
+        },
+        {
+          "mode": "deny",
+          "path": "~/.env.*"
+        },
+        {
+          "mode": "deny",
+          "path": "~/**/.env.*"
+        },
+        {
+          "mode": "deny",
+          "path": "~/Brewfile*"
+        },
+        {
+          "mode": "deny",
+          "path": "~/**/Brewfile*"
+        },
+        {
+          "mode": "deny",
+          "path": "~/.zshenv*"
+        },
+        {
+          "mode": "deny",
+          "path": "~/.zcompdump*"
+        },
+        {
+          "mode": "deny",
+          "path": "~/.zsh_sessions*"
+        },
+        {
+          "mode": "deny",
+          "path": "~/.v8flags*"
+        },
+        {
+          "mode": "deny",
+          "path": "~/.mutagen*"
+        },
+        {
+          "mode": "deny",
+          "path": "~/.wget-hsts*"
+        },
+        {
+          "mode": "deny",
+          "path": "~/.viminfo*"
+        },
+        {
+          "mode": "deny",
+          "path": "~/.tmux*"
+        },
+        {
+          "mode": "deny",
+          "path": "~/.git-credentials*"
+        },
+        {
+          "mode": "deny",
+          "path": "~/.gitconfig*"
+        },
+        {
+          "mode": "deny",
+          "path": "~/.bunfig.toml"
+        },
+        {
+          "mode": "deny",
+          "path": "~/.gdbinit"
+        },
+        {
+          "mode": "deny",
+          "path": "~/.ssh"
+        },
+        {
+          "mode": "deny",
+          "path": "~/.aws"
+        },
+        {
+          "mode": "deny",
+          "path": "~/.gnupg"
+        },
+        {
+          "mode": "deny",
+          "path": "~/.gcloud"
+        },
+        {
+          "mode": "deny",
+          "path": "~/.config"
+        },
+        {
+          "mode": "deny",
+          "path": "~/.docker"
+        },
+        {
+          "mode": "deny",
+          "path": "~/.kube"
+        },
+        {
+          "mode": "deny",
+          "path": "~/.azure"
+        },
+        {
+          "mode": "deny",
+          "path": "~/.keychain"
+        },
+        {
+          "mode": "deny",
+          "path": "~/.appstoreconnect"
+        },
+        {
+          "mode": "deny",
+          "path": "~/private_keys"
         },
         {
           "mode": "deny",
@@ -1026,158 +1773,6 @@
         {
           "mode": "deny",
           "path": "~/.claude.json.backup"
-        },
-        {
-          "mode": "deny",
-          "path": "~/**/.netrc"
-        },
-        {
-          "mode": "deny",
-          "path": "~/**/.npmrc"
-        },
-        {
-          "mode": "deny",
-          "path": "~/**/.pypirc"
-        },
-        {
-          "mode": "deny",
-          "path": "~/**/.htpasswd*"
-        },
-        {
-          "mode": "deny",
-          "path": "~/credentials.json"
-        },
-        {
-          "mode": "deny",
-          "path": "~/**/credentials.json"
-        },
-        {
-          "mode": "deny",
-          "path": "~/token.json"
-        },
-        {
-          "mode": "deny",
-          "path": "~/**/token.json"
-        },
-        {
-          "mode": "deny",
-          "path": "~/.gitconfig*"
-        },
-        {
-          "mode": "deny",
-          "path": "~/.bunfig.toml"
-        },
-        {
-          "mode": "deny",
-          "path": "~/.gdbinit"
-        },
-        {
-          "mode": "deny",
-          "path": "**/.DS_Store*"
-        },
-        {
-          "mode": "deny",
-          "path": "**/.env"
-        },
-        {
-          "mode": "deny",
-          "path": "**/.env.*"
-        },
-        {
-          "mode": "deny",
-          "path": "~/.ssh"
-        },
-        {
-          "mode": "deny",
-          "path": "~/.aws"
-        },
-        {
-          "mode": "deny",
-          "path": "~/.gnupg"
-        },
-        {
-          "mode": "deny",
-          "path": "~/.gcloud"
-        },
-        {
-          "mode": "deny",
-          "path": "~/.config"
-        },
-        {
-          "mode": "deny",
-          "path": "~/.docker"
-        },
-        {
-          "mode": "deny",
-          "path": "~/.kube"
-        },
-        {
-          "mode": "deny",
-          "path": "~/.htpasswd*"
-        },
-        {
-          "mode": "deny",
-          "path": "~/.zshenv*"
-        },
-        {
-          "mode": "deny",
-          "path": "~/.*rc*"
-        },
-        {
-          "mode": "deny",
-          "path": "~/.v8flags*"
-        },
-        {
-          "mode": "deny",
-          "path": "~/.mutagen*"
-        },
-        {
-          "mode": "deny",
-          "path": "~/.*login*"
-        },
-        {
-          "mode": "deny",
-          "path": "~/.*logout*"
-        },
-        {
-          "mode": "deny",
-          "path": "~/.*history*"
-        },
-        {
-          "mode": "deny",
-          "path": "~/.zcompdump*"
-        },
-        {
-          "mode": "deny",
-          "path": "~/.zsh_sessions*"
-        },
-        {
-          "mode": "deny",
-          "path": "~/.*profile*"
-        },
-        {
-          "mode": "deny",
-          "path": "~/.wget-hsts*"
-        },
-        {
-          "mode": "deny",
-          "path": "~/.viminfo*"
-        },
-        {
-          "mode": "deny",
-          "path": "~/.tmux*"
-        },
-        {
-          "mode": "deny",
-          "path": "~/.git-credentials*"
-        },
-        {
-          "mode": "deny",
-          "path": "**/Brewfile*"
-        },
-        {
-          "mode": "deny",
-          "path": "~/Brewfile*"
         },
         {
           "mode": "deny",
@@ -1707,8 +2302,14 @@
         "~/**/*.p12",
         "~/*.pfx",
         "~/**/*.pfx",
+        "~/*.p8",
+        "~/**/*.p8",
         "~/*.ppk",
         "~/**/*.ppk",
+        "~/*.jks",
+        "~/**/*.jks",
+        "~/*.keystore",
+        "~/**/*.keystore",
         "~/*.secret",
         "~/**/*.secret",
         "~/*.secrets",
@@ -1723,6 +2324,123 @@
         "~/**/id_ed25519",
         "~/id_rsa",
         "~/**/id_rsa",
+        "~/credentials.json",
+        "~/**/credentials.json",
+        "~/token.json",
+        "~/**/token.json",
+        "~/.vault-token",
+        "~/**/.vault-token",
+        "~/.netrc",
+        "~/**/.netrc",
+        "~/_netrc",
+        "~/**/_netrc",
+        "~/.npmrc",
+        "~/**/.npmrc",
+        "~/.yarnrc",
+        "~/**/.yarnrc",
+        "~/.yarnrc.yml",
+        "~/**/.yarnrc.yml",
+        "~/.pypirc",
+        "~/**/.pypirc",
+        "~/.gemrc",
+        "~/**/.gemrc",
+        "~/.curlrc",
+        "~/**/.curlrc",
+        "~/.wgetrc",
+        "~/**/.wgetrc",
+        "~/.condarc",
+        "~/**/.condarc",
+        "~/.pearrc",
+        "~/**/.pearrc",
+        "~/.dockercfg",
+        "~/**/.dockercfg",
+        "~/.authrc",
+        "~/**/.authrc",
+        "~/.ldaprc",
+        "~/**/.ldaprc",
+        "~/.sentryclirc",
+        "~/**/.sentryclirc",
+        "~/.mongorc.js",
+        "~/**/.mongorc.js",
+        "~/.hgrc",
+        "~/**/.hgrc",
+        "~/.msmtprc",
+        "~/**/.msmtprc",
+        "~/.mbsyncrc",
+        "~/**/.mbsyncrc",
+        "~/.offlineimaprc",
+        "~/**/.offlineimaprc",
+        "~/.fetchmailrc",
+        "~/**/.fetchmailrc",
+        "~/.muttrc",
+        "~/**/.muttrc",
+        "~/.mailrc",
+        "~/**/.mailrc",
+        "~/.lftprc",
+        "~/**/.lftprc",
+        "~/.screenrc",
+        "~/**/.screenrc",
+        "~/.my.cnf",
+        "~/**/.my.cnf",
+        "~/.mariadb.cnf",
+        "~/**/.mariadb.cnf",
+        "~/.mylogin.cnf",
+        "~/**/.mylogin.cnf",
+        "~/.pgpass",
+        "~/**/.pgpass",
+        "~/.pg_service.conf",
+        "~/**/.pg_service.conf",
+        "~/.rclone.conf",
+        "~/**/.rclone.conf",
+        "~/.s3cfg",
+        "~/**/.s3cfg",
+        "~/.boto",
+        "~/**/.boto",
+        "~/.ansible.cfg",
+        "~/**/.ansible.cfg",
+        "~/.envrc",
+        "~/**/.envrc",
+        "~/.*login*",
+        "~/**/.*login*",
+        "~/.*logout*",
+        "~/**/.*logout*",
+        "~/.*history*",
+        "~/**/.*history*",
+        "~/.*profile*",
+        "~/**/.*profile*",
+        "~/.htpasswd*",
+        "~/**/.htpasswd*",
+        "~/.DS_Store*",
+        "~/**/.DS_Store*",
+        "~/.env",
+        "~/**/.env",
+        "~/.env.*",
+        "~/**/.env.*",
+        "~/Brewfile*",
+        "~/**/Brewfile*",
+        "~/.zshenv*",
+        "~/.zcompdump*",
+        "~/.zsh_sessions*",
+        "~/.v8flags*",
+        "~/.mutagen*",
+        "~/.wget-hsts*",
+        "~/.viminfo*",
+        "~/.tmux*",
+        "~/.git-credentials*",
+        "~/.gitconfig*",
+        "~/.bunfig.toml",
+        "~/.gdbinit",
+        "~/.ssh",
+        "~/.aws",
+        "~/.gnupg",
+        "~/.gcloud",
+        "~/.config",
+        "~/.docker",
+        "~/.kube",
+        "~/.azure",
+        "~/.keychain",
+        "~/.appstoreconnect",
+        "~/private_keys",
         "~/.cloudflared",
         "~/.gsutil",
         "~/.mcp-auth",
@@ -1750,44 +2468,6 @@
         "~/.zed",
         "~/.claude.json",
         "~/.claude.json.backup",
-        "~/**/.netrc",
-        "~/**/.npmrc",
-        "~/**/.pypirc",
-        "~/**/.htpasswd*",
-        "~/credentials.json",
-        "~/**/credentials.json",
-        "~/token.json",
-        "~/**/token.json",
-        "~/.gitconfig*",
-        "~/.bunfig.toml",
-        "~/.gdbinit",
-        "**/.DS_Store*",
-        "**/.env",
-        "**/.env.*",
-        "~/.ssh",
-        "~/.aws",
-        "~/.gnupg",
-        "~/.gcloud",
-        "~/.config",
-        "~/.docker",
-        "~/.kube",
-        "~/.htpasswd*",
-        "~/.zshenv*",
-        "~/.*rc*",
-        "~/.v8flags*",
-        "~/.mutagen*",
-        "~/.*login*",
-        "~/.*logout*",
-        "~/.*history*",
-        "~/.zcompdump*",
-        "~/.zsh_sessions*",
-        "~/.*profile*",
-        "~/.wget-hsts*",
-        "~/.viminfo*",
-        "~/.tmux*",
-        "~/.git-credentials*",
-        "**/Brewfile*",
-        "~/Brewfile*",
         "~/Library",
         "~/Documents",
         "~/Downloads",
@@ -1931,8 +2611,14 @@
         "~/**/*.p12",
         "~/*.pfx",
         "~/**/*.pfx",
+        "~/*.p8",
+        "~/**/*.p8",
         "~/*.ppk",
         "~/**/*.ppk",
+        "~/*.jks",
+        "~/**/*.jks",
+        "~/*.keystore",
+        "~/**/*.keystore",
         "~/*.secret",
         "~/**/*.secret",
         "~/*.secrets",
@@ -1947,6 +2633,123 @@
         "~/**/id_ed25519",
         "~/id_rsa",
         "~/**/id_rsa",
+        "~/credentials.json",
+        "~/**/credentials.json",
+        "~/token.json",
+        "~/**/token.json",
+        "~/.vault-token",
+        "~/**/.vault-token",
+        "~/.netrc",
+        "~/**/.netrc",
+        "~/_netrc",
+        "~/**/_netrc",
+        "~/.npmrc",
+        "~/**/.npmrc",
+        "~/.yarnrc",
+        "~/**/.yarnrc",
+        "~/.yarnrc.yml",
+        "~/**/.yarnrc.yml",
+        "~/.pypirc",
+        "~/**/.pypirc",
+        "~/.gemrc",
+        "~/**/.gemrc",
+        "~/.curlrc",
+        "~/**/.curlrc",
+        "~/.wgetrc",
+        "~/**/.wgetrc",
+        "~/.condarc",
+        "~/**/.condarc",
+        "~/.pearrc",
+        "~/**/.pearrc",
+        "~/.dockercfg",
+        "~/**/.dockercfg",
+        "~/.authrc",
+        "~/**/.authrc",
+        "~/.ldaprc",
+        "~/**/.ldaprc",
+        "~/.sentryclirc",
+        "~/**/.sentryclirc",
+        "~/.mongorc.js",
+        "~/**/.mongorc.js",
+        "~/.hgrc",
+        "~/**/.hgrc",
+        "~/.msmtprc",
+        "~/**/.msmtprc",
+        "~/.mbsyncrc",
+        "~/**/.mbsyncrc",
+        "~/.offlineimaprc",
+        "~/**/.offlineimaprc",
+        "~/.fetchmailrc",
+        "~/**/.fetchmailrc",
+        "~/.muttrc",
+        "~/**/.muttrc",
+        "~/.mailrc",
+        "~/**/.mailrc",
+        "~/.lftprc",
+        "~/**/.lftprc",
+        "~/.screenrc",
+        "~/**/.screenrc",
+        "~/.my.cnf",
+        "~/**/.my.cnf",
+        "~/.mariadb.cnf",
+        "~/**/.mariadb.cnf",
+        "~/.mylogin.cnf",
+        "~/**/.mylogin.cnf",
+        "~/.pgpass",
+        "~/**/.pgpass",
+        "~/.pg_service.conf",
+        "~/**/.pg_service.conf",
+        "~/.rclone.conf",
+        "~/**/.rclone.conf",
+        "~/.s3cfg",
+        "~/**/.s3cfg",
+        "~/.boto",
+        "~/**/.boto",
+        "~/.ansible.cfg",
+        "~/**/.ansible.cfg",
+        "~/.envrc",
+        "~/**/.envrc",
+        "~/.*login*",
+        "~/**/.*login*",
+        "~/.*logout*",
+        "~/**/.*logout*",
+        "~/.*history*",
+        "~/**/.*history*",
+        "~/.*profile*",
+        "~/**/.*profile*",
+        "~/.htpasswd*",
+        "~/**/.htpasswd*",
+        "~/.DS_Store*",
+        "~/**/.DS_Store*",
+        "~/.env",
+        "~/**/.env",
+        "~/.env.*",
+        "~/**/.env.*",
+        "~/Brewfile*",
+        "~/**/Brewfile*",
+        "~/.zshenv*",
+        "~/.zcompdump*",
+        "~/.zsh_sessions*",
+        "~/.v8flags*",
+        "~/.mutagen*",
+        "~/.wget-hsts*",
+        "~/.viminfo*",
+        "~/.tmux*",
+        "~/.git-credentials*",
+        "~/.gitconfig*",
+        "~/.bunfig.toml",
+        "~/.gdbinit",
+        "~/.ssh",
+        "~/.aws",
+        "~/.gnupg",
+        "~/.gcloud",
+        "~/.config",
+        "~/.docker",
+        "~/.kube",
+        "~/.azure",
+        "~/.keychain",
+        "~/.appstoreconnect",
+        "~/private_keys",
         "~/.cloudflared",
         "~/.gsutil",
         "~/.mcp-auth",
@@ -1974,44 +2777,6 @@
         "~/.zed",
         "~/.claude.json",
         "~/.claude.json.backup",
-        "~/**/.netrc",
-        "~/**/.npmrc",
-        "~/**/.pypirc",
-        "~/**/.htpasswd*",
-        "~/credentials.json",
-        "~/**/credentials.json",
-        "~/token.json",
-        "~/**/token.json",
-        "~/.gitconfig*",
-        "~/.bunfig.toml",
-        "~/.gdbinit",
-        "**/.DS_Store*",
-        "**/.env",
-        "**/.env.*",
-        "~/.ssh",
-        "~/.aws",
-        "~/.gnupg",
-        "~/.gcloud",
-        "~/.config",
-        "~/.docker",
-        "~/.kube",
-        "~/.htpasswd*",
-        "~/.zshenv*",
-        "~/.*rc*",
-        "~/.v8flags*",
-        "~/.mutagen*",
-        "~/.*login*",
-        "~/.*logout*",
-        "~/.*history*",
-        "~/.zcompdump*",
-        "~/.zsh_sessions*",
-        "~/.*profile*",
-        "~/.wget-hsts*",
-        "~/.viminfo*",
-        "~/.tmux*",
-        "~/.git-credentials*",
-        "**/Brewfile*",
-        "~/Brewfile*",
         "~/Library",
         "~/Documents",
         "~/Downloads",

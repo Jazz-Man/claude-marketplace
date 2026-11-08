@@ -24,7 +24,19 @@ const envVars = [
   "NPM_CONFIG_TOKEN_TEST",
 ];
 
-const keySuffixes = ["pem", "pub", "key", "p12", "pfx", "ppk", "secret", "secrets"];
+const keySuffixes = [
+  "pem",
+  "pub",
+  "key",
+  "p12",
+  "pfx",
+  "p8",
+  "ppk",
+  "jks",
+  "keystore",
+  "secret",
+  "secrets",
+];
 
 const keyNames = [
   "authorized_keys",
@@ -34,16 +46,60 @@ const keyNames = [
   "id_rsa",
 ];
 
-const secretNestedNames = [".netrc", ".npmrc", ".pypirc", ".htpasswd*"];
+const secretFileNames = ["credentials.json", "token.json", ".vault-token"];
 
-const secretFileNames = ["credentials.json", "token.json"];
+const secretRcFiles = [
+  ".netrc",
+  "_netrc",
+  ".npmrc",
+  ".yarnrc",
+  ".yarnrc.yml",
+  ".pypirc",
+  ".gemrc",
+  ".curlrc",
+  ".wgetrc",
+  ".condarc",
+  ".pearrc",
+  ".dockercfg",
+  ".authrc",
+  ".ldaprc",
+  ".sentryclirc",
+  ".mongorc.js",
+  ".hgrc",
+  ".msmtprc",
+  ".mbsyncrc",
+  ".offlineimaprc",
+  ".fetchmailrc",
+  ".muttrc",
+  ".mailrc",
+  ".lftprc",
+  ".screenrc",
+];
+
+const secretConfigFiles = [
+  ".my.cnf",
+  ".mariadb.cnf",
+  ".mylogin.cnf",
+  ".pgpass",
+  ".pg_service.conf",
+  ".rclone.conf",
+  ".s3cfg",
+  ".boto",
+  ".ansible.cfg",
+  ".envrc",
+];
+
+const wildcardSecrets = [
+  ".*login*",
+  ".*logout*",
+  ".*history*",
+  ".*profile*",
+  ".htpasswd*",
+];
+
+const projectSecretNames = [".DS_Store*", ".env", ".env.*", "Brewfile*"];
 
 const homeStateFiles = [
-  "~/.*rc*",
-  "~/.*login*",
-  "~/.*logout*",
-  "~/.*history*",
-  "~/.*profile*",
   "~/.zshenv*",
   "~/.zcompdump*",
   "~/.zsh_sessions*",
@@ -54,7 +110,6 @@ const homeStateFiles = [
   "~/.tmux*",
   "~/.git-credentials*",
   "~/.gitconfig*",
-  "~/.htpasswd*",
   "~/.bunfig.toml",
   "~/.gdbinit",
 ];
@@ -67,6 +122,10 @@ const credentialDirs = [
   "~/.config",
   "~/.docker",
   "~/.kube",
+  "~/.azure",
+  "~/.keychain",
+  "~/.appstoreconnect",
+  "~/private_keys",
 ];
 
 const secretStateDirs = [
@@ -116,16 +175,14 @@ const protectedFiles = [
   ...keySuffixes.flatMap((suffix) => bothForms(`*.${suffix}`)),
   ...keyNames.flatMap(bothForms),
   ...secretFileNames.flatMap(bothForms),
-  ...secretNestedNames.map((name) => `~/**/${name}`),
+  ...secretRcFiles.flatMap(bothForms),
+  ...secretConfigFiles.flatMap(bothForms),
+  ...wildcardSecrets.flatMap(bothForms),
+  ...projectSecretNames.flatMap(bothForms),
   ...homeStateFiles,
   ...credentialDirs,
   ...secretStateDirs,
   ...macOSDirs,
-  "**/.DS_Store*",
-  "**/.env",
-  "**/.env.*",
-  "**/Brewfile*",
-  "~/Brewfile*",
 ];
 
 const memoryPaths = [
