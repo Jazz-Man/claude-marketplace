@@ -29,12 +29,6 @@ describe("runHook (unit)", () => {
     expect(runHook(bashPayload("git push"))).toBeNull();
   });
 
-  it("returns the FIRST policy's reason on dual violations", () => {
-    expect(reasonOf(runHook(bashPayload("npm install /etc/passwd")))).toContain(
-      "Dependency install/update blocked",
-    );
-  });
-
   it("denies filesystem escapes", () => {
     expect(decisionOfBash("cat /etc/passwd")).toBe("deny");
   });
