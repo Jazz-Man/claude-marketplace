@@ -1,7 +1,6 @@
 {
   "$schema": "../claude-code-settings-schema.json",
   "enabledPlugins": {
-    "plugin-dev@claude-plugins-official": true,
-    "security-guard@sdd-local": false
+    "plugin-dev@claude-plugins-official": true
   }
 }

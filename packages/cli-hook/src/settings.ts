@@ -458,22 +458,7 @@ const gitWriteCommands = [
   "git clone*",
 ];
 
-const disableCommands = [
-  "sudo*",
-  "omz*",
-  "brew*",
-  "nix*",
-  "bunx*",
-  "npx*",
-  "pnpx*",
-  "uvx*",
-  "grep*",
-  "egrep*",
-  "fgrep*",
-  "find*",
-  "xargs grep*",
-  "xargs find*",
-];
+const disableCommands = ["sudo*", "omz*", "brew*", "nix*", "bunx*", "npx*", "pnpx*", "uvx*"];
 
 const readDenyPaths = unique([
   ...protectedFiles,
