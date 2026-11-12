@@ -9,7 +9,7 @@ LSP (Language Server Protocol) provides **semantic** code intelligence — types
 
 ## Getting the LSP tool
 
-The LSP tool may be deferred — absent from the tool list until loaded. Load it with ONE ToolSearch call in the exact-name form: query `select:LSP`. Keyword or regex guesses (`definition`, `references`, `language server`) do not match it and waste calls; `select:` resolves by name directly. If other basic tools (Read, Grep, Glob) are deferred too, load them in the same call — `select:LSP,Read,Grep,Glob` — names that do not exist are simply not matched.
+The LSP tool may be deferred — absent from the tool list until loaded. Load it with ONE ToolSearch call in the exact-name form: query `select:LSP`. Keyword or regex guesses (`definition`, `references`, `language server`) do not match it and waste calls; `select:` resolves by name directly. If `Read` is deferred too, load it in the same call — `select:LSP,Read` — names that do not exist are simply not matched.
 
 ## Why LSP over grep/Read
 
@@ -25,7 +25,7 @@ The LSP tool may be deferred — absent from the tool list until loaded. Load it
 Do not open a file just to find something in it — a whole-file Read of a large file costs tokens for lines the task never needs. Map first, read bounded ranges second:
 
 - `documentSymbol` gives the file's structure and the exact line of every symbol.
-- For names that are not symbols (import specifiers, string literals), a Grep scoped to that one file returns the line cheaply.
+- For names that are not symbols (import specifiers, string literals), a bash `grep -n` on that one file returns the line cheaply.
 - When a piece of code genuinely must be read, read exactly that range (Read accepts `offset`/`limit`), not the whole file.
 - Skip existence pre-checks (`ls`/`find` before acting on a path): point the LSP operation or Read at the path directly — a wrong path fails with an informative error from the tool itself, one signal instead of two calls.
 
@@ -57,7 +57,7 @@ Max 3 retries. If still empty after 3 retries, the file may have an **indexing q
 
 - **`workspaceSymbol`** — works across the whole project; most resilient to indexing state.
 - **`documentSymbol`** — works on most files; reliable for listing symbols.
-- **`findReferences`** — preferred over `incomingCalls` for finding callers (more reliable in complex code). Its result is semantic: string literals, comments, and same-named functions never appear, so once the returned references are classified (calls + declaration + imports), the answer is complete — do not re-sweep the repo with grep to double-check a non-empty classified result. Grep is the fallback when LSP returns empty, not a second opinion.
+- **`findReferences`** — preferred over `incomingCalls` for finding callers (more reliable in complex code). Its result is semantic: string literals, comments, and same-named functions never appear, so once the returned references are classified (calls + declaration + imports), the answer is complete — do not re-sweep the repo with grep to double-check a non-empty classified result. bash grep is the fallback when LSP returns empty, not a second opinion.
 
 ### Less reliable operations (server-dependent)
 
@@ -93,7 +93,7 @@ Hover output beginning with `(alias)` — e.g. `(alias) interface JsonRpcMessage
 ### "Who calls function X?"
 1. `LSP findReferences(file, lineOfX, charOnX)` — preferred
 2. If empty: `LSP workspaceSymbol(file, 1, 1, query: "X")` to confirm the symbol exists, then retry findReferences
-3. If still empty: fall back to `Grep` with `pattern: "X("` scoped to source files
+3. If still empty: fall back to bash `grep -rn "X("` scoped to source files
 
 ### "What type is this variable?"
 1. `LSP hover(file, line, charOnVar)` — shows type + documentation
@@ -103,10 +103,10 @@ Hover output beginning with `(alias)` — e.g. `(alias) interface JsonRpcMessage
 
 ## When to use non-LSP tools
 
-- **`Glob`** — finding files by name pattern (`**/*.ts`, `src/**/*.go`)
-- **`Grep`** — non-symbol text search: string literals, comments, regex patterns, config values, obfuscated identifiers
+- **Bash `grep`** — non-symbol text search: string literals, comments, regex patterns, config values, obfuscated identifiers (`grep -rn "pattern" src/`)
+- **Bash `find`** — finding files by name pattern (`find src -name "*.ts"`)
 - **`Read`** — non-code files: JSON, YAML, Markdown, TOML, config, images, binary, `.txt`. Also for reading full file contents when LSP doesn't cover the file type.
-- **`Bash`** — running commands (`bun test`, `git`, `npm`), build/test execution. **NEVER** for text processing (sed, awk, cat, head, tail). Use `Grep` or `Read` instead.
+- **`Bash`** — running commands (`bun test`, `git`, `npm`), build/test execution — and the home of `grep`/`find`: output pipes cleanly (`| head`, `| wc -l`, `| awk '{print $1}'`) and rtk condenses it before it reaches the context.
 
 ## Fallback: when LSP returns empty results
 
@@ -114,16 +114,16 @@ Some files have **indexing quirks** — `documentSymbol`/`hover`/`findReferences
 
 **Strategy:**
 1. Try `workspaceSymbol` first (most resilient) — if it finds the symbol, you know LSP is working for that symbol.
-2. If `documentSymbol`/`hover`/`findReferences` return empty for a specific file: retry once (indexing may complete). If still empty, fall back per the table below (Grep for reference finding, Read for structure).
-3. **Do NOT assume "no references found" means the symbol is unused** — verify with `Grep` if LSP returned empty.
+2. If `documentSymbol`/`hover`/`findReferences` return empty for a specific file: retry once (indexing may complete). If still empty, fall back per the table below (bash grep for reference finding, Read for structure).
+3. **Do NOT assume "no references found" means the symbol is unused** — verify with bash `grep` if LSP returned empty.
 
 | LSP operation | Fallback (when LSP returns empty) |
 |---|---|
-| `goToDefinition` | `Grep` with `pattern: "function SYMBOL"` or `"class SYMBOL"` |
-| `findReferences` | `Grep` with `pattern: "SYMBOL"` scoped to source files |
+| `goToDefinition` | bash `grep -rn "function SYMBOL"` / `"class SYMBOL"` |
+| `findReferences` | bash `grep -rn "SYMBOL"` scoped to source files |
 | `hover` (type info) | `Read` the file, infer type from context |
 | `documentSymbol` | `Read` the file, scan for declarations |
-| `workspaceSymbol` | `Grep` with `pattern: "SYMBOL"` across project |
+| `workspaceSymbol` | bash `grep -rn "SYMBOL"` across project |
 
 ## Diagnostics
 
