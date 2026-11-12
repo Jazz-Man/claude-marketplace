@@ -1,4 +1,6 @@
 /** biome-ignore-all lint/style/noExcessiveLinesPerFile: literal deny lists are data, not logic */
+
+import { homedir } from "node:os";
 import process from "node:process";
 import { debug } from "./debug.ts";
 
@@ -11,6 +13,11 @@ const envVars = [
   "GITHUB_AUTH_TOKEN",
   "GITHUB_PERSONAL_ACCESS_TOKEN",
   "GITHUB_PUBLICK_EMAIL",
+  "GH_TOKEN",
+  "GH_ENTERPRISE_TOKEN",
+  "GITHUB_ENTERPRISE_TOKEN",
+  "OPENAI_API_KEY",
+  "HF_TOKEN",
   "HUGGINGFACE_TOKEN",
   "ANTHROPIC_API_KEY",
   "GOOGLE_AI_API_KEY",
@@ -23,7 +30,31 @@ const envVars = [
   "ANTHROPIC_AUTH_TOKEN",
   "ANTHROPIC_BASE_URL",
   "NPM_CONFIG_TOKEN",
+  "NPM_TOKEN",
   "NPM_CONFIG_TOKEN_TEST",
+  "AWS_ACCESS_KEY_ID",
+  "AWS_SECRET_ACCESS_KEY",
+  "AWS_SESSION_TOKEN",
+  "CARGO_REGISTRY_TOKEN",
+  "GEM_HOST_API_KEY",
+  "TWINE_PASSWORD",
+  "PYPI_TOKEN",
+  "VAULT_TOKEN",
+  "SENTRY_AUTH_TOKEN",
+  "DOCKER_PASSWORD",
+  "KUBECONFIG",
+  "SSH_AUTH_SOCK",
+  "BASH_ENV",
+  "GIT_SSH_COMMAND",
+  "GIT_ASKPASS",
+  "GIT_EDITOR",
+  "GIT_CONFIG",
+  "GIT_CONFIG_GLOBAL",
+  "GIT_PAGER",
+  "PAGER",
+  "EDITOR",
+  "DYLD_INSERT_LIBRARIES",
+  "DYLD_LIBRARY_PATH",
 ];
 
 const keySuffixes = [
@@ -500,7 +531,9 @@ const config = {
 };
 
 try {
-  const settingsPath = Bun.file(".claude/settings.json");
+  const HOME_DIR = homedir();
+
+  const settingsPath = Bun.file(`${HOME_DIR}/.claude/settings.json`);
 
   const currentConfig = await settingsPath.json();
 
@@ -511,9 +544,7 @@ try {
     sandbox: config.sandbox,
   };
 
-  await Bun.file(".claude/settings.json").write(
-    JSON.stringify(newConfig, null, 2),
-  );
+  await settingsPath.write(JSON.stringify(newConfig, null, 2));
 
   debug(newConfig, {
     depth: 10,
