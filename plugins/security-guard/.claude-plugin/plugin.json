@@ -1,9 +1,0 @@
-{
-  "author": {
-    "name": "Vasyl Sokolyk"
-  },
-  "description": "Mechanical Bash guard for Claude Code: filesystem safety, dependency immutability, and git read-only, enforced by the claude-code-cli-hook policy binary",
-  "displayName": "security-guard",
-  "name": "security-guard",
-  "version": "0.1.0"
-}
