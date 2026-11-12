@@ -34,11 +34,11 @@
     "packages/cli-hook": {
       "name": "@cc-sdd/claude-code-cli-hook",
       "dependencies": {
+        "@cc-sdd/bin-builder": "workspace:*",
         "unbash": "catalog:core",
       },
       "devDependencies": {
         "@cc-sdd/agent-types": "workspace:*",
-        "@cc-sdd/bin-builder": "workspace:*",
         "mitata": "catalog:core",
       },
     },
