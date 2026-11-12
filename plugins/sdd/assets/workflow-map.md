@@ -38,7 +38,7 @@ tracking writes into documents (`.beans/` is CLI-only; specs never carry checkbo
 
 **Code analysis.** Any code reading or navigation, in any phase and in any dispatched subagent,
 applies the `lsp-code-analysis` skill: LSP operations first (definitions, references, types,
-call structure), Grep/Glob as the fallback - semantic awareness beats text matching.
+call structure), bash grep/find as the fallback - semantic awareness beats text matching.
 
 **Interaction.** Every question or choice-point goes through AskUserQuestion; subagents never
 ask the user - they return status contracts. Clarifying questions only in discovery and
