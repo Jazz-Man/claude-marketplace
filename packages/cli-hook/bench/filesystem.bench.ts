@@ -48,10 +48,6 @@ import {
   ASK as FS_ASK,
   DENY as FS_DENY,
 } from "../tests/fixtures/filesystem.ts";
-import {
-  ALLOW as ND_ALLOW,
-  DENY as ND_DENY,
-} from "../tests/fixtures/no-deps.ts";
 import { commands } from "./corpus.ts";
 
 // Corpus: identical to bench/equiv.ts — the 233-command arsenal (two
@@ -102,8 +98,6 @@ const corpus: string[] = [
   ...FS_ALLOW,
   ...FS_ASK,
   ...FS_DENY,
-  ...ND_ALLOW,
-  ...ND_DENY,
   ...ADVERSARIAL,
 ];
 
