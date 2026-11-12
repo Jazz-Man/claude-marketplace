@@ -66,7 +66,7 @@ references/rpg.md.
 | Which feature does this belong to / what sits around it | grepai RPG (fetch/explore) |
 | How a curated dependency works internally | grepai (indexed source) |
 | Call structure in a language with no LSP server | grepai trace_callers / callees |
-| String literals, comments, config values | text Grep |
+| String literals, comments, config values | bash grep (text search) |
 
 The composing flow: grepai DISCOVERS candidates → LSP VERIFIES precisely
 (coordinates, types) → Read only the bounded range that verification
