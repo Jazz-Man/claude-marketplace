@@ -9,9 +9,8 @@ import {
   checkFilePath,
   filesystemPolicy,
 } from "./policies/filesystem/policy.ts";
-import { noDepsPolicy } from "./policies/no-deps.ts";
 
-const POLICIES: Policy[] = [noDepsPolicy, filesystemPolicy];
+const POLICIES: Policy[] = [filesystemPolicy];
 
 const READ_TOOLS = new Set(["Read"]);
 const WRITE_TOOLS = new Set(["Edit", "Write", "NotebookEdit"]);
