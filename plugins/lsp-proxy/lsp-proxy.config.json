@@ -5,10 +5,10 @@
       "command": "tsc",
       "extensionToLanguage": {
         ".cjs": "javascript",
+        ".cts": "typescript",
         ".js": "javascript",
         ".jsx": "javascriptreact",
         ".mjs": "javascript",
-        ".cts": "typescript",
         ".ts": "typescript",
         ".tsx": "typescriptreact"
       },
@@ -22,12 +22,12 @@
       "extensionToLanguage": {
         ".cjs": "javascript",
         ".css": "css",
+        ".cts": "typescript",
         ".js": "javascript",
         ".json": "json",
         ".jsonc": "json",
         ".jsx": "javascriptreact",
         ".mjs": "javascript",
-        ".cts": "typescript",
         ".ts": "typescript",
         ".tsx": "typescriptreact"
       },
@@ -181,6 +181,19 @@
       },
       "initializationOptions": {},
       "name": "jscpd",
+      "settings": {}
+    },
+    {
+      "args": [],
+      "command": "/opt/homebrew/bin/zls",
+      "extensionToLanguage": {
+        ".zig": "zig",
+        ".zon": "zig"
+      },
+      "initializationOptions": {
+        "enable_snippets": true
+      },
+      "name": "zls",
       "settings": {}
     }
   ]

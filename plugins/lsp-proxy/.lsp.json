@@ -33,6 +33,7 @@
       ".cs": "csharp",
       ".css": "css",
       ".csx": "csharp",
+      ".cts": "typescript",
       ".cxx": "cpp",
       ".d": "d",
       ".dart": "dart",
@@ -144,20 +145,10 @@
       ".xml": "xml",
       ".yaml": "yaml",
       ".yml": "yaml",
-      ".zig": "zig"
-    },
-    "maxRestarts": 3,
-    "transport": "stdio"
-  },
-  "zig": {
-    "command": "zls",
-    "extensionToLanguage": {
       ".zig": "zig",
       ".zon": "zig"
     },
-    "initializationOptions": {
-      "enable_snippets": true
-    },
-    "maxRestarts": 3
+    "maxRestarts": 3,
+    "transport": "stdio"
   }
 }

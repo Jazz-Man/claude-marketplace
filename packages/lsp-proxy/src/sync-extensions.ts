@@ -43,7 +43,10 @@ if (isDirectRun) {
     allowPositionals: true,
     args: process.argv.slice(2),
   });
-  const defaultConfig = new URL("../lsp-proxy.config.json", import.meta.url);
+  const defaultConfig = new URL(
+    "../../../plugins/lsp-proxy/lsp-proxy.config.json",
+    import.meta.url,
+  );
   const defaultTarget = new URL(
     "../../../plugins/lsp-proxy/.lsp.json",
     import.meta.url,
