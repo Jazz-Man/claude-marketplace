@@ -1,13 +1,7 @@
 [
   {
     "allow_concurrent_runs": false,
-    "args": [
-      "--dangerously-skip-permissions",
-      "--resume",
-      "cc-sdd",
-      "--allowedTools",
-      "Glob,Grep"
-    ],
+    "args": ["--dangerously-skip-permissions", "--resume", "cc-sdd"],
     "command": "claude",
     "hide": "never",
     "label": "claude-code-ide",
@@ -15,6 +9,18 @@
     "reveal_target": "dock",
     "show_command": true,
     "tags": ["claude"],
+    "use_new_terminal": false
+  },
+  {
+    "allow_concurrent_runs": false,
+    "args": ["watch"],
+    "command": "grepai",
+    "hide": "never",
+    "label": "grepai:watch",
+    "reveal": "always",
+    "reveal_target": "dock",
+    "show_command": true,
+    "tags": ["grepai"],
     "use_new_terminal": false
   }
 ]
