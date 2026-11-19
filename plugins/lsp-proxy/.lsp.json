@@ -148,5 +148,16 @@
     },
     "maxRestarts": 3,
     "transport": "stdio"
+  },
+  "zig": {
+    "command": "zls",
+    "extensionToLanguage": {
+      ".zig": "zig",
+      ".zon": "zig"
+    },
+    "initializationOptions": {
+      "enable_snippets": true
+    },
+    "maxRestarts": 3
   }
 }
