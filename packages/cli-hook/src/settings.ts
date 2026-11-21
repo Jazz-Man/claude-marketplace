@@ -84,7 +84,7 @@ const secretFileNames = ["credentials.json", "token.json", ".vault-token"];
 const secretRcFiles = [
   ".netrc",
   "_netrc",
-  ".npmrc",
+  // ".npmrc",
   ".yarnrc",
   ".yarnrc.yml",
   ".pypirc",
@@ -133,7 +133,11 @@ const wildcardSecrets = [
   ".htpasswd*",
 ];
 
-const projectSecretNames = [".DS_Store*", ".env", ".env.*", "Brewfile*"];
+const projectSecretNames = [
+  ".DS_Store*",
+  // ".env", ".env.*",
+  "Brewfile*",
+];
 
 const homeStateFiles = [
   "~/.zshenv*",
@@ -458,7 +462,16 @@ const gitWriteCommands = [
   "git clone*",
 ];
 
-const disableCommands = ["sudo*", "omz*", "brew*", "nix*", "bunx*", "npx*", "pnpx*", "uvx*"];
+const disableCommands = [
+  "sudo*",
+  "omz*",
+  "brew*",
+  "nix*",
+  "bunx*",
+  "npx*",
+  "pnpx*",
+  "uvx*",
+];
 
 const readDenyPaths = unique([
   ...protectedFiles,
