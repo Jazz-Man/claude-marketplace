@@ -71,7 +71,7 @@ Breadth-first walk with `direction` (forward | reverse | both), `depth`,
 | `invokes` | symbol calls symbol |
 | `imports` | file imports file/package |
 | `maps_to_chunk` | symbol to the vector chunk holding its code |
-| `semantic_sim` | symbols with similar features or call patterns |
+| `semantic_sim` | symbols in different files with similar feature labels |
 
 Explore is the ORIENTATION tool — "what sits around this node". For exact
 caller/callee coordinates use trace (references/trace.md); explore trades
