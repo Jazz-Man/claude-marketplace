@@ -28,7 +28,8 @@ Ignore changes always require a re-index; boost changes never do.
 4. **`external_gitignore`** — one extra gitignore file applied from the
    project root (`~/` expansion supported; a missing file only warns).
 5. **Built-in** — minified files (.min.js, .min.css, .bundle.js,
-   .bundle.css), files over 1 MB, binary files. Not configurable.
+   .bundle.css) and binary files (unconditional); files over the size cap
+   (default 1 MB, configurable via `chunking.max_file_size_bytes`).
 
 Ignore excludes from BOTH indexes at once — the vector search index and
 the trace symbol index (see references/trace.md).
@@ -44,7 +45,7 @@ trees; `!` negations pull back exactly the libraries worth trusting.
 ```
 # JS/TS: trust one library's source
 !node_modules/<lib>/
-node_modules/<lib>/docs/          # re-exclude what you do not want
+node_modules/<lib>/docs/          # re-exclude what is not wanted
 node_modules/<lib>/CLAUDE.md
 
 # PHP
@@ -98,7 +99,7 @@ Craft rules, all live-tested:
 - Every ignore change (any layer) requires a re-index before the index
   reflects it — unlike boost, which applies to the next search. A running
   watch daemon builds its ignore matcher once at startup, so ignore edits
-  also invalidate the daemon. Never index or restart anything yourself —
+  also invalidate the daemon. Never index or restart anything —
   warn the owner that a re-index (and a daemon restart, if watch runs) is
   needed.
 - Verify by file count: `grepai_index_status { root }` before and after a

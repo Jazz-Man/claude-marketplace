@@ -6,7 +6,7 @@ skill; this file is the prose map. Anything not covered here is in the
 schema.
 
 Config lives at `.grepai/config.yaml`. Most options are optional at load —
-but a missing `search:` section leaves boost/hybrid/dedup off (see
+but a missing `search:` section leaves boost and dedup off (see
 pitfalls), and an empty `provider` errors at runtime. Unknown YAML keys
 are silently ignored by grepai itself (the schema flags them as typos).
 
@@ -68,9 +68,14 @@ search:
 
 - `size` (tokens, default 512; with strategy=ast converted to non-whitespace
   characters), `overlap` (default 50; unused by ast).
-- `strategy`: fixed (sliding window) | ast (syntax-tree split; covers
-  .go/.js/.jsx/.ts/.tsx/.py, everything else falls back to fixed; requires a
-  treesitter-tagged build, otherwise warns and falls back).
+- `strategy`: fixed (sliding window) | ast (syntax-tree split; covers ~30
+  tree-sitter languages — the authoritative list is the `strategy` enum's
+  description in the schema and references/chunking.md; everything else
+  falls back to fixed; requires a treesitter-tagged build, otherwise warns
+  and falls back).
+- `max_file_size_bytes`: per-file indexing cap, default 1048576 (1 MB);
+  takes effect after a re-index (and a watch-daemon restart). Minified and
+  binary files stay excluded unconditionally.
 - `custom_extensions`: extra indexed extensions, each with a leading dot
   (e.g. `.tengo`); binary detection still applies.
 
@@ -113,7 +118,9 @@ off; `node_path` defaults to `node`. `enabled: false` forces off.
 Only `enabled_languages` exists (extensions with a leading dot; empty =
 shipped default). The regex extractor covers .go .js .ts .jsx .tsx .py
 .php .lua .c .h .zig .rs .cpp/.hpp/.cc/.cxx/.hxx .java .cs .pas .dpr .fs
-.fsx .fsi .gd .rb — and it is the only extractor production ever builds.
+.fsx .fsi .gd .rb — and it is the only extractor wired into indexing: a
+tree-sitter symbol extractor also exists in the source, but no command
+selects it; symbols always come from the regex extractor.
 `.vue` works through framework_processing. Extensions outside extractor
 coverage are indexed but yield no symbols.
 
@@ -130,18 +137,10 @@ the whole config at load. `feature_group_strategy`: sample | split.
 ## ignore and external_gitignore
 
 `ignore` entries are layered on top of every `.gitignore` in the project
-and compile as root-level gitignore patterns (no slash — match at any
-depth; leading slash — anchored; a bare directory name prunes the subtree
-at any depth). A nested `.grepaiignore` can re-include (override) even
-these entries — though a deeper .gitignore still beats a shallower
-negation. The file's list is the effective list verbatim: nothing merges
-at runtime, and the list is the OWNER's curation — init's defaults
-(.git, .grepai, node_modules, vendor, bin, dist, __pycache__, .venv,
-venv, .idea, .vscode, target, .zig-cache, zig-out, qdrant_storage) are a
-starting point the owner may prune; never re-add removed entries — the
-.gitignore layers usually still cover the big trees. Minified
-files (.min.js/.min.css/.bundle.*) are excluded built-in, not via this
-list.
+and compile as root-level gitignore patterns; a nested `.grepaiignore`
+can re-include (override) even these entries. The layer semantics, the
+shipped default list, and the owner-curation rule live in
+references/ignore.md — the prose home for everything ignore.
 
 `external_gitignore`: path to one more gitignore applied from the project
 root (supports `~`); a missing file only warns.

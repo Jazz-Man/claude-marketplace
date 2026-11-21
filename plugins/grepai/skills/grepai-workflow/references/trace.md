@@ -15,7 +15,7 @@ built by indexing/watching. Before blaming a query, check
 `grepai_index_status { root }` — `symbols_ready: true` is what the trace
 tools need. An empty symbol index fails with "symbol index is empty"; that
 is an index-build problem, not a query problem — flag the rebuild to the
-owner, never run it yourself.
+owner, never run it.
 
 ## Tool calls
 
@@ -86,7 +86,8 @@ The semantic index and the symbol index cover different worlds:
   languages plus Shell, SQL, HTML/CSS, Markdown, YAML/JSON/TOML/XML, ini,
   env, proto, terraform), extended by `chunking.custom_extensions`.
   Detection is by file EXTENSION ONLY — no shebang or content sniffing —
-  and files over 1 MB or binary are skipped regardless of any config.
+  and files over the size cap (default 1 MB, configurable via
+  `chunking.max_file_size_bytes`) or binary are skipped.
 - **Trace tier** — only languages with an extractor: Go, JS/JSX, TS/TSX,
   Vue SFC (converted to TS first via framework processing), Python, PHP,
   Lua, GDScript, Ruby, C/C++, Rust, Zig, C#, Java, F#, Pascal/Delphi.
@@ -96,6 +97,12 @@ Everything else — Swift, Kotlin, Scala, Dart, Elixir, Erlang, Clojure,
 Haskell, OCaml, Elm, Nim, and all config/markup — is searchable but yields
 no call graphs. Custom extensions are indexed for search with the fixed
 chunker and are never traced.
+
+Coverage sets do not imply each other: the `ast` chunker parses ~30
+languages — including Swift, Kotlin, Scala, Elixir, Elm, OCaml
+(references/chunking.md) — while the symbol extractor reads the regex set
+above. The lists overlap, but neither contains the other: AST chunking
+improves SEARCH for a language; it does not enable call graphs for it.
 
 Ruby caveat: receiver.method calls are found with or without parentheses;
 bare parenthesis-less calls are not (indistinguishable from variables for
@@ -109,8 +116,9 @@ by hand if a language silently yields nothing.
 
 The only CONFIGURABLE file-level exclusion is the top-level `ignore`
 layer — it removes files from BOTH indexes (vector and symbol) at once.
-Minified files, files over 1 MB, and binary files are also always excluded
-from both indexes, regardless of config. A trace-specific exclude does not
+Minified and binary files are also always excluded from both indexes; the
+size cap defaults to 1 MB and is configurable (`chunking.max_file_size_bytes`).
+A trace-specific exclude does not
 exist; wanting files in vector search but out of trace is not an
 expressible configuration.
 

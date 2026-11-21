@@ -1,6 +1,6 @@
 ---
 name: grepai-workflow
-description: This skill should be used when the user asks to "set up grepai" or configure it (.grepaiignore, search boost), mentions the grepai tools (grepai_search, trace, rpg), or needs any code discovery that is not an exact symbol lookup — natural-language codebase questions ("what implements the framing logic"), pre-build "does this already exist" checks, curated-dependency internals, call structure where no LSP server covers the language, feature orientation ("which feature does this belong to"). grepai discovers, LSP verifies.
+description: This skill should be used when the user asks to "set up grepai" or configure it (.grepaiignore, search boost), mentions the grepai tools (grepai_search, trace, rpg), or needs any code discovery that is not an exact symbol lookup — natural-language codebase questions ("what implements the framing logic"), pre-build "does this already exist" checks, curated-dependency internals, call structure where no LSP server covers the language, feature orientation ("which feature does this belong to"). Also use when dispatching code-research subagents (the dispatch contract lives in the skill body). grepai discovers, LSP verifies.
 ---
 
 # grepai workflow — semantic search configured per project, working with LSP
@@ -16,16 +16,15 @@ grepai discovers, LSP verifies.
    settled for this workflow: local Ollama, GOB backend).
 2. Shape the ignore layers and curate the dependency sources worth
    trusting — the five layers, negation craft, and the Rust/Go honesty
-   rule: references/ignore.md. The ignore list is the OWNER's curation:
-   `grepai init` defaults are a starting point the owner may prune — never
-   re-add entries the owner removed; a shorter list is usually intentional
-   (the .gitignore layers still cover the big trees).
+   rule: references/ignore.md. The ignore list is the OWNER's curation —
+   never re-add entries the owner removed; the full rule lives in the
+   reference.
 3. Shape `search.boost` ranking — rules, defaults, and the
    curation-interplay rule: references/search-boost.md.
-4. Never run indexing or watching yourself — the owner builds and maintains
+4. Never run indexing or watching — the owner builds and maintains
    the index (`grepai index` / `grepai watch`); after any change that
    requires a re-index (ignore layers, chunking, embedder identity, the RPG
-   graph), your job is to SAY so, not to run it.
+   graph), say so, never run it.
 5. Verify with a ground-truth query; if a curated library does not
    surface, walk the ignore layers in order.
 
@@ -73,6 +72,29 @@ The composing flow: grepai DISCOVERS candidates → LSP VERIFIES precisely
 points to. Never re-verify a classified non-empty LSP result with a text
 sweep — cross-tool flow means each tool covers what the other cannot, not
 double work.
+
+## Dispatching research subagents
+
+Subagents receive no server instructions and do not reliably reach for the
+tools unprompted — two tests (2026-11-21) showed zero unprompted calls with
+a neutral dispatch — so the dispatch prompt is the only dependable channel.
+Copy this contract verbatim into any code-research dispatch:
+
+    Code research in this repo MUST use the grepai MCP tools before bash grep:
+    - grepai_search {query: <intent phrased in English>, compact: true, limit: 3-5}
+      (pass root when the target differs from the server's startup project)
+    - grepai_trace_callers / _callees for call structure (bare-name matching;
+      an empty result means no name matched, not "nothing calls it")
+    - grepai_rpg_search → _fetch / _explore for feature orientation
+      (word-overlap: query with the literal words, not synonyms)
+    - grepai_index_status when results look wrong (symbols_ready,
+      rpg_enabled) before concluding code is missing or falling back to grep
+    Verify significant claims with LSP; Read only the bounded ranges the
+    tools point to. bash grep only for exact strings, identifiers, and
+    literals.
+
+A long research run on a small model loses this contract mid-run — dispatch
+deep research to a senior model.
 
 ## References
 

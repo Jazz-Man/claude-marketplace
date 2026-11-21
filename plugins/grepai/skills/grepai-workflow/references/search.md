@@ -7,9 +7,9 @@ index.
 
 ## The mindset: intent, not identifier
 
-Semantic search matches MEANING. It is for when you do not know the exact
-name — the exact-name cases belong to text Grep or LSP (see the synergy
-matrix in SKILL.md).
+Semantic search matches MEANING. It is for when the exact name is unknown —
+the exact-name cases belong to bash grep (text search) or LSP (see
+the synergy matrix in SKILL.md).
 
 | Wrong (identifier) | Right (intent) |
 |---|---|
@@ -65,7 +65,7 @@ cases: (a) the task is comprehension-shaped (evaluate a module for reuse,
 explain how it works) — the module itself is the answer, so its full span
 is the bounded range; (b) the file is small (~under 150-200 lines) —
 slicing costs more calls than it saves. For lookup-shaped questions on
-large files, slice; and once LSP/trace handed you exact coordinates, read
+large files, slice; and once LSP/trace provided exact coordinates, read
 the symbol span plus a little context — never restart from line 1.
 
 `limit` — 3-5 by default; 15-20 only when deliberately surveying. `format`:
@@ -141,7 +141,7 @@ most once.
 
 ## Pitfalls
 
-1. Exact identifiers as queries — wasted call; that is Grep/LSP territory.
+1. Exact identifiers as queries — wasted call; that is bash grep/LSP territory.
 2. Absolute score thresholds as quality gates — model-relative noise; use
    ranks and gaps.
 3. Judging freshness by memory — check `last_updated` in index status.

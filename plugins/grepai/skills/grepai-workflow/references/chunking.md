@@ -46,9 +46,14 @@ related declarations.
 
 - `size` remains the budget, but counted in NON-WHITESPACE characters
   (~4 per token); `overlap` is NOT used by ast.
-- Coverage: `.go`, `.py`, `.js`, `.jsx`, `.ts`, `.tsx`. Every other
-  extension — and files nested too deeply to split — falls back to the
-  fixed chunker automatically.
+- Coverage: ~30 tree-sitter languages in this build — the C family
+  (.c .h .cc .cpp .cxx .hpp .hxx), .cs, .css, .elm, .ex/.exs, .fs, .go,
+  .hcl/.tf, .html, .java, .js/.jsx, .kt, .lua, .ml, .php, .proto, .py,
+  .rb, .rs, .scala, .sh/.bash/.zsh, .sql, .swift, .toml, .ts/.tsx,
+  .yaml/.yml, .zig. The `strategy` enum's description in
+  config.schema.json is the authoritative list; every other extension —
+  and files nested too deeply to split — falls back to the fixed chunker
+  automatically.
 - Experimental: the ast algorithm may change between grepai releases, which
   can require re-indexing after an upgrade.
 - A stock build (or an unknown strategy value) warns and uses `fixed` —
@@ -57,6 +62,12 @@ related declarations.
 Choosing between them: with ast available, prefer it for supported languages
 (whole-function chunks match intent queries better than windows); keep fixed
 for everything else — the fallback handles that per file automatically.
+
+ast chunking coverage is NOT symbol-extraction coverage: Swift, Kotlin,
+Scala, Elixir, Elm, OCaml chunk by AST (better search) yet still yield no
+call graphs — trace reads the symbol extractor's language set
+(references/trace.md), a different list that overlaps but neither contains
+the other.
 
 ## custom_extensions
 
@@ -69,8 +80,8 @@ safe. These files chunk with `fixed`.
 ## Applying changes
 
 - Changing `size`, `overlap`, or `strategy` does NOT re-chunk what is
-  already indexed — a full re-index is required. Never run indexing
-  yourself: warn the owner that a rebuild is needed.
+  already indexed — a full re-index is required. Never run indexing:
+  warn the owner that a rebuild is needed.
 - Embedder context limit: if the embedder rejects an oversized chunk, grepai
   splits it in half and retries — up to 3 re-chunking attempts, visible as
   "Re-chunking … context limit exceeded" log lines. Sub-chunks of an ast

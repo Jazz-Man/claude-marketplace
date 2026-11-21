@@ -45,20 +45,20 @@ against the project-relative path written with forward slashes and a leading
 | Source | `/src/`, `/lib/`, `/app/` | x1.1 |
 
 Custom `penalties:`/`bonuses:` lists REPLACE the defaults — copy the
-defaults you want to keep and append yours.
+defaults worth keeping and append the new ones.
 
 ## Curation interplay (the solo-setup rule)
 
 Dependency curation happens at the INDEX layer: `.gitignore` excludes,
 `.grepaiignore` `!` negations re-include the chosen libraries (JS/TS
 `!node_modules/<lib>/`, PHP `!vendor/<lib>/`). Boost must never penalize a
-root you deliberately curated — a `/node_modules/` x0.1-style rule sinks
-exactly the source you pulled in. Inside a curated library, ranking emerges
+root that was deliberately curated — a `/node_modules/` x0.1-style rule
+sinks exactly the source that was pulled in. Inside a curated library, ranking emerges
 on its own: `.d.ts`/source is neutral while `.md`/`.mdx` docs hit the x0.6
 penalty — source above guides, both findable.
 
-Penalize what your project GENERATES (tests, mocks, fixtures, scratch);
-never penalize what you deliberately INCLUDE.
+Penalize what the project GENERATES (tests, mocks, fixtures, scratch);
+never penalize what was deliberately INCLUDED.
 
 ## Factors and effect
 
@@ -91,7 +91,7 @@ Common add-ons on TOP of the shipped defaults:
 
 | Layer | Effect | For |
 |---|---|---|
-| `ignore` / `.gitignore` | excluded from the index entirely | dependencies you do NOT curate, build output, caches |
+| `ignore` / `.gitignore` | excluded from the index entirely | uncurated dependencies, build output, caches |
 | `.grepaiignore` `!` | re-included into the index | the few dependency sources worth trusting |
 | penalty (x<1) | still searchable, ranked low | tests, docs, examples — rarely needed, never hidden |
 | bonus (x>1) | ranked high | the packages that ARE the product |
@@ -107,9 +107,9 @@ Verification runs exclusively through the MCP tools.
 - Verify with a real query before/after: results from penalized paths sink
   but remain findable (a "test authentication" query still returns tests,
   ranked lower).
-- Symptom: tests still on top → your naming convention is not covered (add
-  its pattern). Cannot find penalized code AT ALL → that is ignore's doing,
-  not boost; check the ignore layers.
+- Symptom: tests still on top → the project's naming convention is not
+  covered (add its pattern). Cannot find penalized code AT ALL → that is
+  ignore's doing, not boost; check the ignore layers.
 
 ## Pitfalls
 
@@ -117,6 +117,6 @@ Verification runs exclusively through the MCP tools.
    misconfiguration.
 2. A missing `search:` section disables boost AND dedup (search has no
    load-time defaults).
-3. Penalizing a curated dependency root undoes your curation.
+3. Penalizing a curated dependency root undoes the curation.
 4. Cumulative double-hits are intended (`.md` + `/docs/`) — factor them in
    when choosing custom factors.
