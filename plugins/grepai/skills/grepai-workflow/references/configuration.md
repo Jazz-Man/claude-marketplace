@@ -5,7 +5,9 @@ machine. The machine truth is `references/config.schema.json` in this
 skill; this file is the prose map. Anything not covered here is in the
 schema.
 
-Config lives at `.grepai/config.yaml`. Most options are optional at load —
+Config lives at `.grepai/config.yaml`, written by `grepai init` (which also
+offers inheriting the config from a detected git worktree's main checkout).
+Most options are optional at load —
 but a missing `search:` section leaves boost and dedup off (see
 pitfalls), and an empty `provider` errors at runtime. Unknown YAML keys
 are silently ignored by grepai itself (the schema flags them as typos).
@@ -50,8 +52,10 @@ search:
 - `parallelism`, `max_retries`, `max_batch_size`, `max_batch_tokens`:
   consumed ONLY by the openai provider — ollama silently ignores them.
 - `api_key`: local providers ignore it; cloud providers resolve from env
-  (OPENAI_API_KEY and per-provider fallbacks). Rotating a key does NOT
-  invalidate the index (excluded from the cache namespace).
+  (OPENAI_API_KEY and per-provider fallbacks) — but an env key is only sent
+  to the provider's OFFICIAL endpoint; a custom endpoint requires an
+  explicit `api_key` (embedder/env_key.go guards this). Rotating a key does
+  NOT invalidate the index (excluded from the cache namespace).
 - `request_timeout_seconds`: default 60s (synthetic hardcodes 90s);
   consumed by all providers except requesty — the one tuning knob that
   matters for slow self-hosted Ollama.
