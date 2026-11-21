@@ -34,13 +34,18 @@
 					"type": "string",
 					"enum": ["fixed", "ast"],
 					"default": "fixed",
-					"description": "fixed: sliding window of size+overlap. ast: cAST recursive split-then-merge respecting syntax trees; covers .go .js .jsx .ts .tsx .py, every other file falls back to fixed. Requires a build with the treesitter tag + CGO (enabled on main after the v1.1.0 release, commit 87a66ac); in builds without it, logs a warning and falls back to fixed. Unknown values also fall back to fixed with a warning."
+					"description": "fixed: sliding window of size+overlap. ast: cAST recursive split-then-merge respecting syntax trees; covers .go .js .jsx .ts .tsx .py .zig .rs plus the C family (.c .h .cc .cpp .cxx .hpp .hxx), .cs, .css, .fs (F#), .html, .java, .kt, .lua, .ml (OCaml), .php, .proto, .rb, .scala, .sh/.bash/.zsh, .sql, .swift, .tf/.hcl, .toml, .ex/.exs, .elm and .yaml/.yml; every other file falls back to fixed. Requires a build with the treesitter tag + CGO (enabled on main after the v1.1.0 release, commit 87a66ac); in builds without it, logs a warning and falls back to fixed. Unknown values also fall back to fixed with a warning."
 				},
 				"custom_extensions": {
 					"type": "array",
 					"items": { "type": "string", "pattern": "^\\." },
 					"default": [],
 					"description": "Extra file extensions to index beyond the built-in SupportedExtensions list (e.g. [\".tengo\", \".el\"]). Each entry needs the leading dot; matched case-insensitively. Binary detection (UTF-8 + null-byte check) still applies, so adding a binary extension is safe."
+				},
+				"max_file_size_bytes": {
+					"type": "integer",
+					"minimum": 1,
+					"description": "Caps the size of files considered for indexing, in bytes. Absent or <= 0 keeps the built-in default of 1048576 (1 MB). Applies to full scans and incremental watcher updates; takes effect after a re-index (and a watch-daemon restart)."
 				}
 			}
 		},
