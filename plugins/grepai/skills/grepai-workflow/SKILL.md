@@ -65,13 +65,17 @@ references/rpg.md.
 | Which feature does this belong to / what sits around it | grepai RPG (fetch/explore) |
 | How a curated dependency works internally | grepai (indexed source) |
 | Call structure in a language with no LSP server | grepai trace_callers / callees |
+| Which files exist in an area / file inventory | grepai_rpg_search with `kinds: "file"` — BEFORE reach for `find` |
 | String literals, comments, config values | bash grep (text search) |
 
 The composing flow: grepai DISCOVERS candidates → LSP VERIFIES precisely
 (coordinates, types) → Read only the bounded range that verification
 points to. Never re-verify a classified non-empty LSP result with a text
 sweep — cross-tool flow means each tool covers what the other cannot, not
-double work.
+double work. The same holds inside grepai: when a search already returned
+the file cluster, an exact-string sweep over that same ground is
+re-verification wearing a complementary label ("map all mentioners") —
+widen the query or the path scope instead.
 
 ## Dispatching research subagents
 
@@ -89,9 +93,12 @@ Copy this contract verbatim into any code-research dispatch:
       (word-overlap: query with the literal words, not synonyms)
     - grepai_index_status when results look wrong (symbols_ready,
       rpg_enabled) before concluding code is missing or falling back to grep
-    Verify significant claims with LSP; Read only the bounded ranges the
-    tools point to. bash grep only for exact strings, identifiers, and
-    literals.
+    - for file inventories use grepai_rpg_search kinds:"file" (or
+      grepai_index_status), not find/grep -l
+    Load the LSP tool first (ToolSearch select:LSP), verify significant
+    claims with it; Read only the bounded ranges the tools point to.
+    bash grep only for exact strings, identifiers, and literals — in a file
+    already located, never as a sweep over ground grepai classified.
 
 A long research run on a small model loses this contract mid-run — dispatch
 deep research to a senior model.
