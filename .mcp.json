@@ -1,5 +1,9 @@
 {
   "mcpServers": {
+    "grepai-source-mcp": {
+      "args": ["mcp-serve", "/Users/vasilsokolik/tools/grepai"],
+      "command": "grepai"
+    },
     "jscpd-mcp": {
       "args": ["--mcp"],
       "command": "jscpd"
