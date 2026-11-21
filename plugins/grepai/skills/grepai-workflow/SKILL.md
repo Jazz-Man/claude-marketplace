@@ -34,6 +34,11 @@ references/chunking.md.
 
 ## Searching
 
+Orientation starts with the index, not the file tree: `grepai_index_status`
+for health and scope, `grepai_rpg_search kinds:"file"` for what exists —
+a `find`/`ls` preamble re-derives by brute force what the index already
+answers.
+
 Query by intent, not identifier ("where does the proxy parse incoming
 frames", not "framing"). Default call shape — the token-economy contract:
 `compact: true` and `limit: 3-5` on every search; fetch content ONLY for
