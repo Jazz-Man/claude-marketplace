@@ -19,7 +19,11 @@ try {
     ...buildConfig(),
   };
 
-  await settingsPath.write(JSON.stringify(newConfig, null, 2));
+  const configData = JSON.stringify(newConfig, null, 2);
+
+  await settingsPath.write(configData);
+
+  await Bun.write("claude-settings.json", configData);
 
   debug(newConfig, {
     depth: 10,

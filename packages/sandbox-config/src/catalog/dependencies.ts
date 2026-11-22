@@ -55,7 +55,7 @@ export const managerStateDirs = [
   "~/.local/share/pnpm",
   "~/.yarn",
   "~/.local/share/yarn",
-  "~/.cache",
+  // "~/.cache",
   "~/.cargo",
   "~/.rustup",
   "~/go",
