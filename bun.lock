@@ -32,15 +32,7 @@
       "name": "@cc-sdd/bin-builder",
     },
     "packages/cli-hook": {
-      "name": "@cc-sdd/claude-code-cli-hook",
-      "dependencies": {
-        "@cc-sdd/bin-builder": "workspace:*",
-        "unbash": "catalog:core",
-      },
-      "devDependencies": {
-        "@cc-sdd/agent-types": "workspace:*",
-        "mitata": "catalog:core",
-      },
+      "name": "@cc-sdd/sandbox-config",
     },
     "packages/lsp-proxy": {
       "name": "@cc-sdd/lsp-proxy",
@@ -100,9 +92,9 @@
 
     "@cc-sdd/bin-builder": ["@cc-sdd/bin-builder@workspace:packages/bin-builder"],
 
-    "@cc-sdd/claude-code-cli-hook": ["@cc-sdd/claude-code-cli-hook@workspace:packages/cli-hook"],
-
     "@cc-sdd/lsp-proxy": ["@cc-sdd/lsp-proxy@workspace:packages/lsp-proxy"],
+
+    "@cc-sdd/sandbox-config": ["@cc-sdd/sandbox-config@workspace:packages/cli-hook"],
 
     "@effect/platform-bun": ["@effect/platform-bun@4.1.0", "", { "dependencies": { "@effect/platform-node-shared": "^4.1.0" }, "peerDependencies": { "effect": "^4.1.0" } }, "sha512-ZgIV+tV2utcbiopbWSoJuGn3FZuyqhLWIYITFCR8vlwnKicO1q0WgP4BBjDUYUTMRPEU/N1+BcZourAgpiDI/w=="],
 
@@ -295,8 +287,6 @@
     "mime-db": ["mime-db@1.54.0", "", {}, "sha512-aU5EJuIN2WDemCcAp2vFBfp/m4EAhWJnUNSSw0ixs7/kXbd6Pg64EmwJkNdFhB8aWt1sH2CTXrLxo/iAGV3oPQ=="],
 
     "mime-types": ["mime-types@3.0.2", "", { "dependencies": { "mime-db": "^1.54.0" } }, "sha512-Lbgzdk0h4juoQ9fCKXW4by0UJqj+nOOrI9MJ1sSj4nI8aI2eo1qmvQEie4VD1glsS250n15LsWsYtCugiStS5A=="],
-
-    "mitata": ["mitata@1.0.34", "", {}, "sha512-Mc3zrtNBKIMeHSCQ0XqRLo1vbdIx1wvFV9c8NJAiyho6AjNfMY8bVhbS12bwciUdd1t4rj8099CH3N3NFahaUA=="],
 
     "ms": ["ms@2.1.3", "", {}, "sha512-6FlzubTLZG3J2a/NVCAleEhjzq5oxgHyaCU9yYXvcLsvoVaHJq/s5xXI6/XXP6tz7R9xAOtHnSO/tXtF3WRTlA=="],
 

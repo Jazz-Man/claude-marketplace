@@ -1,16 +1,9 @@
 {
-  "dependencies": {
-    "@cc-sdd/bin-builder": "workspace:*",
-    "unbash": "catalog:core"
-  },
-  "devDependencies": {
-    "@cc-sdd/agent-types": "workspace:*",
-    "mitata": "catalog:core"
-  },
-  "name": "@cc-sdd/claude-code-cli-hook",
+  "main": "src/settings.ts",
+  "name": "@cc-sdd/sandbox-config",
   "private": true,
   "scripts": {
-    "build-bin": "bun build.ts"
+    "build-bin": "bun run src/settings.ts"
   },
   "type": "module"
 }
