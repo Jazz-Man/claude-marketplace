@@ -3,7 +3,7 @@
   "name": "@cc-sdd/sandbox-config",
   "private": true,
   "scripts": {
-    "build-bin": "bun run src/settings.ts"
+    "sandbox": "bun run src/settings.ts"
   },
   "type": "module"
 }

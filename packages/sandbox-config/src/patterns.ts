@@ -2,7 +2,7 @@
 
 /** Expand a name to both forms: directly under ~ and anywhere under ~. */
 export const bothForms = (name: string): string[] => [
-  `~/${name}`,
+  // `~/${name}`,
   `~/**/${name}`,
 ];
 

@@ -28,7 +28,6 @@ export const envVars = [
   "ANTHROPIC_BASE_URL",
   "NPM_CONFIG_TOKEN",
   "NPM_TOKEN",
-  "NPM_CONFIG_TOKEN_TEST",
   "AWS_ACCESS_KEY_ID",
   "AWS_SECRET_ACCESS_KEY",
   "AWS_SESSION_TOKEN",
@@ -52,6 +51,8 @@ export const envVars = [
   "EDITOR",
   "DYLD_INSERT_LIBRARIES",
   "DYLD_LIBRARY_PATH",
+  "NGROK_AUTHTOKEN",
+  "SNYK_TOKEN",
 ];
 
 export const keySuffixes = [
@@ -139,7 +140,7 @@ export const credentialDirs = [
   "~/.aws",
   "~/.gnupg",
   "~/.gcloud",
-  "~/.config",
+  // "~/.config",
   "~/.docker",
   "~/.kube",
   "~/.azure",
