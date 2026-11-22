@@ -34,6 +34,6 @@
   },
   "similarity": 0.8,
   "skipIsolated": [
-    ["packages/lsp-proxy", "packages/cli-hook", "packages/bin-builder"]
+    ["packages/lsp-proxy", "packages/sandbox-config", "packages/bin-builder"]
   ]
 }
