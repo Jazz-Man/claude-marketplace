@@ -1,0 +1,108 @@
+/**
+ * User and machine state: shell/tool state files, credential-adjacent state
+ * directories, cloud CLI state, and the macOS user trees. Not secrets as
+ * such, but reads leak the machine's footprint and writes corrupt live state.
+ */
+
+export const projectSecretNames = [
+  ".DS_Store*",
+  // ".env", ".env.*",
+  "Brewfile*",
+];
+
+export const homeStateFiles = [
+  "~/.zshenv*",
+  "~/.zcompdump*",
+  "~/.zsh_sessions*",
+  "~/.v8flags*",
+  "~/.mutagen*",
+  "~/.wget-hsts*",
+  "~/.viminfo*",
+  "~/.tmux*",
+  "~/.git-credentials*",
+  "~/.bunfig.toml",
+  "~/.gdbinit",
+  "~/.oh-my-zsh",
+];
+
+export const secretStateDirs = [
+  "~/.cloudflared",
+  "~/.gsutil",
+  "~/.mcp-auth",
+  "~/.linkedin-mcp",
+  "~/.zai",
+  "~/.alchemy",
+  "~/.slack",
+  "~/.pgadmin",
+  "~/.redis-insight",
+  "~/.mysqlsh",
+  "~/.subversion",
+  "~/.BurpSuite",
+  "~/.JWT4B",
+  "~/.cryptoplugin",
+  "~/.maryam",
+  "~/.tor",
+  "~/.postman",
+  "~/Postman",
+  "~/.ipython",
+  "~/.jupyter",
+  "~/.Trash",
+  "~/.Xauthority",
+  "~/.rnd",
+  "~/.qwen",
+  "~/.zed",
+  "~/.claude.json",
+  "~/.claude.json.backup",
+];
+
+export const cloudStateDirs = [
+  "~/.fly",
+  "~/.supabase",
+  "~/.netlify",
+  "~/.heroku",
+  "~/.circleci",
+  "~/.travis",
+  "~/.buildkite",
+  "~/.railway",
+  "~/.render",
+  "~/.planetscale",
+  "~/.neon",
+  "~/.twilio",
+  "~/.newrelic",
+  "~/.launchdarkly",
+  "~/.op",
+  "~/.doctl",
+  "~/.linode-cli",
+  "~/.vultr",
+  "~/.ibm-cloud",
+  "~/.bluemix",
+  "~/.alibabacloud",
+  "~/.aliyun",
+  "~/.tencentcloud",
+  "~/.pulumi",
+  "~/.p4tickets",
+  "~/.p4trust",
+  "~/.chef",
+  "~/.okta-aws",
+  "~/.saml2aws",
+  "~/.aws-sso",
+  "~/.aws-vault",
+  "~/.minikube",
+  "~/.colima",
+  "~/.helm",
+  "~/.mc",
+  "~/.irssi",
+];
+
+export const macOSDirs = [
+  "~/Library",
+  "~/Documents",
+  "~/Downloads",
+  "~/Movies",
+  "~/Music",
+  "~/Pictures",
+  "~/Public",
+  "~/Applications",
+  "~/Sites",
+  "~/Desktop",
+];

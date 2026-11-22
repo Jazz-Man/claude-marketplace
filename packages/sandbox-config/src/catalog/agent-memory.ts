@@ -1,0 +1,80 @@
+/**
+ * Agent instruction and memory files: the per-tool rule files (CLAUDE.md,
+ * AGENTS.md, ...) and the directories tools keep them in. Denied so that
+ * instructions found inside dependencies or stale agent memory cannot steer
+ * agents; also excluded from CLAUDE.md context loading. Commented-out
+ * entries are deliberate owner exclusions — do not re-add them.
+ */
+
+export const memoryPaths = [
+  "~/.claude/projects/**/memory",
+  "~/.claude/agent-memory",
+  ".claude/agent-memory",
+  ".claude/agent-memory-local",
+];
+
+export const dependencyMemoryNames = [
+  "CLAUDE.md",
+  "AGENTS.md",
+  "QWEN.md",
+  "GEMINI.md",
+  "COPILOT.md",
+  "CONVENTIONAL.md",
+  "copilot-instructions.md",
+  ".cursorrules",
+  ".clinerules",
+  ".windsurfrules",
+];
+
+export const dependencyMemoryDirs = [
+  ".claude",
+  ".cursor",
+  // ".aider-desk",
+  // ".agents",
+  // ".autohand",
+  // ".augment",
+  // ".bob",
+  // ".codeartsdoer",
+  // ".codebuddy",
+  // ".codemaker",
+  // ".codestudio",
+  // ".commandcode",
+  // ".continue",
+  // ".cortex",
+  // ".crush",
+  // ".devin",
+  // ".forge",
+  // ".goose",
+  // ".grok",
+  // ".hermes",
+  // ".iflow",
+  // ".inferencesh",
+  // ".jazz",
+  // ".junie",
+  // ".kiro",
+  // ".kode",
+  // ".lingma",
+  // ".mcpjam",
+  // ".minimax",
+  // ".moxby",
+  // ".mux",
+  // ".neovate",
+  // ".ona",
+  // ".openhands",
+  // ".pochi",
+  // ".posit/assistant",
+  // ".qoder",
+  ".qwen",
+  // ".reasonix",
+  // ".roo",
+  // ".rovodev",
+  // ".tabnine/agent",
+  // ".terramind",
+  // ".tinycloud",
+  // ".trae",
+  // ".windsurf",
+  // ".zcode",
+  // ".zencoder",
+  // ".adal",
+  // "skills",
+];
