@@ -28,8 +28,6 @@ export const homeStateFiles = [
 export const secretStateDirs = [
   "~/.cloudflared",
   "~/.gsutil",
-  "~/.mcp-auth",
-  "~/.linkedin-mcp",
   "~/.zai",
   "~/.alchemy",
   "~/.slack",

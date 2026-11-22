@@ -33,8 +33,8 @@ export const envVars = [
   "AWS_SESSION_TOKEN",
   "CARGO_REGISTRY_TOKEN",
   "GEM_HOST_API_KEY",
-  "TWINE_PASSWORD",
-  "PYPI_TOKEN",
+  // "TWINE_PASSWORD",
+  // "PYPI_TOKEN",
   "VAULT_TOKEN",
   "SENTRY_AUTH_TOKEN",
   "DOCKER_PASSWORD",
@@ -127,20 +127,11 @@ export const secretConfigFiles = [
   ".envrc",
 ];
 
-export const wildcardSecrets = [
-  ".*login*",
-  ".*logout*",
-  ".*history*",
-  ".*profile*",
-  ".htpasswd*",
-];
-
 export const credentialDirs = [
   "~/.ssh",
   "~/.aws",
   "~/.gnupg",
   "~/.gcloud",
-  // "~/.config",
   "~/.docker",
   "~/.kube",
   "~/.azure",

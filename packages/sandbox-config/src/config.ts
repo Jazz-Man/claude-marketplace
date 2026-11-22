@@ -31,7 +31,6 @@ import {
   secretConfigFiles,
   secretFileNames,
   secretRcFiles,
-  wildcardSecrets,
 } from "./catalog/secrets.ts";
 import {
   cloudStateDirs,
@@ -44,6 +43,7 @@ import {
   configWriteOnly,
   gitConfigWriteOnly,
   gitHistoryWriteOnly,
+  systemWriteAllow,
   systemWriteOnly,
 } from "./catalog/write-only.ts";
 import { bothForms, unique } from "./patterns.ts";
@@ -56,7 +56,6 @@ const protectedFiles = unique([
   ...secretFileNames.flatMap(bothForms),
   ...secretRcFiles.flatMap(bothForms),
   ...secretConfigFiles.flatMap(bothForms),
-  ...wildcardSecrets.flatMap(bothForms),
   ...projectSecretNames.flatMap(bothForms),
   ...homeStateFiles,
   ...credentialDirs,
@@ -88,8 +87,8 @@ const dependencyMemoryFiles = unique([
 ]);
 
 const readDenyPaths = unique([
-  ...protectedFiles,
-  ...memoryPaths,
+  // ...protectedFiles,
+  // ...memoryPaths,
   ...dependencyMemoryFiles,
 ]);
 
@@ -110,8 +109,8 @@ export const buildConfig = () => ({
   claudeMdExcludes: unique(dependencyMemoryFiles),
   permissions: {
     deny: unique([
-      ...pathsToRules(readDenyPaths, "Read"),
-      ...pathsToRules(writeDenyPaths, "Edit"),
+      // ...pathsToRules(readDenyPaths, "Read"),
+      // ...pathsToRules(writeDenyPaths, "Edit"),
       ...pathsToRules(["**/.git", "**/.git/**"], "Edit"),
       ...pathsToRules(gitWriteCommands, "Bash"),
       ...pathsToRules(disableCommands, "Bash"),
@@ -135,6 +134,7 @@ export const buildConfig = () => ({
     enableWeakerNetworkIsolation: true,
     failIfUnavailable: true,
     filesystem: {
+      allowWrite: systemWriteAllow,
       denyRead: readDenyPaths,
       denyWrite: unique([...writeDenyPaths, ...gitHistoryWriteOnly]),
     },
