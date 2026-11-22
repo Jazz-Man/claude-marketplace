@@ -13,6 +13,18 @@
   },
   {
     "allow_concurrent_runs": false,
+    "args": ["--experimental-lsp", "--resume", "cc-sdd"],
+    "command": "qwen",
+    "hide": "never",
+    "label": "qwen-code-ide",
+    "reveal": "always",
+    "reveal_target": "dock",
+    "show_command": true,
+    "tags": ["qwen"],
+    "use_new_terminal": false
+  },
+  {
+    "allow_concurrent_runs": false,
     "args": ["watch"],
     "command": "grepai",
     "hide": "never",
