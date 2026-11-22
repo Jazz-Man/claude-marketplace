@@ -7,8 +7,10 @@ try {
   const HOME_DIR = homedir();
 
   const settingsPath = Bun.file(`${HOME_DIR}/.claude/settings.json`);
+  //
+  const exist = await settingsPath.exists();
 
-  const currentConfig = await settingsPath.json();
+  const currentConfig = exist ? await settingsPath.json() : {};
 
   // claudeMdExcludes, permissions, and sandbox are owned by this tool and
   // replaced wholesale; every other key in settings.json survives as is.
