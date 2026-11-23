@@ -113,6 +113,7 @@
       },
       "includes": [
         "**/config.schema.json",
+        "**/claude-settings.json",
         "**/tests/fixtures/**",
         ".jscpd-baseline.json",
         "skills-lock.json",
