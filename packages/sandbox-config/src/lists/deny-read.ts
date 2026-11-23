@@ -1,17 +1,9 @@
-/**
- * sandbox.filesystem.denyRead — paths sandboxed commands cannot read. Does
- * not stop the Read tool: that answers to permissions.deny
- * (permission-deny.ts). This list is this key's alone; see config.ts for why
- * lists never share entries.
- */
 import {
   // bothForms,
   dependencyMemoryFiles,
   unique,
 } from "../utils.ts";
 
-// Secrets, state and macOS trees: off for this key for now. To test them,
-// uncomment this block, the two spreads in denyRead, and bothForms in the import.
 // const keySuffixes = [
 //   // "pem",
 //   "pub",
@@ -207,9 +199,6 @@ import {
 //   ".claude/agent-memory-local",
 // ];
 
-// Agent instruction files and the directories tools keep them in. Denied so
-// that instructions found inside dependencies or stale agent memory cannot
-// steer agents.
 const dependencyFolders = ["node_modules", "vendor", "Pods", ".venv", "venv"];
 
 const dependencyPrefixes = ["/opt/homebrew"];
@@ -229,7 +218,6 @@ const dependencyMemoryNames = [
   ".windsurfrules",
 ];
 
-// Commented-out entries are deliberate owner exclusions — do not re-add them.
 const dependencyMemoryDirs = [
   ".claude",
   ".cursor",

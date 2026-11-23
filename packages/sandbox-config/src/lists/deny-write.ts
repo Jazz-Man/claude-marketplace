@@ -1,14 +1,6 @@
-/**
- * sandbox.filesystem.denyWrite — paths sandboxed commands cannot write.
- * This list is this key's alone; see config.ts for why lists never share
- * entries (the secret and state groups recur verbatim in credential-files.ts).
- */
 /** biome-ignore-all lint/style/noExcessiveLinesPerFile: <explanation> */
 import { bothForms, unique } from "../utils.ts";
 
-// Denied for BOTH reading and writing: secrets, state, and macOS user trees.
-// Credential-bearing material: key files and rc/config files that commonly
-// hold credentials, and whole credential-store directories.
 const keySuffixes = [
   // "pem",
   "pub",
@@ -77,8 +69,6 @@ const secretConfigFiles = [
   ".envrc",
 ];
 
-// User and machine state: shell/tool state files, credential-adjacent state
-// directories, cloud CLI state, and the macOS user trees.
 const projectSecretNames = [
   ".DS_Store*",
   // ".env", ".env.*",
@@ -193,17 +183,12 @@ const macOSDirs = [
   "~/Desktop",
 ];
 
-// Write-only protections that stay readable: git metadata, repo tool config,
-// and system trees.
 const gitConfigWriteOnly = ["~/.gitconfig*"];
 
 const configWriteOnly = [".gitmodules", ".mcp.json", ".lsp.json"].flatMap(
   bothForms,
 );
 
-// The install world: dependency trees, manifests and lockfiles, package
-// manager state. Readable — source inspection is legitimate — but never
-// writable: installs and dependency changes belong to the owner.
 const dependencyFolders = ["node_modules", "vendor", "Pods", ".venv", "venv"];
 
 const dependencyWriteOnly = [

@@ -1,12 +1,5 @@
-/**
- * claudeMdExcludes — CLAUDE.md files skipped when memory loads. This list is
- * this key's alone; see config.ts for why lists never share entries.
- */
 import { dependencyMemoryFiles, unique } from "../utils.ts";
 
-// Agent instruction files and the directories tools keep them in. Denied so
-// that instructions found inside dependencies or stale agent memory cannot
-// steer agents.
 const dependencyFolders = ["node_modules", "vendor", "Pods", ".venv", "venv"];
 
 const dependencyPrefixes = ["/opt/homebrew"];
@@ -26,7 +19,6 @@ const dependencyMemoryNames = [
   ".windsurfrules",
 ];
 
-// Commented-out entries are deliberate owner exclusions — do not re-add them.
 const dependencyMemoryDirs = [
   ".claude",
   ".cursor",

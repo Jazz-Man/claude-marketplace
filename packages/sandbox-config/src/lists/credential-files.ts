@@ -1,14 +1,5 @@
-/**
- * sandbox.credentials.files — files sandboxed Bash commands cannot read: the
- * same read deny as denyRead. This list is this key's alone; see config.ts
- * for why lists never share entries (the secret and state groups recur
- * verbatim in deny-write.ts).
- */
 import { bothForms, dependencyMemoryFiles, unique } from "../utils.ts";
 
-// Denied for BOTH reading and writing: secrets, state, and macOS user trees.
-// Credential-bearing material: key files and rc/config files that commonly
-// hold credentials, and whole credential-store directories.
 const keySuffixes = [
   // "pem",
   "pub",
@@ -77,8 +68,6 @@ const secretConfigFiles = [
   ".envrc",
 ];
 
-// User and machine state: shell/tool state files, credential-adjacent state
-// directories, cloud CLI state, and the macOS user trees.
 const projectSecretNames = [
   ".DS_Store*",
   // ".env", ".env.*",
