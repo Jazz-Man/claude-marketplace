@@ -56,7 +56,7 @@ export const envVars = [
 ];
 
 export const keySuffixes = [
-  "pem",
+  // "pem",
   "pub",
   "key",
   "p12",

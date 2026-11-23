@@ -117,7 +117,7 @@ export const buildConfig = () => ({
     ]),
   },
   sandbox: {
-    allowAppleEvents: true,
+    allowAppleEvents: false,
     allowUnsandboxedCommands: false,
     autoAllowBashIfSandboxed: true,
     credentials: {
@@ -131,6 +131,7 @@ export const buildConfig = () => ({
     },
     enabled: true,
     enabledPlatforms: ["macos"],
+    enableWeakerNestedSandbox: true,
     enableWeakerNetworkIsolation: true,
     failIfUnavailable: true,
     filesystem: {
@@ -138,6 +139,11 @@ export const buildConfig = () => ({
       denyRead: readDenyPaths,
       denyWrite: unique([...writeDenyPaths, ...gitHistoryWriteOnly]),
     },
-    network: { allowAllUnixSockets: true, allowLocalBinding: true },
+    network: {
+      allowAllUnixSockets: true,
+      // allowedDomains: ["127.0.0.1", "localhost", "[::1]"],
+      allowLocalBinding: true,
+      // allowMachLookup: ["*"],
+    },
   },
 });
