@@ -33,6 +33,10 @@ const gitWriteCommands = [
   "clone",
 ].map((cmd) => `git ${cmd}*`);
 
+const ghCommands = ["login", "logout", "refresh", "switch", "token"].map(
+  (cmd) => `gh auth ${cmd}*`,
+);
+
 // Privileged or package-running commands — system changes and installs
 // belong to the owner.
 const disableCommands = [
@@ -52,4 +56,5 @@ export const permissionDeny = unique([
   ...pathsToRules(["**/.git", "**/.git/**"], "Edit"),
   ...pathsToRules(gitWriteCommands, "Bash"),
   ...pathsToRules(disableCommands, "Bash"),
+  ...pathsToRules(ghCommands, "Bash"),
 ]);
