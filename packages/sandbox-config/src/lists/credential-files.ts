@@ -1,0 +1,291 @@
+/**
+ * sandbox.credentials.files — files sandboxed Bash commands cannot read: the
+ * same read deny as denyRead. This list is this key's alone; see config.ts
+ * for why lists never share entries (the secret and state groups recur
+ * verbatim in deny-write.ts).
+ */
+import { bothForms, dependencyMemoryFiles, unique } from "../utils.ts";
+
+// Denied for BOTH reading and writing: secrets, state, and macOS user trees.
+// Credential-bearing material: key files and rc/config files that commonly
+// hold credentials, and whole credential-store directories.
+const keySuffixes = [
+  // "pem",
+  "pub",
+  "key",
+  "p12",
+  "pfx",
+  "p8",
+  "ppk",
+  "jks",
+  "keystore",
+  "secret",
+  "secrets",
+];
+
+const keyNames = [
+  "authorized_keys",
+  "id_dsa",
+  "id_ecdsa",
+  "id_ed25519",
+  "id_rsa",
+];
+
+const secretFileNames = ["credentials.json", "token.json", ".vault-token"];
+
+const secretRcFiles = [
+  ".netrc",
+  "_netrc",
+  // ".npmrc",
+  ".yarnrc",
+  ".yarnrc.yml",
+  ".pypirc",
+  ".gemrc",
+  ".curlrc",
+  ".wgetrc",
+  ".condarc",
+  ".pearrc",
+  ".dockercfg",
+  ".authrc",
+  ".ldaprc",
+  ".sentryclirc",
+  ".mongorc.js",
+  ".hgrc",
+  ".msmtprc",
+  ".mbsyncrc",
+  ".offlineimaprc",
+  ".fetchmailrc",
+  ".muttrc",
+  ".mailrc",
+  ".lftprc",
+  ".screenrc",
+  ".zshrc*",
+  ".bashrc*",
+  ".kshrc*",
+];
+
+const secretConfigFiles = [
+  ".my.cnf",
+  ".mariadb.cnf",
+  ".mylogin.cnf",
+  ".pgpass",
+  ".pg_service.conf",
+  ".rclone.conf",
+  ".s3cfg",
+  ".boto",
+  ".ansible.cfg",
+  ".envrc",
+];
+
+// User and machine state: shell/tool state files, credential-adjacent state
+// directories, cloud CLI state, and the macOS user trees.
+const projectSecretNames = [
+  ".DS_Store*",
+  // ".env", ".env.*",
+  "Brewfile*",
+];
+
+const homeStateFiles = [
+  "~/.zshenv*",
+  "~/.zcompdump*",
+  "~/.zsh_sessions*",
+  "~/.v8flags*",
+  "~/.mutagen*",
+  "~/.wget-hsts*",
+  "~/.viminfo*",
+  "~/.tmux*",
+  "~/.git-credentials*",
+  "~/.bunfig.toml",
+  "~/.gdbinit",
+  "~/.oh-my-zsh",
+];
+
+const credentialDirs = [
+  "~/.ssh",
+  "~/.aws",
+  "~/.gnupg",
+  "~/.gcloud",
+  "~/.docker",
+  "~/.kube",
+  "~/.azure",
+  "~/.keychain",
+  "~/.appstoreconnect",
+  "~/private_keys",
+];
+
+const secretStateDirs = [
+  "~/.cloudflared",
+  "~/.gsutil",
+  "~/.zai",
+  "~/.alchemy",
+  "~/.slack",
+  "~/.pgadmin",
+  "~/.redis-insight",
+  "~/.mysqlsh",
+  "~/.subversion",
+  "~/.BurpSuite",
+  "~/.JWT4B",
+  "~/.cryptoplugin",
+  "~/.maryam",
+  "~/.tor",
+  "~/.postman",
+  "~/Postman",
+  "~/.ipython",
+  "~/.jupyter",
+  "~/.Trash",
+  "~/.Xauthority",
+  "~/.rnd",
+  "~/.qwen",
+  "~/.zed",
+  "~/.claude.json",
+  "~/.claude.json.backup",
+];
+
+const cloudStateDirs = [
+  "~/.fly",
+  "~/.supabase",
+  "~/.netlify",
+  "~/.heroku",
+  "~/.circleci",
+  "~/.travis",
+  "~/.buildkite",
+  "~/.railway",
+  "~/.render",
+  "~/.planetscale",
+  "~/.neon",
+  "~/.twilio",
+  "~/.newrelic",
+  "~/.launchdarkly",
+  "~/.op",
+  "~/.doctl",
+  "~/.linode-cli",
+  "~/.vultr",
+  "~/.ibm-cloud",
+  "~/.bluemix",
+  "~/.alibabacloud",
+  "~/.aliyun",
+  "~/.tencentcloud",
+  "~/.pulumi",
+  "~/.p4tickets",
+  "~/.p4trust",
+  "~/.chef",
+  "~/.okta-aws",
+  "~/.saml2aws",
+  "~/.aws-sso",
+  "~/.aws-vault",
+  "~/.minikube",
+  "~/.colima",
+  "~/.helm",
+  "~/.mc",
+  "~/.irssi",
+];
+
+const macOSDirs = [
+  "~/Library",
+  "~/Documents",
+  "~/Downloads",
+  "~/Movies",
+  "~/Music",
+  "~/Pictures",
+  "~/Public",
+  "~/Applications",
+  "~/Sites",
+  "~/Desktop",
+];
+
+// Agent instruction files and the directories tools keep them in. Denied so
+// that instructions found inside dependencies or stale agent memory cannot
+// steer agents.
+const dependencyFolders = ["node_modules", "vendor", "Pods", ".venv", "venv"];
+
+const dependencyPrefixes = ["/opt/homebrew"];
+
+const dependencyCacheRoots = ["~/.cargo/registry/src", "~/go/pkg/mod"];
+
+const dependencyMemoryNames = [
+  "CLAUDE.md",
+  "AGENTS.md",
+  "QWEN.md",
+  "GEMINI.md",
+  "COPILOT.md",
+  "CONVENTIONAL.md",
+  "copilot-instructions.md",
+  ".cursorrules",
+  ".clinerules",
+  ".windsurfrules",
+];
+
+// Commented-out entries are deliberate owner exclusions — do not re-add them.
+const dependencyMemoryDirs = [
+  ".claude",
+  ".cursor",
+  // ".aider-desk",
+  // ".agents",
+  // ".autohand",
+  // ".augment",
+  // ".bob",
+  // ".codeartsdoer",
+  // ".codebuddy",
+  // ".codemaker",
+  // ".codestudio",
+  // ".commandcode",
+  // ".continue",
+  // ".cortex",
+  // ".crush",
+  // ".devin",
+  // ".forge",
+  // ".goose",
+  // ".grok",
+  // ".hermes",
+  // ".iflow",
+  // ".inferencesh",
+  // ".jazz",
+  // ".junie",
+  // ".kiro",
+  // ".kode",
+  // ".lingma",
+  // ".mcpjam",
+  // ".minimax",
+  // ".moxby",
+  // ".mux",
+  // ".neovate",
+  // ".ona",
+  // ".openhands",
+  // ".pochi",
+  // ".posit/assistant",
+  // ".qoder",
+  ".qwen",
+  // ".reasonix",
+  // ".roo",
+  // ".rovodev",
+  // ".tabnine/agent",
+  // ".terramind",
+  // ".tinycloud",
+  // ".trae",
+  // ".windsurf",
+  // ".zcode",
+  // ".zencoder",
+  // ".adal",
+  // "skills",
+];
+
+export const credentialFiles = unique([
+  ...keySuffixes.flatMap((suffix) => bothForms(`*.${suffix}`)),
+  ...keyNames.flatMap(bothForms),
+  ...secretFileNames.flatMap(bothForms),
+  ...secretRcFiles.flatMap(bothForms),
+  ...secretConfigFiles.flatMap(bothForms),
+  ...projectSecretNames.flatMap(bothForms),
+  ...homeStateFiles,
+  ...credentialDirs,
+  ...secretStateDirs,
+  ...cloudStateDirs,
+  ...macOSDirs,
+  ...dependencyMemoryFiles({
+    cacheRoots: dependencyCacheRoots,
+    dirs: dependencyMemoryDirs,
+    folders: dependencyFolders,
+    names: dependencyMemoryNames,
+    prefixes: dependencyPrefixes,
+  }),
+]);

@@ -1,19 +1,19 @@
 /**
- * Agent instruction and memory files: the per-tool rule files (CLAUDE.md,
- * AGENTS.md, ...) and the directories tools keep them in. Denied so that
- * instructions found inside dependencies or stale agent memory cannot steer
- * agents; also excluded from CLAUDE.md context loading. Commented-out
- * entries are deliberate owner exclusions — do not re-add them.
+ * claudeMdExcludes — CLAUDE.md files skipped when memory loads. This list is
+ * this key's alone; see config.ts for why lists never share entries.
  */
+import { dependencyMemoryFiles, unique } from "../utils.ts";
 
-export const memoryPaths = [
-  "~/.claude/projects/**/memory",
-  "~/.claude/agent-memory",
-  ".claude/agent-memory",
-  ".claude/agent-memory-local",
-];
+// Agent instruction files and the directories tools keep them in. Denied so
+// that instructions found inside dependencies or stale agent memory cannot
+// steer agents.
+const dependencyFolders = ["node_modules", "vendor", "Pods", ".venv", "venv"];
 
-export const dependencyMemoryNames = [
+const dependencyPrefixes = ["/opt/homebrew"];
+
+const dependencyCacheRoots = ["~/.cargo/registry/src", "~/go/pkg/mod"];
+
+const dependencyMemoryNames = [
   "CLAUDE.md",
   "AGENTS.md",
   "QWEN.md",
@@ -26,7 +26,8 @@ export const dependencyMemoryNames = [
   ".windsurfrules",
 ];
 
-export const dependencyMemoryDirs = [
+// Commented-out entries are deliberate owner exclusions — do not re-add them.
+const dependencyMemoryDirs = [
   ".claude",
   ".cursor",
   // ".aider-desk",
@@ -78,3 +79,13 @@ export const dependencyMemoryDirs = [
   // ".adal",
   // "skills",
 ];
+
+export const claudeMdExcludes = unique(
+  dependencyMemoryFiles({
+    cacheRoots: dependencyCacheRoots,
+    dirs: dependencyMemoryDirs,
+    folders: dependencyFolders,
+    names: dependencyMemoryNames,
+    prefixes: dependencyPrefixes,
+  }),
+);
