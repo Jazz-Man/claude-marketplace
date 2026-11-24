@@ -259,7 +259,7 @@ const dependencyMemoryDirs = [
 ];
 
 export const credentialFiles = unique([
-  ...keySuffixes.flatMap((suffix) => bothForms(`*.${suffix}`)),
+  // ...keySuffixes.flatMap((suffix) => bothForms(`*.${suffix}`)),
   ...keyNames.flatMap(bothForms),
   ...secretFileNames.flatMap(bothForms),
   ...secretRcFiles.flatMap(bothForms),
