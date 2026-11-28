@@ -240,6 +240,7 @@ const managerStateDirs = [
   "~/.gem",
   "~/.bundle",
   "~/.swiftpm",
+  "~/.ollama",
 ];
 
 const systemWriteOnly = [

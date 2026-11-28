@@ -41,11 +41,23 @@ const disableCommands = [
   "uvx*",
 ];
 
+const ollamaModelCommands = [
+  "create",
+  "cp",
+  "pull",
+  "push",
+  "rm",
+  "run",
+  "stop",
+].map((cmd) => `ollama ${cmd}*`);
+
 export const permissionDeny = unique([
   // ...pathsToRules(denyRead, "Read"),
   // ...pathsToRules(denyWrite, "Edit"),
   ...pathsToRules(["**/.git", "**/.git/**"], "Edit"),
+  ...pathsToRules(["~/.ollama/**"], "Edit"),
   ...pathsToRules(gitWriteCommands, "Bash"),
   ...pathsToRules(disableCommands, "Bash"),
-  // ...pathsToRules(ghCommands, "Bash"),
+  ...pathsToRules(ollamaModelCommands, "Bash"),
+  ...pathsToRules(ghCommands, "Bash"),
 ]);
