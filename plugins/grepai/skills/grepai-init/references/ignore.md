@@ -32,7 +32,7 @@ Ignore changes always require a re-index; boost changes never do.
    (default 1 MB, configurable via `chunking.max_file_size_bytes`).
 
 Ignore excludes from BOTH indexes at once — the vector search index and
-the trace symbol index (see references/trace.md).
+the trace symbol index (see `trace.md` in the grepai-workflow skill).
 
 Quote globs in YAML (`"*.pb.go"`, not `*.pb.go`) — unquoted special
 characters can break parsing.

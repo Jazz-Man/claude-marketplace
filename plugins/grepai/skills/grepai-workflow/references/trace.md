@@ -100,9 +100,10 @@ chunker and are never traced.
 
 Coverage sets do not imply each other: the `ast` chunker parses ~30
 languages — including Swift, Kotlin, Scala, Elixir, Elm, OCaml
-(references/chunking.md) — while the symbol extractor reads the regex set
-above. The lists overlap, but neither contains the other: AST chunking
-improves SEARCH for a language; it does not enable call graphs for it.
+(`chunking.md` in the grepai-init skill) — while the symbol extractor
+reads the regex set above. The lists overlap, but neither contains the
+other: AST chunking improves SEARCH for a language; it does not enable
+call graphs for it.
 
 Ruby caveat: receiver.method calls are found with or without parentheses;
 bare parenthesis-less calls are not (indistinguishable from variables for

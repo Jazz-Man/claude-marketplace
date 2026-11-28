@@ -65,9 +65,9 @@ for everything else — the fallback handles that per file automatically.
 
 ast chunking coverage is NOT symbol-extraction coverage: Swift, Kotlin,
 Scala, Elixir, Elm, OCaml chunk by AST (better search) yet still yield no
-call graphs — trace reads the symbol extractor's language set
-(references/trace.md), a different list that overlaps but neither contains
-the other.
+call graphs — trace reads the symbol extractor's language set (the `trace`
+section of references/configuration.md), a different list that overlaps
+but neither contains the other.
 
 ## custom_extensions
 

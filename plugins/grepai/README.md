@@ -1,18 +1,20 @@
 # grepai
 
 The grepai semantic code search as a Claude Code plugin: the grepai MCP
-server (`grepai mcp-serve`) plus one skill, `grepai-workflow`.
+server (`grepai mcp-serve`) plus two skills, `grepai-init` and
+`grepai-workflow`.
 
 ## What it provides
 
 - **MCP server** — `grepai` (name kept unique; distinct from any
   project-level `grepai-api` entry) exposing search, trace (callers/callees/
   graph), refs, and index-status tools against the project's grepai index.
-- **grepai-workflow skill** — per-project setup (config `ignore` defaults,
-  `.grepaiignore` dependency curation with `!` negations, `search.boost`
-  shaping), intent-shaped search doctrine with a mandatory "already exists"
-  pre-check before building, and the LSP synergy matrix: grepai discovers,
-  LSP verifies, Read reads only the verified range.
+- **grepai-init skill** — per-project setup: `grepai init`, config `ignore`
+  defaults, `.grepaiignore` dependency curation with `!` negations,
+  `search.boost` shaping. The owner builds the index.
+- **grepai-workflow skill** — intent-shaped search doctrine with a mandatory
+  "already exists" pre-check before building, and the LSP synergy matrix:
+  grepai discovers, LSP verifies, Read reads only the verified range.
 
 ## Requirements
 

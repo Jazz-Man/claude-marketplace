@@ -109,11 +109,11 @@ hold exactly for boost-neutral paths; and workspace-mode searches never
 fuse (they report cosine and may repeat a file across projects).
 
 What actually carries signal within one result set: the ORDER (boost-shaped
-— see references/search-boost.md) and the RELATIVE gap between adjacent
-scores (a cliff after the third hit means three real answers). The same
-file repeating with multiple chunks is a signal only when dedup is off —
-the default keeps the single best chunk per file, so each file appears at
-most once.
+— see `search-boost.md` in the grepai-init skill) and the RELATIVE gap
+between adjacent scores (a cliff after the third hit means three real
+answers). The same file repeating with multiple chunks is a signal only
+when dedup is off — the default keeps the single best chunk per file, so
+each file appears at most once.
 
 ## Iterative refinement
 
@@ -124,8 +124,9 @@ most once.
 4. Try one synonym round ("credential validation" vs "user login
    verification") — semantic recall varies with phrasing.
 5. Still nothing: `grepai_index_status` (stale index?), simpler query, then
-   the ignore layers (is the file indexed at all?) — a file the index never
-   saw is invisible to every query.
+   the ignore layers (is the file indexed at all? — `ignore.md` in the
+   grepai-init skill) — a file the index never saw is invisible to every
+   query.
 
 ## Patterns that recur
 

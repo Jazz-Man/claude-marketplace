@@ -1,36 +1,20 @@
 ---
 name: grepai-workflow
-description: This skill should be used when the user asks to "set up grepai" or configure it (.grepaiignore, search boost), mentions the grepai tools (grepai_search, trace, rpg), or needs any code discovery that is not an exact symbol lookup — natural-language codebase questions ("what implements the framing logic"), pre-build "does this already exist" checks, curated-dependency internals, call structure where no LSP server covers the language, feature orientation ("which feature does this belong to"). Also use when dispatching code-research subagents (the dispatch contract lives in the skill body). grepai discovers, LSP verifies.
+description: This skill should be used when the user mentions the grepai tools (grepai_search, trace, rpg) or needs any code discovery that is not an exact symbol lookup — natural-language codebase questions ("what implements the framing logic"), pre-build "does this already exist" checks, curated-dependency internals, call structure where no LSP server covers the language, feature orientation ("which feature does this belong to"). Also use when dispatching code-research subagents (the dispatch contract lives in the skill body). Setting grepai up or changing its config (.grepaiignore, search boost) is the grepai-init skill. grepai discovers, LSP verifies.
 ---
 
-# grepai workflow — semantic search configured per project, working with LSP
+# grepai workflow — semantic search working with LSP
 
 grepai embeds the codebase into a searchable index. LSP answers exact
 symbol questions (definition, references, types); grepai answers intent
 questions and works with no language server at all. The two compose:
 grepai discovers, LSP verifies.
 
-## Setup (first run in a project)
-
-1. `grepai init` — writes `.grepai/config.yaml` (embedder and store are
-   settled for this workflow: local Ollama, GOB backend).
-2. Shape the ignore layers and curate the dependency sources worth
-   trusting — the five layers, negation craft, and the Rust/Go honesty
-   rule: references/ignore.md. The ignore list is the OWNER's curation —
-   never re-add entries the owner removed; the full rule lives in the
-   reference.
-3. Shape `search.boost` ranking — rules, defaults, and the
-   curation-interplay rule: references/search-boost.md.
-4. Never run indexing or watching — the owner builds and maintains
-   the index (`grepai index` / `grepai watch`); after any change that
-   requires a re-index (ignore layers, chunking, embedder identity, the RPG
-   graph), say so, never run it.
-5. Verify with a ground-truth query; if a curated library does not
-   surface, walk the ignore layers in order.
-
-The full config map and the solo pitfalls: references/configuration.md.
-Chunking (the `ast` strategy is active in this build):
-references/chunking.md.
+The index is set up per project by the `grepai-init` skill — `grepai
+init`, the ignore layers, `search.boost`. A search that misses code for
+a config reason (a file not indexed, tests outranking source) hands over
+to it. Indexing and watching stay the owner's: never run `grepai index`
+or `grepai watch`.
 
 ## Searching
 
@@ -110,11 +94,6 @@ deep research to a senior model.
 
 ## References
 
-- **configuration.md** — the config map for the solo profile and its pitfalls
-- **ignore.md** — five ignore layers, curation craft, ignore-vs-boost division
 - **search.md** — query craft, score bands, refinement, the no-results ladder
-- **search-boost.md** — ranking rules, shipped defaults, their reorder-only limits
-- **chunking.md** — fixed vs ast strategies, tuning tables, the re-index rule
 - **trace.md** — call graphs: verified trust profile, language tiers, refs
 - **rpg.md** — the feature graph: word-overlap search, node IDs, edge types
-- **config.schema.json** — the machine truth for the config

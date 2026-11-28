@@ -21,7 +21,7 @@
       "source": "./plugins/lsp-proxy"
     },
     {
-      "description": "grepai semantic code search: the grepai MCP server plus a workflow skill for per-project setup, intent-shaped search, and LSP synergy",
+      "description": "grepai semantic code search: the grepai MCP server plus skills for per-project setup, intent-shaped search, and LSP synergy",
       "name": "grepai",
       "source": "./plugins/grepai"
     }
