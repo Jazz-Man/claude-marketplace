@@ -49,6 +49,8 @@ const ollamaModelCommands = [
   "rm",
   "run",
   "stop",
+  "signin",
+  "signout",
 ].map((cmd) => `ollama ${cmd}*`);
 
 export const permissionDeny = unique([
