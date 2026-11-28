@@ -17,6 +17,7 @@ export interface ExtensionConflict {
 export interface ServerFields {
   args: string[] | undefined;
   command: string;
+  configFiles: string[] | undefined;
   env: Record<string, string> | undefined;
   extensionToLanguage: Record<string, string>;
   initializationOptions: unknown;
@@ -153,6 +154,27 @@ function argsField(
   return undefined;
 }
 
+function configFilesField(
+  raw: unknown,
+  context: string,
+  errors: ConfigError[],
+): string[] | undefined {
+  if (raw === undefined) {
+    return undefined;
+  }
+  if (isStringArray(raw) && raw.length > 0 && raw.every(isNonEmptyString)) {
+    return raw;
+  }
+  errors.push(
+    new ConfigError(
+      `${context}.configFiles`,
+      "a non-empty array of non-empty strings",
+      raw,
+    ),
+  );
+  return undefined;
+}
+
 function envField(
   raw: unknown,
   context: string,
@@ -203,6 +225,7 @@ export function collectServerFields(
     context,
     errors,
   );
+  const configFiles = configFilesField(record.configFiles, context, errors);
   const args = argsField(record.args, context, errors);
   const env = envField(record.env, context, errors);
   if (errors.length > before) {
@@ -211,6 +234,7 @@ export function collectServerFields(
   return {
     args,
     command,
+    configFiles,
     env,
     extensionToLanguage,
     initializationOptions: record.initializationOptions,

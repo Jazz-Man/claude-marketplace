@@ -3,6 +3,7 @@ import { ProxyConfig as ProxyConfigClass } from "./config/ProxyConfig.ts";
 export interface ServerConfig {
   args?: string[];
   command: string;
+  configFiles?: string[];
   env?: Record<string, string>;
   extensionToLanguage: Record<string, string>;
   initializationOptions?: unknown;

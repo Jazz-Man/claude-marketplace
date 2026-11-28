@@ -1,3 +1,4 @@
+import { activeServers } from "./activation.ts";
 import {
   cancelIdOf,
   changesOf,
@@ -189,9 +190,12 @@ export class LspProxy {
     if (isRecord(message.params)) {
       this.clientParams = message.params;
     }
+    const servers = activeServers(this.config, this.clientParams, (line) =>
+      this.log(line),
+    );
     try {
       await Promise.all(
-        this.config.servers.map((serverConfig) =>
+        servers.map((serverConfig) =>
           this.serverSide.startServer(serverConfig, this.clientParams),
         ),
       );

@@ -24,6 +24,7 @@ export class ServerConfig {
 
   private readonly _name: string;
   private readonly _command: string;
+  private readonly _configFiles: string[] | undefined;
   private readonly _extensionToLanguage: Record<string, string>;
   private readonly _args: string[] | undefined;
   private readonly _env: Record<string, string> | undefined;
@@ -36,6 +37,7 @@ export class ServerConfig {
     );
     this._name = fields.name;
     this._command = fields.command;
+    this._configFiles = fields.configFiles;
     this._extensionToLanguage = fields.extensionToLanguage;
     this._args = fields.args;
     this._env = fields.env;
@@ -49,6 +51,10 @@ export class ServerConfig {
 
   get command(): string {
     return this._command;
+  }
+
+  get configFiles(): string[] | undefined {
+    return this._configFiles;
   }
 
   get extensionToLanguage(): Record<string, string> {
