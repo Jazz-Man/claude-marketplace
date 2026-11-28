@@ -1,4 +1,10 @@
 {
+  "gopls": {
+    "command": "gopls",
+    "extensionToLanguage": {
+      ".go": "go"
+    }
+  },
   "lsp-proxy": {
     "args": [],
     "command": "lsp-proxy",
