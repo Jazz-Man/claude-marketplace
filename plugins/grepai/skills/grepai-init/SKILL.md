@@ -54,7 +54,7 @@ Edit `.grepai/config.yaml` until every row holds:
 | `search.boost` | on, 20 shipped rules | on, with rules shaped for this project — references/search-boost.md |
 | `search.hybrid.enabled` | `false` | `true` |
 | `search.dedup.enabled` | `true` | `true` |
-| `trace.enabled_languages` | 27 extensions | the languages the project is written in, kept as whole families |
+| `trace.enabled_languages` | 27 extensions | the languages the project is written in, kept as whole families; only extensions the extractor knows |
 | `rpg.enabled` | `false` | `true` |
 | `embedder`, `chunking.strategy` | nomic-embed-text, 768d, `fixed` | the solo baseline — references/configuration.md |
 
@@ -73,6 +73,10 @@ Three rows deserve a word:
 - The layout cannot tell you which documentation the owner wants ranked
   above source. Ask once, when you report.
 
+The store is not a row: `gob` is right up to about 50,000 chunks. Past
+that the documentation points to `qdrant`, which needs a server the owner
+runs — say so instead of switching it.
+
 ## Report, hand over, verify
 
 Re-read the file, check every row, and report one line per key: what you
@@ -81,7 +85,11 @@ question to the owner, not a silent default.
 
 The owner then builds the index — ignore, trace, RPG, chunking and embedder
 changes only take effect in a fresh one, while boost, hybrid and dedup
-apply to the next search. After the build, `grepai_index_status { root }`
+apply to the next search. `grepai index` takes the project's writer lock,
+so it cannot run while `grepai watch` is active, and a running watcher
+never reloads the config: the owner restarts it. Expect the file to change
+after the build — the index run rewrites it to store
+`watch.last_index_time`. After the build, `grepai_index_status { root }`
 should show a sensible `total_files`, `symbols_ready: true` and
 `rpg_enabled: true` with node and edge counts. Run one ground-truth query
 per tool — a search for code you know is there, `grepai_trace_callers` on a
@@ -97,4 +105,4 @@ Chunking (the `ast` strategy is active in this build): references/chunking.md.
 - **ignore.md** — five ignore layers, curation craft, ignore-vs-boost division
 - **search-boost.md** — ranking rules, shipped defaults, their reorder-only limits
 - **chunking.md** — fixed vs ast strategies, tuning tables, the re-index rule
-- **config.schema.json** — the machine truth for the config
+- **config.schema.json** — grepai's own schema, for key names and valid ranges

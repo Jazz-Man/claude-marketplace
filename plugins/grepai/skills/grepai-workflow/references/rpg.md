@@ -33,6 +33,9 @@ grepai_rpg_search { query: "callers trace", kinds: "symbol,file", scope: "cli" }
   symbol, chunk. DEFAULT IS `symbol`: files, areas and categories stay
   invisible unless requested.
 - `scope` — feature-path prefix filter (e.g. `cli`, `rpg/query`).
+- `limit` — defaults to 10.
+- `workspace` + `project` scope to one project of a workspace; the RPG
+  tools take no `root` and otherwise read the server's own project.
 - Results carry the node ID — the handle for fetch and explore.
 
 ## Node IDs
@@ -61,8 +64,9 @@ file/symbol part of".
 grepai_rpg_explore { start_node_id: "sym:cli/search.go:runSearch", depth: 2 }
 ```
 
-Breadth-first walk with `direction` (forward | reverse | both), `depth`,
-`limit`, and `edge_types` filtering:
+Breadth-first walk with `direction` (forward | reverse | both; default
+both), `depth` (default 2), `limit` (default 100), and `edge_types`
+(default all) filtering:
 
 | Edge type | Meaning |
 |---|---|
@@ -82,16 +86,21 @@ precision for neighborhood breadth.
 `feature_mode: local` derives verb-object labels ("validate token") from
 symbol names with heuristics — fast, deterministic, and occasionally
 keyword noise (a file's feature may read like "operate if" when its
-dominant symbols are control flow). `llm` / `hybrid` ask an
-OpenAI-compatible chat model instead (`llm_endpoint`, `llm_model`; both
-currently behave the same and fall back to local on error or when the
-endpoint or model is unset). Treat feature paths as NAVIGATION structure, not as
+dominant symbols are control flow). `llm` / `hybrid` run the same code and
+ask a chat model instead (`llm_endpoint`, `llm_model`; both fall back to
+`local` when either is empty). Treat feature paths as NAVIGATION structure, not as
 semantic truth about the codebase.
 
 `drift_threshold` (0.0–1.0) controls how much a file's features must
 change before it moves in the hierarchy during incremental updates;
-`feature_group_strategy` (sample | split) trims oversized `semantic_sim`
-groups.
+`feature_group_strategy` (sample | split) trims `semantic_sim` groups of
+more than 100 similar symbols.
+
+Under `grepai watch` the graph follows an edit in two steps: the nodes of
+the edited file and its place in the hierarchy update as soon as the file
+is indexed, while its call, import and similarity edges are rebuilt by a
+background worker, up to `watch.rpg_derived_debounce_ms` later. Right
+after an edit, `explore` can still show the old edges.
 
 ## Integration with the rest
 

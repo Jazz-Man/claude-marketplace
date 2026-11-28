@@ -75,7 +75,8 @@ Copy this contract verbatim into any code-research dispatch:
 
     Code research in this repo MUST use the grepai MCP tools before bash grep:
     - grepai_search {query: <intent phrased in English>, compact: true, limit: 3-5}
-      (pass root when the target differs from the server's startup project)
+      (pass root when the target differs from the server's startup project;
+      never together with workspace)
     - grepai_trace_callers / _callees for call structure (bare-name matching;
       an empty result means no name matched, not "nothing calls it")
     - grepai_rpg_search → _fetch / _explore for feature orientation

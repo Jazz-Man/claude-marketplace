@@ -1,35 +1,39 @@
 # grepai ignore reference — the five layers and the curation craft
 
 Scope: what keeps files OUT of the index, and — the more interesting half —
-how to pull selected files back IN. Ignore decides index membership;
-ranking inside the index is `search.boost` (see references/search-boost.md).
+how to pull selected files back IN. A file is indexed when it is not
+ignored and has a supported extension; grepai always skips binary files,
+minified files and files over the size cap. Ignore decides index
+membership; ranking inside the index is `search.boost` (see
+references/search-boost.md).
 Ignore changes always require a re-index; boost changes never do.
 
 ## The five layers, in order
 
-1. **`.gitignore`** files — root and subdirectories, standard semantics.
-2. **`.grepaiignore`** — same syntax as .gitignore, plus `!` negations that
-   RE-INCLUDE paths excluded by other layers, including the config `ignore`
-   list below. Nested .grepaiignore files are supported; for a given path
-   the most specific (deepest) one decides. One boundary: a DEEPER
-   .gitignore still beats a shallower .grepaiignore negation.
-3. **`ignore` in `.grepai/config.yaml`** — the list in the file IS the
+1. **`.gitignore`** files at any level of the project — standard semantics.
+2. **`ignore` in `.grepai/config.yaml`** — names or gitignore-style
+   patterns applied from the project root. The list in the file IS the
    effective list, verbatim: nothing merges at runtime. `grepai init`
-   writes the shipped defaults (.git, .grepai, node_modules, vendor, bin,
-   dist, __pycache__, .venv, venv, .idea, .vscode, target, .zig-cache,
+   writes the 15 shipped defaults (.git, .grepai, node_modules, vendor,
+   bin, dist, __pycache__, .venv, venv, .idea, .vscode, target, .zig-cache,
    zig-out, qdrant_storage) as a STARTING POINT — the owner's list is a
    curation decision: never re-add entries the owner removed (a shorter
    list is usually intentional, and the .gitignore layers still cover the
    big dependency trees); suggest additions only when the project shape
    names something specific. A missing `ignore:` section means NO
-   config-layer ignore at all. Entries compile as root-level gitignore
-   patterns (no slash — match at any depth; leading slash — anchored), and
-   a bare directory name prunes that whole subtree at any depth.
-4. **`external_gitignore`** — one extra gitignore file applied from the
-   project root (`~/` expansion supported; a missing file only warns).
+   config-layer ignore at all. Entries are names or gitignore-style
+   patterns skipped everywhere in the project: a bare directory name
+   matches at any depth.
+3. **`.grepaiignore`** at any level of the project — gitignore syntax, and
+   it takes precedence over `.gitignore`: a `!pattern` re-includes paths
+   that the other layers excluded, the config `ignore` list included. One
+   boundary: a `.gitignore` in a deeper directory still wins.
+4. **`external_gitignore`** — one extra gitignore file outside the
+   project, applied from the project root (a leading `~` expands; a
+   missing file only warns).
 5. **Built-in** — minified files (.min.js, .min.css, .bundle.js,
    .bundle.css) and binary files (unconditional); files over the size cap
-   (default 1 MB, configurable via `chunking.max_file_size_bytes`).
+   (default 1 MB, `chunking.max_file_size_bytes`, applied after a re-index).
 
 Ignore excludes from BOTH indexes at once — the vector search index and
 the trace symbol index (see `trace.md` in the grepai-workflow skill).
@@ -39,8 +43,10 @@ characters can break parsing.
 
 ## .grepaiignore — the curation layer
 
-This is where the solo setup happens: .gitignore excludes whole dependency
-trees; `!` negations pull back exactly the libraries worth trusting.
+Use it to exclude files from grepai without touching `.gitignore`, or to
+index files that Git ignores. This is also where the solo setup happens:
+.gitignore excludes whole dependency trees; `!` negations pull back
+exactly the libraries worth trusting.
 
 ```
 # JS/TS: trust one library's source
@@ -52,26 +58,65 @@ node_modules/<lib>/CLAUDE.md
 !vendor/<lib>/
 ```
 
-Craft rules, all live-tested:
+Craft rules:
 
-- Re-inclusion works mechanically: whenever any .grepaiignore carries a
-  negation, the indexer descends into ignored directories instead of
-  pruning them — negations never sit dead, provided the file itself is
-  discoverable (a .grepaiignore placed inside a config-ignored directory
-  is never read).
-- A pattern WITHOUT a leading slash matches the directory NAME at any
+- A negation overrides a `.gitignore` at the same level or above, and it
+  cancels the `ignore` list for that folder: inside a folder that
+  `.gitignore` or the `ignore` list ignores, grepai descends and checks
+  each file.
+- A `.gitignore` in a deeper directory still wins over a shallower
+  negation.
+- grepai skips a directory that `.grepaiignore` itself ignores without
+  looking inside, so a negation below such a directory has no effect —
+  exclude the siblings on the path instead (next section).
+- A pattern without a leading slash matches the directory NAME at any
   depth — including versioned package-store copies
   (`node_modules/.bun/<lib>@1.2.3/node_modules/<lib>/`). After a store
   cleanup this is harmless; to be immune to duplicates, pin the version or
-  anchor the negation to the exact store path.
-- A leading slash anchors to the project root (in a nested .grepaiignore,
-  to that file's own directory).
+  anchor the negation to the exact store path. A leading slash ties the
+  pattern to the project root.
 - A negation can be followed by ordinary exclusions of its sub-paths —
-  last match wins, gitignore-style.
+  last match wins, gitignore-style. Re-exclude what is not wanted, or the
+  negation brings in that folder's generated files too.
 - Rust/Go honesty: dependencies live in global caches outside the project
   tree (~/.cargo/registry, $GOPATH/pkg/mod) — no project-relative pattern
   can reach them. Dependency curation is JS/TS-and-PHP territory; for
   Rust/Go rely on LSP and text search for library questions.
+
+## Index only one folder
+
+To index one folder and leave out the rest of its parent tree, keep the
+folders on the way to it out of `.grepaiignore` and exclude the siblings
+of each folder on the path instead. This file indexes only the
+hand-written documentation pages of a project:
+
+```
+/docs/*/
+!/docs/src/
+/docs/src/*/
+!/docs/src/content/
+/docs/src/content/*/
+!/docs/src/content/docs/
+
+/docs/src/content/docs/commands/
+/docs/*.*
+/docs/src/*.*
+```
+
+Each pair of lines ignores everything inside a folder except the next
+folder on the path. The last three lines exclude the generated command
+pages, and the files that sit directly in `docs/` and `docs/src/`. Three
+shorter versions give the wrong result:
+
+- `docs/*` with `!docs/src/content/docs/*` indexes nothing under `docs/`:
+  the first line ignores `docs/src` as well, and grepai does not look
+  inside a directory that `.grepaiignore` ignores.
+- The same file without the leading slashes indexes the pages — and every
+  other `docs/src/content/docs/...` path in the project, even where
+  `.gitignore` excludes it.
+- The negation without the `commands/` line also cancels `.gitignore` and
+  the `ignore` list for that folder, so the generated pages are indexed
+  too.
 
 ## Ecosystem additions (on top of the defaults)
 
@@ -114,11 +159,11 @@ the rest while working with grepai.
 ## Applying and verifying
 
 - Every ignore change (any layer) requires a re-index before the index
-  reflects it — unlike boost, which applies to the next search. A running
-  watch daemon builds its ignore matcher once at startup, so ignore edits
-  also invalidate the daemon. Never index or restart anything —
-  warn the owner that a re-index (and a daemon restart, if watch runs) is
-  needed.
+  reflects it — unlike boost, which applies to the next search. The
+  watcher builds its ignore rules once, when it starts, so a running
+  `grepai watch` has to be restarted as well. Never index or restart
+  anything — warn the owner that a re-index (and a watcher restart, if
+  watch runs) is needed.
 - Verify by file count: `grepai_index_status { root }` before and after a
   re-index; a successful curation shows a small increase (the re-included
   library) or a large drop (a corrected exclude), never silence.
@@ -135,3 +180,5 @@ the rest while working with grepai.
 3. A negation matches more than intended when the same directory name
    exists at several depths (package stores, workspaces).
 4. Expecting ignore changes to apply without a re-index.
+5. A negation placed under a directory that `.grepaiignore` ignores does
+   nothing — grepai never looks inside that directory.

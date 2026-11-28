@@ -134,6 +134,13 @@ Verification runs exclusively through the MCP tools.
   covered (add its pattern). Cannot find penalized code AT ALL → that is
   ignore's doing, not boost; check the ignore layers.
 
+## Workspace searches
+
+A workspace search (`grepai_search` with `workspace`) ignores each
+project's `search.boost` block and always applies the built-in default
+rules; hybrid search and dedup are off there as well. Shaping a project's
+rules changes nothing for workspace queries.
+
 ## Pitfalls
 
 1. Empty rule lists are a no-op, not defaults — the single most common

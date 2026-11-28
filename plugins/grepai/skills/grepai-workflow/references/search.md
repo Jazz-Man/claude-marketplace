@@ -22,7 +22,10 @@ Query rules: describe what the code DOES, not what it is called; 3-7
 descriptive words; English always (embedding models are English-first);
 question phrasing works ("how are users authenticated"); no code syntax; do
 not over-specify implementation details ("async function using axios" —
-just "fetch data from external API").
+just "fetch data from external API"). With hybrid search on, a keyword
+list rides along: query words of two or more characters are matched as
+substrings of the chunk text, so an identifier inside an intent query
+("validateEmail function in user module") adds signal instead of waste.
 
 ## Tool calls
 
@@ -49,6 +52,10 @@ starts with the prefix:
 grepai_search { root: "<project>", query: "retry failed requests", path: "packages/api/" }
 ```
 
+Matching is a plain prefix test: `packages/api` would also match
+`packages/api_old/`, so end the prefix with `/` to match one directory
+only.
+
 Token-economy contract — the DEFAULT, not an option: `compact: true`
 drops the content field and returns the map (score, file, line range);
 locate with the map, then Read only the bounded range of the WINNING hit.
@@ -73,7 +80,11 @@ the symbol span plus a little context — never restart from line 1.
 with `compact: true` (combine both for the floor), barely smaller with
 full content (content passes through verbatim).
 `workspace` + `projects` scope a search across a configured multi-project
-workspace.
+workspace. A workspace search does not read the project's `search:`
+settings: it always applies the built-in default boost rules and runs
+without hybrid search, dedup and RPG enrichment. `root` (an absolute
+project path: the tool loads that project's config and index instead of
+the server's own) and `workspace` are never passed together.
 
 ## Reading results
 
@@ -106,7 +117,8 @@ Trust the numbers by band (hybrid on, single-project search):
 Two qualifiers: boost multiplies the fused value, so a both-lists hit on a
 penalized path (docs, tests) can read in the single-list band — the bands
 hold exactly for boost-neutral paths; and workspace-mode searches never
-fuse (they report cosine and may repeat a file across projects).
+fuse (they report similarity times the default boost rules and may repeat
+a file across projects).
 
 What actually carries signal within one result set: the ORDER (boost-shaped
 — see `search-boost.md` in the grepai-init skill) and the RELATIVE gap
@@ -142,7 +154,9 @@ each file appears at most once.
 
 ## Pitfalls
 
-1. Exact identifiers as queries — wasted call; that is bash grep/LSP territory.
+1. Exact identifiers as the whole query — LSP or bash grep answers them
+   in one call. Hybrid search's keyword list catches them too, but it is
+   not the precise instrument.
 2. Absolute score thresholds as quality gates — model-relative noise; use
    ranks and gaps.
 3. Judging freshness by memory — check `last_updated` in index status.

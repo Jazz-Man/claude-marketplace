@@ -111,9 +111,17 @@ the extractor). Expect misses wherever syntax is dynamic — dynamic
 dispatch, magic methods, reflection-based calls: the extractor reads
 explicit syntax only.
 
+Vue caveat: `.vue` goes through the framework processor (on by default).
+Without Node.js and `@vue/compiler-sfc` in the project, grepai warns and
+falls back to the `<script>` blocks. The compiler is loaded from the
+project's own `node_modules`, so it runs code from the repository: disable
+the Vue processor before indexing a repository you do not trust
+(`framework_processing.frameworks.vue.enabled: false`).
+
 Only extensions in `trace.enabled_languages` get symbol extraction; configs
 from older grepai versions may lack newer entries (`.vue`, F#) — add them
-by hand if a language silently yields nothing.
+by hand if a language silently yields nothing; an empty list falls back to
+the shipped defaults.
 
 The only CONFIGURABLE file-level exclusion is the top-level `ignore`
 layer — it removes files from BOTH indexes (vector and symbol) at once.
@@ -121,14 +129,21 @@ Minified and binary files are also always excluded from both indexes; the
 size cap defaults to 1 MB and is configurable (`chunking.max_file_size_bytes`).
 A trace-specific exclude does not
 exist; wanting files in vector search but out of trace is not an
-expressible configuration.
+expressible configuration (the `trace.mode` and `trace.exclude_patterns`
+keys of older configs never had any effect).
 
 ## refs — property-level reads and writes
 
 `grepai_refs_readers` / `grepai_refs_writers` / `grepai_refs_graph` answer
 where a PROPERTY is read or assigned (`store.uid = id`), not called.
 JavaScript/TypeScript and Vue only — other languages extract call
-references only and refs returns nothing for them. Live-tested caveats:
+references only and refs returns nothing for them. Recorded accesses:
+member read and assignment (`store.uid`, `this.user.uid = id`), bracket
+access with a string key (`store["uid"]`), destructuring from
+`storeToRefs()` or `toRefs()`, and a simple alias (`const uid = store.uid`).
+Ignored: built-in roots (`Math`, `JSON`, `console`, `window`, `document`),
+names starting with `_`, Vue internals such as `$el` and `$refs`; an access
+outside any function is attributed to `<top-level>`. Live-tested caveats:
 readers dominated by dependency noise when node_modules is not curated out
 of the index (fix is ignore, not refs), and writers miss closure-variable
 assignments. Treat refs as a lead generator, then verify by reading the
@@ -138,6 +153,8 @@ sites.
 
 - Pre-refactor impact: `trace_callers` on the symbol about to change —
   every impact point with coordinates in one call.
+- Before renaming a JS/TS property: `refs_writers` on it — every
+  assignment site.
 - Dependency map for understanding: `trace_callees` for one function,
   `trace_graph` (depth 2-3) for a subsystem's internal structure.
 - With an LSP available: LSP remains the precision instrument for exact
