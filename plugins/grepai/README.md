@@ -31,3 +31,9 @@ server (`grepai mcp-serve`) plus two skills, `grepai-init` and
 Everything grepai needs lives in the target project (`.grepai/config.yaml`,
 `.grepaiignore`, the index) — this plugin carries no runtime state of its
 own.
+
+## Maintenance
+
+The skill references follow the grepai documentation
+(`docs/src/content/docs` in the grepai repository). When it changes, change
+the references with it.

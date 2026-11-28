@@ -10,6 +10,11 @@ reads what that index holds and how it ranks. Both are decided per project
 by `.grepai/config.yaml` and `.grepaiignore`; this skill writes them.
 Searching the finished index is the `grepai-workflow` skill.
 
+Everything this skill needs is in its references; they follow the grepai
+documentation. Do not open grepai's source, its documentation or the web
+to re-check them — a statement that looks wrong for the project goes into
+your report as a question.
+
 `grepai init` only starts the job. It writes the same generic config for
 every project: trace on for 27 extensions, RPG off, hybrid search off, no
 global gitignore, and no idea where this project keeps its product code or
@@ -41,8 +46,9 @@ give them all:
 2. **What do the agent and editor tools leave in the tree?** The root
    listing; `git check-ignore -q <name>` tells for each candidate whether
    git already ignores it (exit 0). grepai honors gitignore files, so
-   those names need no entry. Without a git repository only the global
-   gitignore can pre-exclude a name: search `~/.gitignore` for it.
+   those names need no entry. Without a git repository that command cannot
+   run: search the project's `.gitignore` files and `~/.gitignore` for the
+   name — grepai reads both with or without git.
 3. **Where are the tests, mocks, fixtures and generated code — by directory
    and by file naming?**
 4. **Which directories are the product?** The source roots.
@@ -90,8 +96,8 @@ Three rows deserve a word:
   above source. Ask once, when you report.
 
 The store is not a row: `gob` is right up to about 50,000 chunks. Past
-that the documentation points to `qdrant`, which needs a server the owner
-runs — say so instead of switching it.
+that the store for that size is `qdrant` (references/configuration.md),
+which needs a server the owner runs — say so instead of switching it.
 
 ## Report, hand over, verify
 

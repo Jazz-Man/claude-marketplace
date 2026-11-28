@@ -50,8 +50,7 @@ related declarations.
   (.c .h .cc .cpp .cxx .hpp .hxx), .cs, .css, .elm, .ex/.exs, .fs, .go,
   .hcl/.tf, .html, .java, .js/.jsx, .kt, .lua, .ml, .php, .proto, .py,
   .rb, .rs, .scala, .sh/.bash/.zsh, .sql, .swift, .toml, .ts/.tsx,
-  .yaml/.yml, .zig. The documentation's chunking strategy list is the
-  authoritative one; every other extension — and files nested too deeply
+  .yaml/.yml, .zig. Every other extension — and files nested too deeply
   to split — falls back to the fixed chunker automatically.
 - Experimental: the ast algorithm may change between grepai releases, which
   can require re-indexing after an upgrade.
@@ -59,7 +58,7 @@ related declarations.
   check the logs before assuming ast is active. An unknown strategy name is
   rejected when the config is loaded.
 
-`fixed` is the default and the documentation's recommendation; `ast` is
+`fixed` is the default and what grepai recommends; `ast` is
 experimental. Choosing between them: with ast available, prefer it for supported languages
 (whole-function chunks match intent queries better than windows); keep fixed
 for everything else — the fallback handles that per file automatically.

@@ -22,8 +22,9 @@ Ignore changes always require a re-index; boost changes never do.
    big dependency trees); suggest additions only when the project shape
    names something specific. A missing `ignore:` section means NO
    config-layer ignore at all. Entries are names or gitignore-style
-   patterns skipped everywhere in the project: a bare directory name
-   matches at any depth.
+   patterns applied from the project root: without a slash a name matches
+   at any depth, a leading slash anchors to the root, and a bare directory
+   name skips that whole subtree at any depth.
 3. **`.grepaiignore`** at any level of the project — gitignore syntax, and
    it takes precedence over `.gitignore`: a `!pattern` re-includes paths
    that the other layers excluded, the config `ignore` list included. One
@@ -118,7 +119,9 @@ shorter versions give the wrong result:
   the `ignore` list for that folder, so the generated pages are indexed
   too.
 
-## Ecosystem additions (on top of the defaults)
+## Ecosystem additions (for the config `ignore` list)
+
+In the same gitignore style, on top of the entries that stay:
 
 - JS/TS: coverage, package-lock.json, yarn.lock, pnpm-lock.yaml,
   "*.bundle.js"
@@ -155,8 +158,9 @@ The index should hold the project's code, not the instructions and state
 of the tools that read it. Add to the config `ignore` list — unless git
 already ignores the name (`git check-ignore -q <name>` exits 0; the
 `.gitignore` and `external_gitignore` layers then exclude it anyway). In
-a project that is not a git repository, search the global gitignore for
-the name instead: it is the only layer that can pre-exclude it there:
+a project that is not a git repository, search the project's `.gitignore`
+files and the global gitignore for the name instead — grepai reads both
+with or without git:
 
 - the agent files `CLAUDE.md` and `AGENTS.md`;
 - the agent directories `.claude` and `.agents`;
