@@ -64,7 +64,6 @@ coverage/
 # superpowers SDD execution workspace
 .superpowers/
 tmp/
-!bin/*
 
 *.bun-build
 .grepai/
