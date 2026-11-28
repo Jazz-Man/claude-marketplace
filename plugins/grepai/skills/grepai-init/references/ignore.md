@@ -83,6 +83,23 @@ Craft rules, all live-tested:
 - Java: .gradle, "*.class", build/ (build name is not a default — add it)
 - Monorepo: packages/legacy/, packages/deprecated/
 
+## Agent and editor artifacts (at init)
+
+The index should hold the project's code, not the instructions and state
+of the tools that read it. Add to the config `ignore` list — unless git
+already ignores the name (`git check-ignore -q <name>` exits 0; the
+`.gitignore` and `external_gitignore` layers then exclude it anyway):
+
+- the agent files `CLAUDE.md` and `AGENTS.md`;
+- the agent directories `.claude` and `.agents`;
+- the editor directories `.zed` and `.idea` (`.vscode` ships in the
+  defaults);
+- any other agent-tool or editor directory the project root actually has.
+
+A bare name matches at any depth, so `.claude` covers
+`packages/app/.claude` as well. This is the basic set; the owner curates
+the rest while working with grepai.
+
 ## Ignore vs boost — the division
 
 - IGNORE what the project does not own at all: uncurated dependencies,

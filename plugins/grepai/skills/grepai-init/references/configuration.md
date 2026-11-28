@@ -35,7 +35,16 @@ search:
     enabled: true               # default is false; see the cost note
   dedup:
     enabled: true
+trace:
+  enabled_languages: [".ts", ".tsx", ".js", ".jsx"]   # this project's languages
+rpg:
+  enabled: true                 # default is false; the index builds the graph
+external_gitignore: ~/.gitignore   # the owner's global gitignore
 ```
+
+`grepai init --yes` writes nomic-embed-text at 768d with `fixed` chunking
+and hybrid off; the baseline is four edits away: `embedder.model`,
+`embedder.dimensions`, `chunking.strategy`, `search.hybrid.enabled`.
 
 ## embedder
 

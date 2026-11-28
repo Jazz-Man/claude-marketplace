@@ -74,6 +74,29 @@ Worked example — `0.82 x/src/middleware.go` with `/src/` x1.1 → 0.90;
 `0.85 x/tests/auth_test.go` with `/tests/` x0.5 → 0.43: same content,
 source outranks test. Bonuses can push scores above 1.0 — normal.
 
+## Shaping the lists for a project (at init)
+
+`grepai init` writes the shipped rules above, which describe an average
+project. At init the lists are yours to shape; afterwards they are the
+owner's:
+
+1. Penalties — find how this project names and places its tests, mocks,
+   fixtures and generated code. Keep the shipped rules that fit and add the
+   conventions they miss.
+2. Bonuses — the directories that ARE the product, its real source roots;
+   the generic `/src/`, `/lib/`, `/app/` rarely name them all. A curated
+   dependency root is never penalized (see below).
+3. Drop the shipped rules that cannot match anything here.
+4. Ask the owner once which documentation should outrank source. Factors
+   multiply, so a bonus above 1 on that path lifts it over the `.md` and
+   `/docs/` penalties.
+
+Worked example — a TypeScript plugin monorepo (`plugins/`, `packages/`,
+bun tests under `tests/`): penalties kept `/tests/`, `.test.`,
+`/fixtures/`, `.md`, `/docs/`; every other shipped rule dropped; bonuses
+`/plugins/` x1.1 beside `/src/`; and `/docs/claude/` x4 for the reference
+the owner wants on top.
+
 ## Project recipes
 
 Common add-ons on TOP of the shipped defaults:

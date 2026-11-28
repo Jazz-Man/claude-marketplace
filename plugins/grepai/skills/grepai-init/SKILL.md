@@ -1,50 +1,95 @@
 ---
 name: grepai-init
-description: This skill should be used when the user asks to "set up grepai" or configure it, or when a project has no .grepai/config.yaml yet — running grepai init, curating .grepaiignore and the config ignore list, shaping search boost, chunking, embedder or store settings — and when a grepai search misses code or ranks it wrongly for a config reason (a file not indexed, tests outranking source). Searching the index (grepai_search, trace, rpg) is the grepai-workflow skill. The owner builds the index; this skill shapes its config.
+description: This skill should be used when the user asks to "set up grepai" or configure it, or when a project has no .grepai/config.yaml yet — running grepai init and then adapting the config it wrote to the project (ignore list, global gitignore, search boost, hybrid and dedup, trace languages, RPG, chunking, embedder) — and when a grepai search misses code or ranks it wrongly for a config reason (a file not indexed, tests outranking source). Searching the index (grepai_search, trace, rpg) is the grepai-workflow skill. The owner builds the index; this skill shapes its config.
 ---
 
-# grepai init — the per-project setup of the search index
+# grepai init — initialize, then adapt the config to the project
 
-grepai embeds a codebase into a searchable index. What that index holds,
-and how it ranks what it holds, is decided per project by two files:
-`.grepai/config.yaml` and `.grepaiignore`. This skill shapes them;
-searching the finished index is the `grepai-workflow` skill.
+grepai embeds a codebase into a searchable index, and every later search
+reads what that index holds and how it ranks. Both are decided per project
+by `.grepai/config.yaml` and `.grepaiignore`; this skill writes them.
+Searching the finished index is the `grepai-workflow` skill.
 
-## First run in a project
+`grepai init` only starts the job. It writes the same generic config for
+every project: trace on for 27 extensions, RPG off, hybrid search off, no
+global gitignore, and no idea where this project keeps its product code or
+what its agent tools leave in the tree. Left like that, the index treats
+`CLAUDE.md`, `.claude/` and editor state as source, call graphs answer for
+languages the project never uses, and ranking is blind to the layout. The
+setup is finished when every row of the checklist below holds in the file.
 
-1. `grepai init --provider ollama --model bge-m3 --backend gob --yes` —
-   writes `.grepai/config.yaml` without asking anything (embedder and
-   store are settled for this workflow: local Ollama, GOB backend). Pass
-   the flags: a bare `grepai init` prompts on stdin and falls back to
-   nomic-embed-text. The new file is three edits short of the solo
-   baseline in references/configuration.md: set
-   `embedder.dimensions: 1024`, `chunking.strategy: ast`, and
-   `search.hybrid.enabled: true`.
-2. Shape the ignore layers and curate the dependency sources worth
-   trusting — the five layers, negation craft, and the Rust/Go honesty
-   rule: references/ignore.md. The ignore list is the OWNER's curation —
-   never re-add entries the owner removed; the full rule lives in the
-   reference.
-3. Shape `search.boost` ranking — rules, defaults, and the
-   curation-interplay rule: references/search-boost.md.
-4. Never run indexing or watching — the owner builds and maintains
-   the index (`grepai index` / `grepai watch`); after any change that
-   requires a re-index (ignore layers, chunking, embedder identity, the RPG
-   graph), say so, never run it. `grepai init` prints `grepai watch` as
-   its next step and `ollama pull` as a hint — both are the owner's, so
-   never pull a model.
-5. Verify with a ground-truth query; if a curated library does not
-   surface, walk the ignore layers in order.
+## Initialize
 
-In a project that already has `.grepai/config.yaml`, `grepai init` only
-reports the file and changes nothing — start at the step the request is
-about. `grepai init` also keeps the index out of git: it adds `.grepai/`
-to the project's `.gitignore`, or writes `.grepai/.gitignore` when the
-project has none.
+`grepai init --yes` writes `.grepai/config.yaml` without asking anything (a
+bare `grepai init` prompts on stdin). In a project that already has the
+file it only reports the path and changes nothing: go straight to adapting.
+It also keeps the index out of git: adds `.grepai/` to the project's
+`.gitignore`, or writes `.grepai/.gitignore` when the project has none.
+Its output suggests `grepai watch` — indexing is the owner's; never run
+`grepai index` or `grepai watch`.
 
-The full config map and the solo pitfalls: references/configuration.md.
-Chunking (the `ast` strategy is active in this build):
-references/chunking.md.
+## Read the project
+
+Every value in the checklist comes from the project itself; four questions
+give them all:
+
+1. **Which languages is it written in?** An extension census of the tracked
+   files: `git ls-files | sed -E 's|.*/||; s/^.*\.//' | sort | uniq -c | sort -rn`.
+2. **What do the agent and editor tools leave in the tree?** The root
+   listing; `git check-ignore -q <name>` tells for each candidate whether
+   git already ignores it (exit 0). grepai honors gitignore files, so
+   those names need no entry.
+3. **Where are the tests, mocks, fixtures and generated code — by directory
+   and by file naming?**
+4. **Which directories are the product?** The source roots.
+
+## Adapt the config
+
+Edit `.grepai/config.yaml` until every row holds:
+
+| Key | `grepai init` writes | It must hold |
+|---|---|---|
+| `external_gitignore` | nothing | `~/.gitignore`, the owner's global gitignore — confirm the file exists |
+| `ignore` | 15 shipped defaults | the defaults plus this project's agent and editor artifacts that git does not ignore — references/ignore.md |
+| `search.boost` | on, 20 shipped rules | on, with rules shaped for this project — references/search-boost.md |
+| `search.hybrid.enabled` | `false` | `true` |
+| `search.dedup.enabled` | `true` | `true` |
+| `trace.enabled_languages` | 27 extensions | the languages the project is written in, kept as whole families |
+| `rpg.enabled` | `false` | `true` |
+| `embedder`, `chunking.strategy` | nomic-embed-text, 768d, `fixed` | the solo baseline — references/configuration.md |
+
+At init the lists are yours to shape. In a config the owner has already
+curated the reverse holds: add what a row lacks and leave the rest as it
+is — never re-add entries the owner removed (references/ignore.md).
+
+Three rows deserve a word:
+
+- Hybrid ships off because every query then scans all chunks. The owner
+  wants it on; on a very large index, say what it costs instead of leaving
+  it off. `k` stays 60.
+- RPG keeps `feature_mode: local` unless the owner names a chat model for
+  `llm_model`; `llm` and `hybrid` fall back to `local` without one. The
+  graph is built from the trace languages, so settle that row first.
+- The layout cannot tell you which documentation the owner wants ranked
+  above source. Ask once, when you report.
+
+## Report, hand over, verify
+
+Re-read the file, check every row, and report one line per key: what you
+set, and what in the project made you set it. A row you cannot fill is a
+question to the owner, not a silent default.
+
+The owner then builds the index — ignore, trace, RPG, chunking and embedder
+changes only take effect in a fresh one, while boost, hybrid and dedup
+apply to the next search. After the build, `grepai_index_status { root }`
+should show a sensible `total_files`, `symbols_ready: true` and
+`rpg_enabled: true` with node and edge counts. Run one ground-truth query
+per tool — a search for code you know is there, `grepai_trace_callers` on a
+known symbol, `grepai_rpg_search` on a known feature word — and confirm the
+agent files stayed out. If a curated library does not surface, walk the
+ignore layers in order (references/ignore.md).
+
+Chunking (the `ast` strategy is active in this build): references/chunking.md.
 
 ## References
 

@@ -9,9 +9,11 @@ server (`grepai mcp-serve`) plus two skills, `grepai-init` and
 - **MCP server** — `grepai` (name kept unique; distinct from any
   project-level `grepai-api` entry) exposing search, trace (callers/callees/
   graph), refs, and index-status tools against the project's grepai index.
-- **grepai-init skill** — per-project setup: `grepai init`, config `ignore`
-  defaults, `.grepaiignore` dependency curation with `!` negations,
-  `search.boost` shaping. The owner builds the index.
+- **grepai-init skill** — per-project setup: `grepai init`, then the config
+  adapted to the project (config `ignore` with the agent and editor
+  artifacts, the global gitignore, `search.boost`, hybrid, trace languages,
+  RPG) and `.grepaiignore` dependency curation with `!` negations. The
+  owner builds the index.
 - **grepai-workflow skill** — intent-shaped search doctrine with a mandatory
   "already exists" pre-check before building, and the LSP synergy matrix:
   grepai discovers, LSP verifies, Read reads only the verified range.
