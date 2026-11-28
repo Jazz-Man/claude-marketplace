@@ -54,11 +54,11 @@ Edit `.grepai/config.yaml` row by row:
 | Key | `grepai init` writes | It must hold |
 |---|---|---|
 | `external_gitignore` | nothing | `~/.gitignore`, the owner's global gitignore — confirm the file exists |
-| `ignore` | 15 shipped defaults | the defaults plus this project's agent and editor artifacts that git does not ignore — references/ignore.md |
+| `ignore` | 15 shipped defaults | this project's own list: the shipped entries that can occur here and its agent and editor artifacts that git does not ignore — nothing for other ecosystems — references/ignore.md |
 | `search.boost` | on, 20 shipped rules | on, with rules shaped for this project — references/search-boost.md |
 | `search.hybrid.enabled` | `false` | `true` |
 | `search.dedup.enabled` | `true` | `true` |
-| `trace.enabled_languages` | 27 extensions | the languages the project is written in, kept as whole families; only extensions the extractor knows |
+| `trace.enabled_languages` | 27 extensions | the languages the project is written in, each as a whole family — TypeScript is `.ts .tsx .js .jsx`, kept together even where the census finds only `.ts`; only extensions the extractor knows |
 | `rpg.enabled` | `false` | `true` |
 | `embedder`, `chunking.strategy` | nomic-embed-text, 768d, `fixed` | the solo baseline — references/configuration.md |
 

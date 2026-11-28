@@ -128,6 +128,27 @@ shorter versions give the wrong result:
 - Java: .gradle, "*.class", build/ (build name is not a default — add it)
 - Monorepo: packages/legacy/, packages/deprecated/
 
+## Shaping the list at init
+
+`grepai init` writes the same 15 entries into every project, whatever its
+ecosystem. At init the list is yours to shape; in a config the owner has
+already curated, leave it as it is.
+
+- Keep `.git` and `.grepai`.
+- Keep a shipped entry only when this project has, or can grow, what it
+  names — its dependency folder, its build output, its caches — and no
+  gitignore layer excludes it already.
+- Add the agent and editor artifacts of the project (next section).
+- Drop the rest: `vendor`, `__pycache__`, `.venv`, `venv`, `target`,
+  `.zig-cache`, `zig-out`, `qdrant_storage` and the like name other
+  ecosystems. In a project without them they are noise, and a list of
+  noise hides the entries that matter.
+
+A TypeScript project on Bun whose `.gitignore` already excludes
+`node_modules` ends with a short list: `.git`, `.grepai`, `bin` where it
+has one, the agent and editor names, and nothing for Python, Rust, Zig or
+Qdrant.
+
 ## Agent and editor artifacts (at init)
 
 The index should hold the project's code, not the instructions and state
@@ -144,8 +165,9 @@ the name instead: it is the only layer that can pre-exclude it there:
 - any other agent-tool or editor directory the project root actually has.
 
 A bare name matches at any depth, so `.claude` covers
-`packages/app/.claude` as well. This is the basic set; the owner curates
-the rest while working with grepai.
+`packages/app/.claude` as well. The base names go in whether or not the
+file exists today: `AGENTS.md` is added before anyone creates it. This is
+the basic set; the owner curates the rest while working with grepai.
 
 ## Ignore vs boost — the division
 
