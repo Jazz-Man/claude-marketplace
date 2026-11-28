@@ -47,9 +47,13 @@ function parseCli(): Cli {
       };
     }
     const [project] = positionals;
+    const root = resolve(project ?? ".");
     return {
-      path: configPathFor(values.config, project),
-      root: resolve(project ?? "."),
+      path:
+        values.config === undefined
+          ? join(root, DEFAULT_CONFIG)
+          : resolve(values.config),
+      root,
     };
   } catch (error) {
     const reason = error instanceof Error ? error.message : String(error);
@@ -57,13 +61,12 @@ function parseCli(): Cli {
   }
 }
 
-function configPathFor(
-  flag: string | undefined,
-  project: string | undefined,
-): string {
-  return flag === undefined
-    ? join(resolve(project ?? "."), DEFAULT_CONFIG)
-    : resolve(flag);
+async function readConfig(path: string): Promise<string | undefined> {
+  try {
+    return await Bun.file(path).text();
+  } catch {
+    return undefined;
+  }
 }
 
 function parseConfig(text: string): Parsed {
@@ -125,13 +128,13 @@ async function main(): Promise<number> {
     return cli.exitCode;
   }
   const { path, root } = cli;
-  if (!(await Bun.file(path).exists())) {
+  const text = await readConfig(path);
+  if (text === undefined) {
     console.log(
       `${path}: invalid — not found; run \`grepai init --yes\` in the project first`,
     );
     return 1;
   }
-  const text = await Bun.file(path).text();
   const parsed = parseConfig(text);
   if (parsed.problem !== undefined) {
     console.log(`${path}: invalid — ${parsed.problem}`);

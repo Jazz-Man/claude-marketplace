@@ -16,7 +16,8 @@ global gitignore, and no idea where this project keeps its product code or
 what its agent tools leave in the tree. Left like that, the index treats
 `CLAUDE.md`, `.claude/` and editor state as source, call graphs answer for
 languages the project never uses, and ranking is blind to the layout. The
-setup is finished when every row of the checklist below holds in the file.
+setup is finished when every row of the checklist below holds in the file,
+which the validator confirms.
 
 ## Initialize
 
@@ -45,7 +46,19 @@ give them all:
 
 ## Adapt the config
 
-Edit `.grepai/config.yaml` until every row holds:
+Edit `.grepai/config.yaml` row by row, and let the validator read it back
+each time:
+
+    bun ${CLAUDE_SKILL_DIR}/scripts/validate-config.ts <project>
+
+It parses the file with Bun's YAML parser and refuses broken YAML, a
+duplicate top-level key, a key grepai does not know and a block of the
+wrong shape. It then prints one line per row of the table with the value it
+read and `ok` or `open`. Run it after `grepai init`, after every edit and
+before you report. It ends with `complete` (exit code 0) only when the
+format is valid and every row holds. `--config <file>` names the file
+itself when it lives elsewhere. When the variable above stays unexpanded,
+it is the skill's base directory.
 
 | Key | `grepai init` writes | It must hold |
 |---|---|---|
@@ -61,6 +74,10 @@ Edit `.grepai/config.yaml` until every row holds:
 At init the lists are yours to shape. In a config the owner has already
 curated the reverse holds: add what a row lacks and leave the rest as it
 is — never re-add entries the owner removed (references/ignore.md).
+
+The validator cannot see two things: whether the boost rules fit this
+project, and agent-tool directories beyond the base names — it lists the
+root directories outside `ignore` for you to judge.
 
 Three rows deserve a word:
 
@@ -79,9 +96,9 @@ runs — say so instead of switching it.
 
 ## Report, hand over, verify
 
-Re-read the file, check every row, and report one line per key: what you
-set, and what in the project made you set it. A row you cannot fill is a
-question to the owner, not a silent default.
+The validator's last output is your per-row status. Report one line per
+key: what you set, and what in the project made you set it. A row that
+stayed open is a question to the owner, not a silent default.
 
 The owner then builds the index — ignore, trace, RPG, chunking and embedder
 changes only take effect in a fresh one, while boost, hybrid and dedup
@@ -105,4 +122,4 @@ Chunking (the `ast` strategy is active in this build): references/chunking.md.
 - **ignore.md** — five ignore layers, curation craft, ignore-vs-boost division
 - **search-boost.md** — ranking rules, shipped defaults, their reorder-only limits
 - **chunking.md** — fixed vs ast strategies, tuning tables, the re-index rule
-- **config.schema.json** — grepai's own schema, for key names and valid ranges
+- **scripts/validate-config.ts** — reads `.grepai/config.yaml`, checks its YAML format and prints the status of every row

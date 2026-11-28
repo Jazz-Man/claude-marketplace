@@ -1,7 +1,6 @@
 import type { Dirent } from "node:fs";
 import { readdir } from "node:fs/promises";
 import { homedir } from "node:os";
-import { resolve } from "node:path";
 
 import { isMapping, listOfStrings } from "./config-shape.ts";
 
@@ -60,7 +59,6 @@ const row = (name: string, ok: boolean, detail: string): Row => ({
 
 async function externalGitignoreRow(
   config: Record<string, unknown>,
-  root: string,
 ): Promise<Row> {
   const value =
     typeof config.external_gitignore === "string"
@@ -69,13 +67,12 @@ async function externalGitignoreRow(
   if (value === "") {
     return row("external_gitignore", false, "not set");
   }
-  const expanded = value.replace(/^~(?=$|\/)/u, homedir());
-  const present = await Bun.file(resolve(root, expanded)).exists();
-  return row(
-    "external_gitignore",
-    present,
-    present ? value : `${value} (no such file)`,
-  );
+  try {
+    await Bun.file(value.replace(/^~(?=$|\/)/u, homedir())).text();
+    return row("external_gitignore", true, value);
+  } catch {
+    return row("external_gitignore", false, `${value} (no such file)`);
+  }
 }
 
 async function agentNamesRow(ignore: string[], root: string): Promise<Row> {
@@ -164,7 +161,7 @@ export async function rows(
   const search = isMapping(config.search) ? config.search : {};
   const rpgOn = isMapping(config.rpg) && config.rpg.enabled === true;
   return [
-    await externalGitignoreRow(config, root),
+    await externalGitignoreRow(config),
     await agentNamesRow(listOfStrings(config.ignore), root),
     boostRow(search),
     switchRow(search, "hybrid"),

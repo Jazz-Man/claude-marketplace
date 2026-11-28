@@ -1,10 +1,7 @@
 # grepai configuration reference
 
 Scope: a solo-developer profile — local Ollama embedder, GOB store, one
-machine. This file follows the grepai documentation. The copy of grepai's
-own schema in references/config.schema.json is there for key names and
-valid ranges; where its wording differs from the documentation, the
-documentation wins.
+machine. This file follows the grepai documentation.
 
 Config lives at `.grepai/config.yaml` at the project root, created by
 `grepai init` with defaults. Every command loads the nearest one: the

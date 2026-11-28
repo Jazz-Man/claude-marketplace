@@ -12,8 +12,9 @@ server (`grepai mcp-serve`) plus two skills, `grepai-init` and
 - **grepai-init skill** — per-project setup: `grepai init`, then the config
   adapted to the project (config `ignore` with the agent and editor
   artifacts, the global gitignore, `search.boost`, hybrid, trace languages,
-  RPG) and `.grepaiignore` dependency curation with `!` negations. The
-  owner builds the index.
+  RPG) and `.grepaiignore` dependency curation with `!` negations. Its
+  validator script reads the config back, checks the YAML format and
+  reports every checklist row. The owner builds the index.
 - **grepai-workflow skill** — intent-shaped search doctrine with a mandatory
   "already exists" pre-check before building, and the LSP synergy matrix:
   grepai discovers, LSP verifies, Read reads only the verified range.
@@ -23,6 +24,8 @@ server (`grepai mcp-serve`) plus two skills, `grepai-init` and
 - `grepai` CLI on PATH (`go install github.com/yoanbernabeu/grepai@latest`
   or the project's install docs). The plugin wires the CLI as an MCP server;
   it does not install it.
+- `bun` on PATH — `plugins/grepai/skills/grepai-init/scripts/validate-config.ts`
+  runs on it.
 - An embedding backend reachable at search time (default: local Ollama).
 
 ## Per-project state
