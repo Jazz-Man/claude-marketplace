@@ -13,7 +13,9 @@ grepai discovers, LSP verifies.
 The index is set up per project by the `grepai-init` skill — `grepai
 init`, the ignore layers, `search.boost`. A search that misses code for
 a config reason (a file not indexed, tests outranking source) hands over
-to it. Indexing and watching stay the owner's: never run `grepai index`
+to it, and so does a tool that answers `invalid configuration`: the
+project's config file has a problem, and the message lists all of them.
+Indexing and watching stay the owner's: never run `grepai index`
 or `grepai watch`.
 
 ## Searching

@@ -15,7 +15,8 @@ built by indexing/watching. Before blaming a query, check
 `grepai_index_status { root }` — `symbols_ready: true` is what the trace
 tools need. An empty symbol index fails with "symbol index is empty"; that
 is an index-build problem, not a query problem — flag the rebuild to the
-owner, never run it.
+owner, never run it. `invalid configuration` is a config problem
+(references/search.md).
 
 ## Tool calls
 
@@ -121,7 +122,8 @@ the Vue processor before indexing a repository you do not trust
 Only extensions in `trace.enabled_languages` get symbol extraction; configs
 from older grepai versions may lack newer entries (`.vue`, F#) — add them
 by hand if a language silently yields nothing; an empty list falls back to
-the shipped defaults.
+the shipped defaults; an entry that is not a lowercase extension with a
+leading dot stops every command.
 
 The only CONFIGURABLE file-level exclusion is the top-level `ignore`
 layer — it removes files from BOTH indexes (vector and symbol) at once.

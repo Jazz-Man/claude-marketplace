@@ -16,8 +16,8 @@ global gitignore, and no idea where this project keeps its product code or
 what its agent tools leave in the tree. Left like that, the index treats
 `CLAUDE.md`, `.claude/` and editor state as source, call graphs answer for
 languages the project never uses, and ranking is blind to the layout. The
-setup is finished when every row of the checklist below holds in the file,
-which the validator confirms.
+setup is finished when every row of the checklist below holds in the file
+and `grepai config validate` exits with code 0.
 
 ## Initialize
 
@@ -36,29 +36,20 @@ give them all:
 
 1. **Which languages is it written in?** An extension census of the tracked
    files: `git ls-files | sed -E 's|.*/||; s/^.*\.//' | sort | uniq -c | sort -rn`.
+   In a project that is not a git repository, count the files on disk
+   instead: `find . -type f -not -path './node_modules/*' | sed -E 's|.*/||; s/^.*\.//' | sort | uniq -c | sort -rn`.
 2. **What do the agent and editor tools leave in the tree?** The root
    listing; `git check-ignore -q <name>` tells for each candidate whether
    git already ignores it (exit 0). grepai honors gitignore files, so
-   those names need no entry.
+   those names need no entry. Without a git repository only the global
+   gitignore can pre-exclude a name: search `~/.gitignore` for it.
 3. **Where are the tests, mocks, fixtures and generated code — by directory
    and by file naming?**
 4. **Which directories are the product?** The source roots.
 
 ## Adapt the config
 
-Edit `.grepai/config.yaml` row by row, and let the validator read it back
-each time:
-
-    bun ${CLAUDE_SKILL_DIR}/scripts/validate-config.ts <project>
-
-It parses the file with Bun's YAML parser and refuses broken YAML, a
-duplicate top-level key, a key grepai does not know and a block of the
-wrong shape. It then prints one line per row of the table with the value it
-read and `ok` or `open`. Run it after `grepai init`, after every edit and
-before you report. It ends with `complete` (exit code 0) only when the
-format is valid and every row holds. `--config <file>` names the file
-itself when it lives elsewhere. When the variable above stays unexpanded,
-it is the skill's base directory.
+Edit `.grepai/config.yaml` row by row:
 
 | Key | `grepai init` writes | It must hold |
 |---|---|---|
@@ -75,9 +66,17 @@ At init the lists are yours to shape. In a config the owner has already
 curated the reverse holds: add what a row lacks and leave the rest as it
 is — never re-add entries the owner removed (references/ignore.md).
 
-The validator cannot see two things: whether the boost rules fit this
-project, and agent-tool directories beyond the base names — it lists the
-root directories outside `ignore` for you to judge.
+Check the file twice — after `grepai init`, after every edit and before
+you report:
+
+- **The format**: `grepai config validate`. It lists every problem at
+  once — an option that does not exist, a value the key does not accept, a
+  number out of range — and exits with code 1 when it finds one. It starts
+  nothing. Every other grepai command and every MCP tool runs the same
+  checks and refuses to work while the file has a problem.
+- **The rows**: the command checks the format only. Whether the values fit
+  this project — the boost rules, agent-tool directories beyond the base
+  names — is yours to judge by re-reading the file against the table.
 
 Three rows deserve a word:
 
@@ -96,9 +95,10 @@ runs — say so instead of switching it.
 
 ## Report, hand over, verify
 
-The validator's last output is your per-row status. Report one line per
-key: what you set, and what in the project made you set it. A row that
-stayed open is a question to the owner, not a silent default.
+Re-read the file, check every row, and report one line per key: what you
+set, and what in the project made you set it. The last
+`grepai config validate` must exit with code 0. A row you cannot fill is a
+question to the owner, not a silent default.
 
 The owner then builds the index — ignore, trace, RPG, chunking and embedder
 changes only take effect in a fresh one, while boost, hybrid and dedup
@@ -122,4 +122,3 @@ Chunking (the `ast` strategy is active in this build): references/chunking.md.
 - **ignore.md** — five ignore layers, curation craft, ignore-vs-boost division
 - **search-boost.md** — ranking rules, shipped defaults, their reorder-only limits
 - **chunking.md** — fixed vs ast strategies, tuning tables, the re-index rule
-- **scripts/validate-config.ts** — reads `.grepai/config.yaml`, checks its YAML format and prints the status of every row

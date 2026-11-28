@@ -55,8 +55,9 @@ related declarations.
   to split — falls back to the fixed chunker automatically.
 - Experimental: the ast algorithm may change between grepai releases, which
   can require re-indexing after an upgrade.
-- A stock build (or an unknown strategy value) warns and uses `fixed` —
-  after any grepai binary swap, check the logs before assuming ast is active.
+- A stock build warns and uses `fixed` — after any grepai binary swap,
+  check the logs before assuming ast is active. An unknown strategy name is
+  rejected when the config is loaded.
 
 `fixed` is the default and the documentation's recommendation; `ast` is
 experimental. Choosing between them: with ast available, prefer it for supported languages
@@ -73,7 +74,7 @@ but neither contains the other.
 
 Extra indexed extensions beyond the built-in list, each with a leading dot
 (e.g. `.tengo`, `.mdx`), matched case-insensitively; an entry missing the
-leading dot is silently dropped — no error, no effect. Binary detection
+leading dot stops the command — `grepai config validate` names it. Binary detection
 (UTF-8 + null-byte check) still applies, so adding a binary extension is
 safe. These files chunk with `fixed`.
 
@@ -94,8 +95,8 @@ safe. These files chunk with `fixed`.
 1. `overlap: 0` cannot be forced — 0 or missing resets to 50 at load.
    Besides `size` and `ignore`, lowering `overlap` (1-49) also shrinks the
    index, though modestly; zero itself is unattainable.
-2. `size: 0` or missing resets to 512; unknown `strategy` values silently
-   fall back to `fixed` (warning in logs only).
+2. `size: 0` or missing resets to 512; an unknown `strategy` name is
+   rejected when the config is loaded.
 3. ast reads its budget in non-whitespace characters, not tokens — the same
    numeric `size` yields different real chunk volumes under the two
    strategies.

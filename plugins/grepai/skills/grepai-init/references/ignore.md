@@ -133,7 +133,9 @@ shorter versions give the wrong result:
 The index should hold the project's code, not the instructions and state
 of the tools that read it. Add to the config `ignore` list — unless git
 already ignores the name (`git check-ignore -q <name>` exits 0; the
-`.gitignore` and `external_gitignore` layers then exclude it anyway):
+`.gitignore` and `external_gitignore` layers then exclude it anyway). In
+a project that is not a git repository, search the global gitignore for
+the name instead: it is the only layer that can pre-exclude it there:
 
 - the agent files `CLAUDE.md` and `AGENTS.md`;
 - the agent directories `.claude` and `.agents`;

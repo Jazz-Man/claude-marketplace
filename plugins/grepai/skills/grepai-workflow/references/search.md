@@ -39,6 +39,14 @@ grepai_index_status { root: "<project>" }
 Watch `total_files`, `last_updated` (versus how recently the code changed),
 and `symbols_ready` for the structure tools.
 
+A tool that answers `invalid configuration` instead of the result means
+the project's `.grepai/config.yaml` has a problem — an option that does
+not exist, a value it does not accept. Every tool of a single project
+reports it, and the message lists all problems; `grepai config validate`
+prints the same list in a terminal. Fixing the file is the
+`grepai-init` skill's job. Calls with a `workspace` do not read the
+project configs.
+
 Basic search — full chunks with content:
 
 ```

@@ -4,30 +4,48 @@ Scope: a solo-developer profile — local Ollama embedder, GOB store, one
 machine. This file follows the grepai documentation.
 
 Config lives at `.grepai/config.yaml` at the project root, created by
-`grepai init` with defaults. Every command loads the nearest one: the
-current directory first, then each parent.
+`grepai init` with defaults.
 
 ## How the file is loaded
+
+Every command except `grepai init` loads the nearest `.grepai/config.yaml`
+— the current directory first, then each parent — fills in the defaults
+and validates the result. A file with a problem stops the command; all
+problems are listed at once, each with the key it belongs to.
 
 1. **Defaults are filled.** A missing or zero value takes the default in
    the tables. Four things are not filled and stay as written:
    `embedder.provider`, `embedder.model`, `store.backend` and the `ignore`
    list. The whole `search` section has no load-time defaults — without
    it, boost, hybrid search and deduplication are all off.
-2. **Values are validated.** The four `watch.rpg_*` values on every load,
-   the `rpg` values when `rpg.enabled` is true. A value outside its range
-   stops the command with a message that names the key.
-3. **Unknown keys are ignored**, and dropped the next time the file is
-   saved. `grepai watch` and `grepai index` save it after each successful
-   index save, so a key this version does not know disappears from it.
-   The same writes store `watch.last_index_time`: expect the file to
-   change after the owner's index run.
+2. **The result is validated.** These stop the command:
+   - an option that does not exist, at any depth, including inside a
+     `search.boost` rule — misspelled, or written by a newer grepai
+     version;
+   - a value of the wrong type, for example `chunking.size: abc`;
+   - a name outside the ones the key accepts: `embedder.provider`,
+     `store.backend`, `chunking.strategy` and `framework_processing.mode`;
+   - a number out of range: the minimums of the four `watch.rpg_*` keys,
+     and the `rpg` ranges when `rpg.enabled` is true;
+   - an entry that would be ignored: a `chunking.custom_extensions` entry
+     without a leading dot, or a `trace.enabled_languages` entry that is
+     not a lowercase extension with a leading dot.
 
-An empty `embedder.provider` (`unknown embedding provider`) or
-`store.backend` (`unknown storage backend`) fails at startup. No value in
-the file expands environment variables: `api_key: ${OPENAI_API_KEY}` is
-sent literally. `trace.mode`, `trace.exclude_patterns`,
-`update.check_on_startup` and `rpg.store_path` never had any effect.
+`grepai config validate` runs these checks and nothing else, prints the
+whole list without starting anything, and exits with code 1 when it finds
+a problem. The MCP tools report the same list as a tool error
+(`invalid configuration`). Not checked: whether the embedder endpoint
+answers, whether an API key or a DSN is present, and whether
+`external_gitignore` points to a file — grepai reports those when it uses
+them.
+
+Two keys fail at startup when they are empty, because nothing fills them:
+`embedder.provider` (`unknown embedding provider`) and `store.backend`
+(`unknown storage backend`). No value in the file expands environment
+variables: `api_key: ${OPENAI_API_KEY}` is sent literally. `trace.mode`,
+`trace.exclude_patterns`, `update.check_on_startup` and `rpg.store_path`
+never had any effect: grepai ignores them and drops them when it next
+saves the file.
 
 | File in `.grepai/` | Written by | Contents |
 |---|---|---|
@@ -141,7 +159,7 @@ remote stores need a server the owner runs.
 |---|---|---|
 | `size` | `512` | Chunk budget in tokens, estimated at 4 characters per token. With `ast`, counted in non-whitespace characters. |
 | `overlap` | `50` | Tokens shared between neighboring chunks. Not used by `ast`; `0` cannot be set. |
-| `strategy` | `fixed` | `fixed` or `ast`. An unknown name, or `ast` in a build without tree-sitter, falls back to `fixed` with a warning. |
+| `strategy` | `fixed` | `fixed` or `ast`. Any other name is rejected when the config is loaded. `ast` in a build without tree-sitter falls back to `fixed` with a warning. |
 | `custom_extensions` | empty | Extra extensions to index, each with the leading dot, matched case-insensitively. These files use the fixed chunker. |
 | `max_file_size_bytes` | `1048576` | Largest file size that is indexed. Applies to full scans and watcher updates, after a re-index. |
 
@@ -183,6 +201,12 @@ The four `rpg_*` keys are validated on every load but only take effect
 when `rpg.enabled` is true. The watcher reads every key except
 `discover_worktrees` — and the ignore rules and the rest of the config —
 when it starts: after a config change it has to be restarted.
+
+The watcher rewrites `config.yaml`, about every 30 seconds while there are
+changes, to store `last_index_time`. If the file has become invalid in the
+meantime — for example while it was being edited — the write is skipped
+and the problem goes to the log: the file stays as it is, and the watcher
+keeps running with the settings it started with.
 
 ## search
 
@@ -262,3 +286,5 @@ rule live in references/ignore.md.
 7. The watcher never reloads the config — after any change to a project
    that runs `grepai watch`, the owner restarts it.
 8. The Vue processor runs code from the project's `node_modules`.
+9. A misspelled option stops every command and every MCP tool
+   (`invalid configuration`) — `grepai config validate` names it.
