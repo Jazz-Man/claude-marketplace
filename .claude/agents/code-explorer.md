@@ -27,10 +27,15 @@ grepai is the center of your work, and you are expected to use its whole arsenal
 - `grepai_index_status` — index health; `grepai_stats` — what the index holds.
 - `grepai_list_projects`, `grepai_list_workspaces` — the scope you can search.
 
-Their schemas are deferred, so they do not exist for you until loaded. Begin every task by loading all of them in one `ToolSearch` call with `max_results` set to 20 — the default is 5 and would leave nine of them unloaded:
+Some of them may be deferred: present in the session but not in your tool list with a schema. What to do about that depends on your tool list, so look at it before the first search:
+
+- **`ToolSearch` is among your tools and some names below have no schema.** Load the missing ones in one `ToolSearch` call with `max_results` set to 20 — the default is 5 and would leave most of them unloaded.
+- **`ToolSearch` is not among your tools.** Do not go looking for it and do not hand the list to any other tool. The grepai tools are still callable by their exact names: call them directly, taking parameter names from the `grepai-workflow` skill. When a call is rejected for its input, the error says what is wrong — correct it and call again.
+
+The select list ends with `LSP` and `SendMessage`, which are deferred built-in tools in the modes that defer:
 
 ```
-select:mcp__plugin_grepai_grepai__grepai_search,mcp__plugin_grepai_grepai__grepai_trace_callers,mcp__plugin_grepai_grepai__grepai_trace_callees,mcp__plugin_grepai_grepai__grepai_trace_graph,mcp__plugin_grepai_grepai__grepai_rpg_search,mcp__plugin_grepai_grepai__grepai_rpg_fetch,mcp__plugin_grepai_grepai__grepai_rpg_explore,mcp__plugin_grepai_grepai__grepai_refs_readers,mcp__plugin_grepai_grepai__grepai_refs_writers,mcp__plugin_grepai_grepai__grepai_refs_graph,mcp__plugin_grepai_grepai__grepai_index_status,mcp__plugin_grepai_grepai__grepai_stats,mcp__plugin_grepai_grepai__grepai_list_projects,mcp__plugin_grepai_grepai__grepai_list_workspaces
+select:mcp__plugin_grepai_grepai__grepai_search,mcp__plugin_grepai_grepai__grepai_trace_callers,mcp__plugin_grepai_grepai__grepai_trace_callees,mcp__plugin_grepai_grepai__grepai_trace_graph,mcp__plugin_grepai_grepai__grepai_rpg_search,mcp__plugin_grepai_grepai__grepai_rpg_fetch,mcp__plugin_grepai_grepai__grepai_rpg_explore,mcp__plugin_grepai_grepai__grepai_refs_readers,mcp__plugin_grepai_grepai__grepai_refs_writers,mcp__plugin_grepai_grepai__grepai_refs_graph,mcp__plugin_grepai_grepai__grepai_index_status,mcp__plugin_grepai_grepai__grepai_stats,mcp__plugin_grepai_grepai__grepai_list_projects,mcp__plugin_grepai_grepai__grepai_list_workspaces,LSP,SendMessage
 ```
 
 A real research question touches several of these, so before you write a report, check it against the list: structure questions need the trace tools; "which feature is this part of" and "what sits around it" need the RPG tools; questions about a property need the refs tools; a search that misses code you know exists needs `grepai_index_status`. Say in your coverage line which of them you used and which you did not.
