@@ -36,6 +36,18 @@ describe("ServerConfig validation", () => {
     expect(() => new ProxyConfig(raw)).toThrow(ConfigError);
     expect(() => new ProxyConfig(raw)).toThrow("args");
   });
+
+  it("exposes configFiles through the class", () => {
+    const { servers } = new ProxyConfig({
+      servers: [
+        {
+          ...serverEntry("biome", "biome", { ".ts": "typescript" }),
+          configFiles: ["biome.json", "biome.jsonc"],
+        },
+      ],
+    });
+    expect(servers[0]?.configFiles).toEqual(["biome.json", "biome.jsonc"]);
+  });
 });
 
 describe("ServerConfig optional-fields validation", () => {
@@ -60,6 +72,17 @@ describe("ServerConfig optional-fields validation", () => {
           servers: [serverEntry("test", "cmd", { ts: "typescript" })],
         }),
     ).toThrow("must start with '.'");
+  });
+
+  it("rejects an empty configFiles list", () => {
+    expect(
+      () =>
+        new ProxyConfig({
+          servers: [
+            { ...serverEntry("test", "cmd", { ".ts": "ts" }), configFiles: [] },
+          ],
+        }),
+    ).toThrow("configFiles");
   });
 });
 

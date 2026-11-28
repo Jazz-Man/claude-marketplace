@@ -1,6 +1,7 @@
 import { readdirSync, rmSync } from "node:fs";
 import { join } from "node:path";
 import process from "node:process";
+import { pathToFileURL } from "node:url";
 
 import { DocumentStore } from "../../src/docstore.ts";
 import type { Downstream } from "../../src/downstream.ts";
@@ -151,12 +152,18 @@ export const stub = (
   settings: {},
 });
 
-export async function initializeSession(proxy: ProxyHandle): Promise<void> {
+export async function initializeSession(
+  proxy: ProxyHandle,
+  root?: string,
+): Promise<void> {
   proxy.push({
     id: 1,
     jsonrpc: "2.0",
     method: "initialize",
-    params: INITIALIZE,
+    params:
+      root === undefined
+        ? INITIALIZE
+        : { ...INITIALIZE, rootPath: root, rootUri: pathToFileURL(root).href },
   });
   await waitFor(() => proxy.clientMessages.some((message) => message.id === 1));
 }
@@ -215,10 +222,13 @@ export async function request(
   return responseFor(proxy, message.id);
 }
 
-export async function boot(servers: unknown[]): Promise<ProxyHandle> {
+export async function boot(
+  servers: unknown[],
+  root?: string,
+): Promise<ProxyHandle> {
   const configPath = await writeConfig(servers);
   const proxy = startProxy(configPath);
-  await initializeSession(proxy);
+  await initializeSession(proxy, root);
   return proxy;
 }
 

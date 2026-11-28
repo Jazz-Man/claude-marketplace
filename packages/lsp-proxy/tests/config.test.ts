@@ -26,6 +26,56 @@ describe("parseConfig acceptance", () => {
   it("allows the same extension mapped to the same language twice", () => {
     expect(parseConfig(serverPair("typescript", "typescript")).ok).toBe(true);
   });
+
+  it("keeps configFiles when present", () => {
+    const parsed = parseConfig({
+      servers: [
+        {
+          ...serverEntry("biome", "biome", { ".ts": "typescript" }),
+          configFiles: ["biome.json", "biome.jsonc"],
+        },
+      ],
+    });
+    expect(parsed.ok).toBe(true);
+    if (!parsed.ok) {
+      return;
+    }
+    expect(parsed.config.servers[0]?.configFiles).toEqual([
+      "biome.json",
+      "biome.jsonc",
+    ]);
+  });
+
+  it("leaves configFiles undefined when absent", () => {
+    const parsed = parseConfig(serverPair("typescript", "typescript"));
+    expect(parsed.ok).toBe(true);
+    if (!parsed.ok) {
+      return;
+    }
+    expect(parsed.config.servers[0]?.configFiles).toBeUndefined();
+  });
+});
+
+describe("parseConfig configFiles violations", () => {
+  const gated = (configFiles: unknown) => ({
+    servers: [
+      {
+        ...serverEntry("biome", "biome", { ".ts": "typescript" }),
+        configFiles,
+      },
+    ],
+  });
+
+  it.each([
+    ["an empty list", []],
+    ["an empty file name", [""]],
+    ["a non-string entry", ["biome.json", 1]],
+    ["a bare file name", "biome.json"],
+  ])("rejects %s", (_, configFiles) => {
+    const parsed = parseConfig(gated(configFiles));
+    expect(parsed.ok).toBe(false);
+    expect(violationText(parsed)).toContain('"servers[0].configFiles"');
+  });
 });
 
 describe("parseConfig violations", () => {
