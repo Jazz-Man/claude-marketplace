@@ -3,6 +3,7 @@
     {
       "args": ["--lsp", "--stdio"],
       "command": "tsc",
+      "configFiles": ["tsconfig.json", "jsconfig.json"],
       "extensionToLanguage": {
         ".cjs": "javascript",
         ".cts": "typescript",
@@ -19,6 +20,7 @@
     {
       "args": ["lsp-proxy"],
       "command": "/opt/homebrew/bin/biome",
+      "configFiles": ["biome.json", "biome.jsonc"],
       "extensionToLanguage": {
         ".cjs": "javascript",
         ".css": "css",
@@ -38,6 +40,7 @@
     {
       "args": ["--lsp"],
       "command": "/opt/homebrew/bin/jscpd",
+      "configFiles": [".jscpd.json"],
       "extensionToLanguage": {
         ".abap": "abap",
         ".ada": "ada",
@@ -186,6 +189,7 @@
     {
       "args": [],
       "command": "/opt/homebrew/bin/zls",
+      "configFiles": ["build.zig", "build.zig.zon"],
       "extensionToLanguage": {
         ".zig": "zig",
         ".zon": "zig"

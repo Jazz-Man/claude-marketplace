@@ -19,6 +19,9 @@ formatting by config priority.
 - **Code actions** — actions are tagged with their origin server;
   `codeAction/resolve` routes back to the originating server (first
   configured server as fallback).
+- **Per-project activation** — a server with `configFiles` is spawned
+  only in projects that keep one of those files in their root; see
+  Maintenance.
 
 ## Liveness model
 
@@ -66,8 +69,19 @@ All downstream configuration — commands, extensions, initialization
 options, settings — lives ONLY in
 `packages/lsp-proxy/lsp-proxy.config.json` (array order = priority).
 The config is validated on load: a bad shape fails fast with collected
-field-level errors. After editing it, regenerate the plugin's extension
-map:
+field-level errors.
+
+A server with `configFiles` starts only in projects whose root holds at
+least one of the listed files; a server without the field always starts:
+
+    "configFiles": ["biome.json", "biome.jsonc"]
+
+The root is the client's first workspace folder, falling back to
+`rootUri`, then `rootPath`. The check runs once, on `initialize`: a
+config file created mid-session takes effect in the next session.
+Skipped servers are logged as `server <name>: not started`.
+
+After editing the config, regenerate the plugin's extension map:
 
     cd packages/lsp-proxy && bun run sync-extensions
 
@@ -86,6 +100,8 @@ Source lives in `packages/lsp-proxy/src` (165 tests, `bun test`):
   collected-errors parse path)
 - `framing.ts docstore.ts mux.ts merge.ts capabilities.ts` — pure
   protocol cores
+- `activation.ts` — which configured servers a project starts
+  (config-file gate on the project root)
 - `proxy.ts proxy-server.ts proxy-requests.ts downstream.ts` —
   process/session orchestration
 - `main.ts` — entrypoint; owns process exits and the log lifecycle
