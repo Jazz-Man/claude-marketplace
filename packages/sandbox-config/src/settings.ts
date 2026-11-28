@@ -23,7 +23,7 @@ try {
 
   await settingsPath.write(configData);
 
-  await Bun.write("claude-settings.json", configData);
+  // await Bun.write("claude-settings.json", configData);
 
   debug(newConfig, {
     depth: 10,
